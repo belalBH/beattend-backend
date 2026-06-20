@@ -1,0 +1,108 @@
+{
+  "companies": [
+    {
+      "id": 1,
+      "name": "شركة الحلول المتقدمة",
+      "logo": "https://ui-avatars.com/api/?name=AS&background=065f46&color=fff",
+      "industry": "التقنية",
+      "employees": 120,
+      "status": "نشط"
+    },
+    {
+      "id": 2,
+      "name": "مجموعة الشايع للتجارة",
+      "logo": "https://ui-avatars.com/api/?name=ST&background=059669&color=fff",
+      "industry": "التجزئة",
+      "employees": 450,
+      "status": "نشط"
+    },
+    {
+      "id": 3,
+      "name": "مستشفى التخصصي",
+      "logo": "https://ui-avatars.com/api/?name=SH&background=10b981&color=fff",
+      "industry": "الصحة",
+      "employees": 800,
+      "status": "نشط"
+    }
+  ],
+  "departments": [
+    {
+      "id": 1,
+      "name": "التقنية",
+      "manager": "أحمد العتيبي",
+      "color": "bg-emerald-900"
+    },
+    {
+      "id": 2,
+      "name": "الموارد البشرية",
+      "manager": "سارة القحطاني",
+      "color": "bg-emerald-700"
+    },
+    {
+      "id": 3,
+      "name": "المبيعات",
+      "manager": "محمد الشمري",
+      "color": "bg-emerald-500"
+    }
+  ],
+  "employees": [
+    {
+      "id": 1,
+      "companyId": 1,
+      "empNo": "EMP-1001",
+      "name": "أحمد العتيبي",
+      "title": "مطور برمجيات أول",
+      "department": "التقنية",
+      "email": "a.otaibi@solutions.sa",
+      "phone": "0500000001",
+      "salary": 15000,
+      "status": "نشط",
+      "avatar": "https://ui-avatars.com/api/?name=أحمد+العتيبي&background=064e3b&color=fff"
+    },
+    {
+      "id": 2,
+      "companyId": 1,
+      "empNo": "EMP-1002",
+      "name": "سارة القحطاني",
+      "title": "أخصائية موارد بشرية",
+      "department": "الموارد البشرية",
+      "email": "s.qahtani@solutions.sa",
+      "phone": "0500000002",
+      "salary": 12000,
+      "status": "نشط",
+      "avatar": "https://ui-avatars.com/api/?name=سارة+القحطاني&background=059669&color=fff"
+    },
+    {
+      "id": 3,
+      "companyId": 1,
+      "empNo": "EMP-1003",
+      "name": "محمد الشمري",
+      "title": "مدير مبيعات",
+      "department": "المبيعات",
+      "email": "m.shammari@shaya.sa",
+      "phone": "0500000003",
+      "salary": 18000,
+      "status": "نشط",
+      "avatar": "https://ui-avatars.com/api/?name=محمد+الشمري&background=10b981&color=fff"
+    }
+  ],
+  "officeLocations": [
+    {
+      "id": "main_office",
+      "name": "المكتب الرئيسي (Main Office)",
+      "latitude": 37.7749,
+      "longitude": -122.4194,
+      "radius_meters": 100,
+      "is_active": 1
+    },
+    {
+      "id": "branch_office",
+      "name": "فرع الشركة (Branch Office)",
+      "latitude": 37.7849,
+      "longitude": -122.4094,
+      "radius_meters": 50,
+      "is_active": 1
+    }
+  ],
+  "attendanceRecords": []
+}

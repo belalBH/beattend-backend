@@ -28,6 +28,7 @@ async function refreshAccessToken() {
         },
         body: JSON.stringify({
           client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+          client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
           grant_type: 'refresh_token',
           refresh_token: FIREBASE_TOKEN
         })

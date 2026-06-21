@@ -19,7 +19,8 @@ import {
   HelpCircle,
   Moon,
   Sun,
-  Languages
+  Languages,
+  Package
 } from 'lucide-react';
 
 import { DashboardView } from './views/Dashboard';
@@ -27,6 +28,7 @@ import { SettingsView } from './views/Settings';
 import { AttendanceLocationView } from './views/Attendance';
 import { CompaniesView } from './views/Companies';
 import { SubscriptionsView } from './views/Subscriptions';
+import { PackagesView } from './views/Packages';
 import { EmployeesView } from './views/Employees';
 import { translations } from './i18n';
 
@@ -75,6 +77,7 @@ function App() {
     { section: t.management.toUpperCase(), items: [
       { id: 'companies', label: t.companies, icon: Globe },
       { id: 'subscriptions', label: t.subscriptions, icon: ShieldCheck },
+      { id: 'packages', label: t.packages, icon: Package },
       { id: 'locations', label: t.locations, icon: MapPinned },
       { id: 'jobs', label: t.jobs, icon: Briefcase },
       { id: 'candidates', label: t.candidates, icon: UserPlus },
@@ -152,6 +155,7 @@ function App() {
           {activeTab === 'dashboard' && <DashboardView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'companies' && <CompaniesView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'subscriptions' && <SubscriptionsView isDarkMode={isDarkMode} lang={lang} />}
+          {activeTab === 'packages' && <PackagesView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'employees' && <EmployeesView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'locations' && <AttendanceLocationView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'settings' && <SettingsView isDarkMode={isDarkMode} lang={lang} />}

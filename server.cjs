@@ -621,6 +621,75 @@ app.get('/api/dashboard/stats', async (req, res) => {
   }
 });
 
+// Packages Endpoints
+app.get('/api/packages', async (req, res) => {
+  try {
+    const packages = await getCollection('packages');
+    if (packages.length === 0) {
+      const defaultPackages = [
+        { id: 'basic', name: 'الأساسية', employees: 15, monthlyPrice: 299, annualPrice: 2999 },
+        { id: 'pro', name: 'المتقدمة', employees: 50, monthlyPrice: 599, annualPrice: 5999 },
+        { id: 'enterprise', name: 'الاحترافية', employees: 200, monthlyPrice: 1299, annualPrice: 12999 }
+      ];
+      for (const p of defaultPackages) {
+        await saveDocument('packages', p.id, p);
+      }
+      return res.json(defaultPackages);
+    }
+    res.json(packages);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/packages', async (req, res) => {
+  const { name, employees, monthlyPrice, annualPrice } = req.body;
+  if (!name) return res.status(400).json({ error: 'اسم الباقة مطلوب' });
+
+  try {
+    const newId = `pack_${Date.now()}`;
+    const newPackage = {
+      id: newId,
+      name,
+      employees: parseInt(employees) || 0,
+      monthlyPrice: parseFloat(monthlyPrice) || 0,
+      annualPrice: parseFloat(annualPrice) || 0
+    };
+
+    await saveDocument('packages', newId, newPackage);
+    res.status(201).json(newPackage);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/packages/:id', async (req, res) => {
+  const idStr = req.params.id;
+  try {
+    const packages = await getCollection('packages');
+    const match = packages.find(p => p.id === idStr);
+    if (!match) return res.status(404).json({ error: 'الباقة غير موجودة' });
+
+    const updated = { ...match, ...req.body };
+    await saveDocument('packages', idStr, updated);
+    res.json(updated);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/packages/:id', async (req, res) => {
+  const idStr = req.params.id;
+  try {
+    await deleteDocument('packages', idStr);
+    res.json({ message: 'تم حذف الباقة بنجاح' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Shared Backend API Server running at http://localhost:${PORT}`);

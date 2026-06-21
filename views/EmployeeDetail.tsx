@@ -40,7 +40,19 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
   const [socialInsuranceNumber, setSocialInsuranceNumber] = useState('');
 
   // Form states (Payroll Tab)
-  const [salary, setSalary] = useState('8000');
+  const [baseSalary, setBaseSalary] = useState('0');
+  const [allowanceHousing, setAllowanceHousing] = useState('0');
+  const [allowanceTransportation, setAllowanceTransportation] = useState('0');
+  const [allowanceCommunication, setAllowanceCommunication] = useState('0');
+  const [allowanceJobNature, setAllowanceJobNature] = useState('0');
+  const [allowanceOther, setAllowanceOther] = useState('0');
+  const [deductionDelay, setDeductionDelay] = useState('0');
+  const [deductionAbsence, setDeductionAbsence] = useState('0');
+  const [deductionLoan, setDeductionLoan] = useState('0');
+  const [deductionOther, setDeductionOther] = useState('0');
+  const [paymentMethod, setPaymentMethod] = useState(lang === 'ar' ? 'تحويل بنكي' : 'Bank Transfer');
+  const [bankName, setBankName] = useState('');
+  const [bankIban, setBankIban] = useState('');
 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('1');
@@ -73,7 +85,6 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
       setPhone(employee.phone || '');
       setTitle(employee.title || 'مطور برمجيات');
       setDepartment(employee.department || 'التقنية');
-      setSalary(employee.salary ? employee.salary.toString() : '8000');
       setAddress(employee.address || 'الرياض، السعودية');
       setGender(employee.gender || (lang === 'ar' ? 'ذكر' : 'Male'));
       setDob(employee.dob || '24th July, 1998');
@@ -100,8 +111,40 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
       setWeeklyWorkDays(employee.weeklyWorkDays || '5');
       setHasSocialInsurance(employee.hasSocialInsurance === true);
       setSocialInsuranceNumber(employee.socialInsuranceNumber || '');
+
+      // Populate custom payroll fields
+      setBaseSalary(employee.baseSalary ? employee.baseSalary.toString() : (employee.salary ? employee.salary.toString() : '0'));
+      setAllowanceHousing(employee.allowanceHousing ? employee.allowanceHousing.toString() : '0');
+      setAllowanceTransportation(employee.allowanceTransportation ? employee.allowanceTransportation.toString() : '0');
+      setAllowanceCommunication(employee.allowanceCommunication ? employee.allowanceCommunication.toString() : '0');
+      setAllowanceJobNature(employee.allowanceJobNature ? employee.allowanceJobNature.toString() : '0');
+      setAllowanceOther(employee.allowanceOther ? employee.allowanceOther.toString() : '0');
+      setDeductionDelay(employee.deductionDelay ? employee.deductionDelay.toString() : '0');
+      setDeductionAbsence(employee.deductionAbsence ? employee.deductionAbsence.toString() : '0');
+      setDeductionLoan(employee.deductionLoan ? employee.deductionLoan.toString() : '0');
+      setDeductionOther(employee.deductionOther ? employee.deductionOther.toString() : '0');
+      setPaymentMethod(employee.paymentMethod || (lang === 'ar' ? 'تحويل بنكي' : 'Bank Transfer'));
+      setBankName(employee.bankName || '');
+      setBankIban(employee.bankIban || '');
     }
   }, [employee, lang]);
+
+  // Real-time salary calculations
+  const numBaseSalary = parseFloat(baseSalary) || 0;
+  const numAllowanceHousing = parseFloat(allowanceHousing) || 0;
+  const numAllowanceTransportation = parseFloat(allowanceTransportation) || 0;
+  const numAllowanceCommunication = parseFloat(allowanceCommunication) || 0;
+  const numAllowanceJobNature = parseFloat(allowanceJobNature) || 0;
+  const numAllowanceOther = parseFloat(allowanceOther) || 0;
+  
+  const numDeductionDelay = parseFloat(deductionDelay) || 0;
+  const numDeductionAbsence = parseFloat(deductionAbsence) || 0;
+  const numDeductionLoan = parseFloat(deductionLoan) || 0;
+  const numDeductionOther = parseFloat(deductionOther) || 0;
+
+  const totalAllowances = numAllowanceHousing + numAllowanceTransportation + numAllowanceCommunication + numAllowanceJobNature + numAllowanceOther;
+  const totalDeductions = numDeductionDelay + numDeductionAbsence + numDeductionLoan + numDeductionOther;
+  const netSalary = numBaseSalary + totalAllowances - totalDeductions;
 
   const handleSave = async () => {
     if (!firstName || !email) {
@@ -115,7 +158,7 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
         phone,
         title,
         department,
-        salary: parseFloat(salary) || 0,
+        salary: netSalary, // netSalary acts as official salary
         status: employeeStatus,
         companyId: parseInt(selectedCompanyId) || 1,
         address,
@@ -136,7 +179,24 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
         dailyWorkingHours,
         weeklyWorkDays,
         hasSocialInsurance,
-        socialInsuranceNumber
+        socialInsuranceNumber,
+        // Payroll details
+        baseSalary: numBaseSalary,
+        allowanceHousing: numAllowanceHousing,
+        allowanceTransportation: numAllowanceTransportation,
+        allowanceCommunication: numAllowanceCommunication,
+        allowanceJobNature: numAllowanceJobNature,
+        allowanceOther: numAllowanceOther,
+        deductionDelay: numDeductionDelay,
+        deductionAbsence: numDeductionAbsence,
+        deductionLoan: numDeductionLoan,
+        deductionOther: numDeductionOther,
+        paymentMethod,
+        bankName,
+        bankIban,
+        totalAllowances,
+        totalDeductions,
+        netSalary
       };
 
       const url = employee 
@@ -392,12 +452,106 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
               {/* PAYROLL TAB */}
               {activeTab === t.payroll && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* 1. الراتب الأساسي */}
                   <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2">
-                    <Banknote size={14} /> {lang === 'ar' ? 'تفاصيل الراتب والتعويضات' : 'Salary Details'}
+                    <Banknote size={14} /> {lang === 'ar' ? 'الراتب الأساسي' : 'Base Salary'}
                   </h3>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.salary}</label>
-                    <input type="number" value={salary} onChange={(e) => setSalary(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'الراتب الأساسي' : 'Base Salary'}</label>
+                    <input type="number" value={baseSalary} onChange={(e) => setBaseSalary(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+
+                  {/* 2. البدلات */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2 mt-4">
+                    <Plus size={14} className="text-[#17AE9F]" /> {lang === 'ar' ? 'البدلات' : 'Allowances'}
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'بدل سكن' : 'Housing Allowance'}</label>
+                    <input type="number" value={allowanceHousing} onChange={(e) => setAllowanceHousing(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'بدل نقل' : 'Transportation Allowance'}</label>
+                    <input type="number" value={allowanceTransportation} onChange={(e) => setAllowanceTransportation(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'بدل اتصال' : 'Communication Allowance'}</label>
+                    <input type="number" value={allowanceCommunication} onChange={(e) => setAllowanceCommunication(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'بدل طبيعة عمل' : 'Job Nature Allowance'}</label>
+                    <input type="number" value={allowanceJobNature} onChange={(e) => setAllowanceJobNature(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'بدل آخر' : 'Other Allowance'}</label>
+                    <input type="number" value={allowanceOther} onChange={(e) => setAllowanceOther(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+
+                  {/* 3. الاستقطاعات */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2 mt-4">
+                    <ChevronRight size={14} className="text-red-500 rotate-90" /> {lang === 'ar' ? 'الاستقطاعات والخصومات' : 'Deductions'}
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'خصم تأخير' : 'Delay Deduction'}</label>
+                    <input type="number" value={deductionDelay} onChange={(e) => setDeductionDelay(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'خصم غياب' : 'Absence Deduction'}</label>
+                    <input type="number" value={deductionAbsence} onChange={(e) => setDeductionAbsence(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'سلفة' : 'Loan/Advance'}</label>
+                    <input type="number" value={deductionLoan} onChange={(e) => setDeductionLoan(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'استقطاع آخر' : 'Other Deduction'}</label>
+                    <input type="number" value={deductionOther} onChange={(e) => setDeductionOther(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+
+                  {/* 4. معلومات الراتب وطريقة الدفع */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2 mt-4">
+                    <GraduationCap size={14} /> {lang === 'ar' ? 'معلومات الدفع والحساب البنكي' : 'Payment Details'}
+                  </h3>
+                  <div className="space-y-2 col-span-full">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</label>
+                    <div className="flex gap-4">
+                      {[(lang === 'ar' ? 'تحويل بنكي' : 'Bank Transfer'), 
+                        (lang === 'ar' ? 'نقدي' : 'Cash')].map((method) => (
+                        <label key={method} className={`flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer text-xs font-bold transition-all ${paymentMethod === method ? 'border-[#17AE9F] bg-[#E8F7F5] text-[#15385E]' : 'border-gray-100 hover:border-gray-200 text-gray-500'}`}>
+                          <input type="radio" name="paymentMethod" value={method} checked={paymentMethod === method} onChange={(e) => setPaymentMethod(e.target.value)} className="hidden" />
+                          {method}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {paymentMethod === (lang === 'ar' ? 'تحويل بنكي' : 'Bank Transfer') && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'اسم البنك' : 'Bank Name'}</label>
+                        <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="مثال: مصرف الراجحي" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                      </div>
+                      <div className="space-y-2 lg:col-span-2">
+                        <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'رقم الآيبان IBAN' : 'IBAN Number'}</label>
+                        <input type="text" value={bankIban} onChange={(e) => setBankIban(e.target.value)} placeholder="SAXXXXXXXXXXXXXXXXXXXXXXXX" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none text-left" dir="ltr" />
+                      </div>
+                    </>
+                  )}
+
+                  {/* 5. احتساب الراتب */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2 mt-4">
+                    <Banknote size={14} className="text-[#17AE9F]" /> {lang === 'ar' ? 'احتساب الراتب الإجمالي والصافي' : 'Salary Calculations'}
+                  </h3>
+                  <div className="space-y-2 bg-[#E8F7F5]/50 p-4 rounded-2xl border border-[#17AE9F]/10">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'إجمالي البدلات (+)' : 'Total Allowances'}</label>
+                    <p className="text-lg font-black text-[#15385E] mt-1">{totalAllowances.toLocaleString()} {lang === 'ar' ? 'ر.س' : 'SAR'}</p>
+                  </div>
+                  <div className="space-y-2 bg-red-50/50 p-4 rounded-2xl border border-red-200/10">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'إجمالي الاستقطاعات (-)' : 'Total Deductions'}</label>
+                    <p className="text-lg font-black text-red-500 mt-1">{totalDeductions.toLocaleString()} {lang === 'ar' ? 'ر.س' : 'SAR'}</p>
+                  </div>
+                  <div className="space-y-2 bg-[#15385E] p-4 rounded-2xl border border-[#15385E]/10 text-white md:col-span-1 lg:col-span-1">
+                    <label className="text-[10px] font-bold text-white/70 uppercase">{lang === 'ar' ? 'صافي الراتب (=)' : 'Net Salary'}</label>
+                    <p className="text-lg font-black text-white mt-1">{netSalary.toLocaleString()} {lang === 'ar' ? 'ر.س' : 'SAR'}</p>
                   </div>
                 </div>
               )}

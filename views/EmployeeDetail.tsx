@@ -83,6 +83,14 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
   const [customName, setCustomName] = useState('');
   const [customCategory, setCustomCategory] = useState(lang === 'ar' ? 'مستندات أخرى' : 'Other');
 
+  const [userRole, setUserRole] = useState(lang === 'ar' ? 'موظف' : 'Employee');
+  const [allowBiometrics, setAllowBiometrics] = useState(true);
+  const [allowGps, setAllowGps] = useState(true);
+  const [allowMobileClockIn, setAllowMobileClockIn] = useState(true);
+  const [notifyDelay, setNotifyDelay] = useState(true);
+  const [notifyAbsence, setNotifyAbsence] = useState(true);
+  const [notifyDocExpiry, setNotifyDocExpiry] = useState(true);
+
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('1');
 
@@ -166,6 +174,14 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
       } else {
         setDocuments(defaultDocs);
       }
+
+      setUserRole(employee.userRole || (lang === 'ar' ? 'موظف' : 'Employee'));
+      setAllowBiometrics(employee.allowBiometrics !== false);
+      setAllowGps(employee.allowGps !== false);
+      setAllowMobileClockIn(employee.allowMobileClockIn !== false);
+      setNotifyDelay(employee.notifyDelay !== false);
+      setNotifyAbsence(employee.notifyAbsence !== false);
+      setNotifyDocExpiry(employee.notifyDocExpiry !== false);
     }
   }, [employee, lang]);
 
@@ -237,7 +253,14 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
         totalAllowances,
         totalDeductions,
         netSalary,
-        documents
+        documents,
+        userRole,
+        allowBiometrics,
+        allowGps,
+        allowMobileClockIn,
+        notifyDelay,
+        notifyAbsence,
+        notifyDocExpiry
       };
 
       const url = employee 
@@ -903,13 +926,145 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
 
               {/* SETTINGS TAB */}
               {activeTab === t.settings && (
-                <div className="space-y-6">
-                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 flex items-center gap-2">
-                    <Settings size={14} /> {lang === 'ar' ? 'إعدادات الحساب والصلاحيات' : 'Account & Access Settings'}
-                  </h3>
-                  <div className="flex items-center gap-3">
-                    <input type="checkbox" id="isApiUser" defaultChecked className="w-5 h-5 accent-[#15385E]" />
-                    <label htmlFor="isApiUser" className="text-xs font-bold text-gray-700">{lang === 'ar' ? 'تمكين الوصول إلى تطبيق الخدمة الذاتية للهاتف' : 'Enable Mobile Self-Service Access'}</label>
+                <div className="space-y-8 animate-in fade-in duration-300">
+                  {/* 1. صلاحيات المستخدم */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 flex items-center gap-2">
+                      <ShieldCheck size={14} className="text-[#17AE9F]" /> {lang === 'ar' ? 'صلاحيات المستخدم والنظام' : 'User Roles & Permissions'}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {[
+                        { id: 'Employee', titleAr: 'موظف', titleEn: 'Employee', descAr: 'وصول محدود للخدمة الذاتية وتطبيق الجوال وحضور اليومي', descEn: 'Self-service mobile app access and attendance logging.' },
+                        { id: 'Supervisor', titleAr: 'مشرف', titleEn: 'Supervisor', descAr: 'صلاحية إشرافية على فرع معين أو قسم محدد واعتماد الإجازات', descEn: 'Supervisory role over a branch or department.' },
+                        { id: 'Manager', titleAr: 'مدير', titleEn: 'Manager', descAr: 'صلاحيات إدارية واسعة لإدارة الأقسام والرواتب والتقارير', descEn: 'Managerial access for payroll, reviews, and reporting.' },
+                        { id: 'Admin', titleAr: 'مدير نظام', titleEn: 'System Admin', descAr: 'صلاحيات كاملة للتحكم في الشركات والفروع وتخصيص النظام', descEn: 'Full system configuration and multi-tenant admin rights.' }
+                      ].map((roleOpt) => {
+                        const isSelected = userRole === roleOpt.id || userRole === roleOpt.titleAr;
+                        return (
+                          <label 
+                            key={roleOpt.id} 
+                            onClick={() => setUserRole(roleOpt.id)}
+                            className={`flex flex-col p-5 rounded-2xl border cursor-pointer text-right transition-all select-none ${isSelected ? 'border-[#17AE9F] bg-[#E8F7F5]/50 shadow-sm shadow-[#17AE9F]/5' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                          >
+                            <input 
+                              type="radio" 
+                              name="userRole" 
+                              value={roleOpt.id} 
+                              checked={isSelected}
+                              onChange={() => {}}
+                              className="hidden" 
+                            />
+                            <div className="flex justify-between items-center mb-2">
+                              <span className={`text-xs font-black ${isSelected ? 'text-[#15385E]' : 'text-gray-900'}`}>{lang === 'ar' ? roleOpt.titleAr : roleOpt.titleEn}</span>
+                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-[#17AE9F] bg-[#17AE9F]' : 'border-gray-200 bg-white'}`}>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
+                              </div>
+                            </div>
+                            <span className="text-[10px] text-gray-400 font-medium leading-relaxed">{lang === 'ar' ? roleOpt.descAr : roleOpt.descEn}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 2. إعدادات الحضور */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 flex items-center gap-2">
+                      <Clock size={14} className="text-[#17AE9F]" /> {lang === 'ar' ? 'إعدادات وقواعد الحضور والإنصراف' : 'Attendance & Geofencing Policies'}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-white border border-gray-100 p-5 rounded-2xl flex items-start gap-4">
+                        <input 
+                          type="checkbox" 
+                          id="allowBiometrics" 
+                          checked={allowBiometrics}
+                          onChange={(e) => setAllowBiometrics(e.target.checked)}
+                          className="w-5 h-5 accent-[#17AE9F] rounded-lg border-gray-200 shrink-0 mt-0.5" 
+                        />
+                        <label htmlFor="allowBiometrics" className="space-y-1 cursor-pointer">
+                          <h4 className="text-xs font-bold text-gray-900">{lang === 'ar' ? 'السماح بالبصمة' : 'Allow Biometrics / FaceID'}</h4>
+                          <p className="text-[10px] text-gray-400 font-medium leading-relaxed">{lang === 'ar' ? 'تمكين الموظف من البصم باستخدام البصمة الحيوية أو الوجه في الجوال' : 'Require biometric verification when logging attendance via mobile.'}</p>
+                        </label>
+                      </div>
+
+                      <div className="bg-white border border-gray-100 p-5 rounded-2xl flex items-start gap-4">
+                        <input 
+                          type="checkbox" 
+                          id="allowGps" 
+                          checked={allowGps}
+                          onChange={(e) => setAllowGps(e.target.checked)}
+                          className="w-5 h-5 accent-[#17AE9F] rounded-lg border-gray-200 shrink-0 mt-0.5" 
+                        />
+                        <label htmlFor="allowGps" className="space-y-1 cursor-pointer">
+                          <h4 className="text-xs font-bold text-gray-900">{lang === 'ar' ? 'السماح بالموقع الجغرافي GPS' : 'Allow GPS Location Tracking'}</h4>
+                          <p className="text-[10px] text-gray-400 font-medium leading-relaxed">{lang === 'ar' ? 'التحقق من تواجد الموظف داخل النطاق الجغرافي للفرع قبل البصم' : 'Verify user is inside the branch geofence boundary before clocking-in.'}</p>
+                        </label>
+                      </div>
+
+                      <div className="bg-white border border-gray-100 p-5 rounded-2xl flex items-start gap-4">
+                        <input 
+                          type="checkbox" 
+                          id="allowMobileClockIn" 
+                          checked={allowMobileClockIn}
+                          onChange={(e) => setAllowMobileClockIn(e.target.checked)}
+                          className="w-5 h-5 accent-[#17AE9F] rounded-lg border-gray-200 shrink-0 mt-0.5" 
+                        />
+                        <label htmlFor="allowMobileClockIn" className="space-y-1 cursor-pointer">
+                          <h4 className="text-xs font-bold text-gray-900">{lang === 'ar' ? 'السماح بتسجيل الحضور من الجوال' : 'Allow Mobile Clock-In'}</h4>
+                          <p className="text-[10px] text-gray-400 font-medium leading-relaxed">{lang === 'ar' ? 'تخويل الموظف من تسجيل الدخول/الخروج من تطبيق الخدمة الذاتية للجوال' : 'Authorize employee to submit clock-in records from mobile application.'}</p>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. الإشعارات */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 flex items-center gap-2">
+                      <Settings size={14} className="text-[#17AE9F]" /> {lang === 'ar' ? 'إعدادات الإشعارات الذكية والتنبيهات' : 'Smart Notifications & Alerts'}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-white border border-gray-100 p-5 rounded-2xl flex items-start gap-4">
+                        <input 
+                          type="checkbox" 
+                          id="notifyDelay" 
+                          checked={notifyDelay}
+                          onChange={(e) => setNotifyDelay(e.target.checked)}
+                          className="w-5 h-5 accent-[#17AE9F] rounded-lg border-gray-200 shrink-0 mt-0.5" 
+                        />
+                        <label htmlFor="notifyDelay" className="space-y-1 cursor-pointer">
+                          <h4 className="text-xs font-bold text-gray-900">{lang === 'ar' ? 'إشعارات التأخير' : 'Delay Notifications'}</h4>
+                          <p className="text-[10px] text-gray-400 font-medium leading-relaxed">{lang === 'ar' ? 'إرسال تنبيه فوري للمشرف والموظف عند التأخر عن موعد الدوام الرسمي' : 'Notify supervisor and employee when official shift clock-in is delayed.'}</p>
+                        </label>
+                      </div>
+
+                      <div className="bg-white border border-gray-100 p-5 rounded-2xl flex items-start gap-4">
+                        <input 
+                          type="checkbox" 
+                          id="notifyAbsence" 
+                          checked={notifyAbsence}
+                          onChange={(e) => setNotifyAbsence(e.target.checked)}
+                          className="w-5 h-5 accent-[#17AE9F] rounded-lg border-gray-200 shrink-0 mt-0.5" 
+                        />
+                        <label htmlFor="notifyAbsence" className="space-y-1 cursor-pointer">
+                          <h4 className="text-xs font-bold text-gray-900">{lang === 'ar' ? 'إشعارات الغياب' : 'Absence Notifications'}</h4>
+                          <p className="text-[10px] text-gray-400 font-medium leading-relaxed">{lang === 'ar' ? 'إشعار فوري لإدارة الموارد البشرية عند غياب الموظف دون عذر مقبول' : 'Notify HR management immediately upon unexcused employee absence.'}</p>
+                        </label>
+                      </div>
+
+                      <div className="bg-white border border-gray-100 p-5 rounded-2xl flex items-start gap-4">
+                        <input 
+                          type="checkbox" 
+                          id="notifyDocExpiry" 
+                          checked={notifyDocExpiry}
+                          onChange={(e) => setNotifyDocExpiry(e.target.checked)}
+                          className="w-5 h-5 accent-[#17AE9F] rounded-lg border-gray-200 shrink-0 mt-0.5" 
+                        />
+                        <label htmlFor="notifyDocExpiry" className="space-y-1 cursor-pointer">
+                          <h4 className="text-xs font-bold text-gray-900">{lang === 'ar' ? 'إشعارات انتهاء المستندات' : 'Document Expiry Alerts'}</h4>
+                          <p className="text-[10px] text-gray-400 font-medium leading-relaxed">{lang === 'ar' ? 'تنبيه الموظف وإدارة الموارد البشرية قبل 30 يوماً من انتهاء الهوية أو العقد' : 'Alert HR and employee 30 days before passport, Iqama, or permit expires.'}</p>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

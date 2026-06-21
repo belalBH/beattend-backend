@@ -320,6 +320,7 @@ app.post('/api/employees', async (req, res) => {
 
   const newId = employees.length > 0 ? Math.max(...employees.map(e => parseInt(e.id) || 0)) + 1 : 1;
   const newEmployee = {
+    ...req.body,
     id: newId,
     companyId: parseInt(companyId) || 1,
     empNo: empNo || `EMP-${Date.now().toString().slice(-4)}`,

@@ -1,26 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Mail, Phone, MapPin, Cake, Edit3, Plus, ChevronRight, Banknote, GraduationCap, Calendar, ChevronDown, Building2 } from 'lucide-react';
+import { ChevronLeft, Mail, Phone, MapPin, Cake, Edit3, Plus, ChevronRight, Banknote, GraduationCap, Calendar, ChevronDown, Building2, ShieldCheck, Clock, FileText, Settings } from 'lucide-react';
 import { translations } from '../i18n';
 import { Company } from '../types';
 import { API_BASE_URL } from '../constants';
 
-export const EmployeeDetailView = ({ onBack, lang }: { onBack: (shouldRefresh?: boolean) => void, lang: 'ar' | 'en' }) => {
+export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any, onBack: (shouldRefresh?: boolean) => void, lang: 'ar' | 'en' }) => {
   const t = translations[lang];
   const tabs = [t.general, t.job, t.payroll, t.documents, t.settings];
-  const activeTab = tabs[0];
+  const [activeTab, setActiveTab] = useState(tabs[0]);
 
-  // Form states
+  // Form states (General Tab)
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [title, setTitle] = useState('مطور برمجيات');
-  const [department, setDepartment] = useState('التقنية');
-  const [salary, setSalary] = useState('8000');
   const [address, setAddress] = useState('الرياض، السعودية');
   const [gender, setGender] = useState(lang === 'ar' ? 'ذكر' : 'Male');
   const [dob, setDob] = useState('24th July, 1998');
   const [nationality, setNationality] = useState(lang === 'ar' ? 'سعودي' : 'Saudi');
+
+  // Form states (Job Tab)
+  const [empNo, setEmpNo] = useState('');
+  const [title, setTitle] = useState('مطور برمجيات');
+  const [department, setDepartment] = useState('التقنية');
+  const [administration, setAdministration] = useState('الإدارة العامة');
+  const [branch, setBranch] = useState('الفرع الرئيسي');
+  const [lineManager, setLineManager] = useState('');
+  const [contractType, setContractType] = useState(lang === 'ar' ? 'دوام كامل' : 'Full-time');
+  const [hiringDate, setHiringDate] = useState(new Date().toISOString().split('T')[0]);
+  const [contractStartDate, setContractStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [contractEndDate, setContractEndDate] = useState('');
+  const [workStartDate, setWorkStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [employeeStatus, setEmployeeStatus] = useState(lang === 'ar' ? 'على رأس العمل' : 'Active');
+  const [workingHoursStart, setWorkingHoursStart] = useState('08:00');
+  const [workingHoursEnd, setWorkingHoursEnd] = useState('17:00');
+  const [dailyWorkingHours, setDailyWorkingHours] = useState('8');
+  const [weeklyWorkDays, setWeeklyWorkDays] = useState('5');
+  const [hasSocialInsurance, setHasSocialInsurance] = useState(false);
+  const [socialInsuranceNumber, setSocialInsuranceNumber] = useState('');
+
+  // Form states (Payroll Tab)
+  const [salary, setSalary] = useState('8000');
 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('1');
@@ -32,7 +52,7 @@ export const EmployeeDetailView = ({ onBack, lang }: { onBack: (shouldRefresh?: 
         if (res.ok) {
           const data = await res.json();
           setCompanies(data);
-          if (data.length > 0) {
+          if (data.length > 0 && !employee) {
             setSelectedCompanyId(data[0].id.toString());
           }
         }
@@ -41,7 +61,47 @@ export const EmployeeDetailView = ({ onBack, lang }: { onBack: (shouldRefresh?: 
       }
     };
     fetchCompanies();
-  }, []);
+  }, [employee]);
+
+  // Load existing employee data if editing
+  useEffect(() => {
+    if (employee) {
+      const nameParts = (employee.name || '').split(' ');
+      setFirstName(nameParts[0] || '');
+      setLastName(nameParts.slice(1).join(' ') || '');
+      setEmail(employee.email || '');
+      setPhone(employee.phone || '');
+      setTitle(employee.title || 'مطور برمجيات');
+      setDepartment(employee.department || 'التقنية');
+      setSalary(employee.salary ? employee.salary.toString() : '8000');
+      setAddress(employee.address || 'الرياض، السعودية');
+      setGender(employee.gender || (lang === 'ar' ? 'ذكر' : 'Male'));
+      setDob(employee.dob || '24th July, 1998');
+      setNationality(employee.nationality || (lang === 'ar' ? 'سعودي' : 'Saudi'));
+      
+      if (employee.companyId) {
+        setSelectedCompanyId(employee.companyId.toString());
+      }
+
+      // Populate custom job fields
+      setEmpNo(employee.empNo || '');
+      setAdministration(employee.administration || 'الإدارة العامة');
+      setBranch(employee.branch || 'الفرع الرئيسي');
+      setLineManager(employee.lineManager || '');
+      setContractType(employee.contractType || (lang === 'ar' ? 'دوام كامل' : 'Full-time'));
+      setHiringDate(employee.hiringDate || new Date().toISOString().split('T')[0]);
+      setContractStartDate(employee.contractStartDate || new Date().toISOString().split('T')[0]);
+      setContractEndDate(employee.contractEndDate || '');
+      setWorkStartDate(employee.workStartDate || new Date().toISOString().split('T')[0]);
+      setEmployeeStatus(employee.status || (lang === 'ar' ? 'على رأس العمل' : 'Active'));
+      setWorkingHoursStart(employee.workingHoursStart || '08:00');
+      setWorkingHoursEnd(employee.workingHoursEnd || '17:00');
+      setDailyWorkingHours(employee.dailyWorkingHours || '8');
+      setWeeklyWorkDays(employee.weeklyWorkDays || '5');
+      setHasSocialInsurance(employee.hasSocialInsurance === true);
+      setSocialInsuranceNumber(employee.socialInsuranceNumber || '');
+    }
+  }, [employee, lang]);
 
   const handleSave = async () => {
     if (!firstName || !email) {
@@ -49,21 +109,47 @@ export const EmployeeDetailView = ({ onBack, lang }: { onBack: (shouldRefresh?: 
       return;
     }
     try {
-      const response = await fetch(`${API_BASE_URL}/api/employees`, {
-        method: 'POST',
+      const body = {
+        name: `${firstName} ${lastName}`.trim(),
+        email,
+        phone,
+        title,
+        department,
+        salary: parseFloat(salary) || 0,
+        status: employeeStatus,
+        companyId: parseInt(selectedCompanyId) || 1,
+        address,
+        gender,
+        dob,
+        nationality,
+        empNo,
+        administration,
+        branch,
+        lineManager,
+        contractType,
+        hiringDate,
+        contractStartDate,
+        contractEndDate,
+        workStartDate,
+        workingHoursStart,
+        workingHoursEnd,
+        dailyWorkingHours,
+        weeklyWorkDays,
+        hasSocialInsurance,
+        socialInsuranceNumber
+      };
+
+      const url = employee 
+        ? `${API_BASE_URL}/api/employees/${employee.id}`
+        : `${API_BASE_URL}/api/employees`;
+      const method = employee ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: `${firstName} ${lastName}`.trim(),
-          email,
-          phone,
-          title,
-          department,
-          salary: parseFloat(salary) || 0,
-          status: 'نشط',
-          companyId: parseInt(selectedCompanyId) || 1
-        }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
@@ -85,19 +171,28 @@ export const EmployeeDetailView = ({ onBack, lang }: { onBack: (shouldRefresh?: 
       <div className="flex justify-between items-center">
         <button onClick={() => onBack(false)} className="flex items-center gap-2 text-gray-900 font-bold hover:text-[#15385E] transition-colors">
           <ChevronLeft size={20} className={lang === 'ar' ? 'rotate-180' : ''} />
-          <h2 className="text-xl">{lang === 'ar' ? 'إضافة موظف جديد' : 'Add New Employee'}</h2>
+          <h2 className="text-xl">
+            {employee 
+              ? (lang === 'ar' ? 'تعديل بيانات الموظف' : 'Edit Employee Details')
+              : (lang === 'ar' ? 'إضافة موظف جديد' : 'Add New Employee')}
+          </h2>
         </button>
         <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase">
-          <span>{lang === 'ar' ? 'الرئيسية' : 'Home'}</span> / <span>{t.employees}</span> / <span className="text-gray-900 font-black">{lang === 'ar' ? 'إضافة' : 'Add'}</span>
+          <span>{lang === 'ar' ? 'الرئيسية' : 'Home'}</span> / <span>{t.employees}</span> / <span className="text-gray-900 font-black">{employee ? (lang === 'ar' ? 'تعديل' : 'Edit') : (lang === 'ar' ? 'إضافة' : 'Add')}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         <div className="xl:col-span-8 space-y-6">
           <div className="bg-white border border-gray-50 rounded-[2rem] shadow-sm overflow-hidden">
-            <div className="flex border-b border-gray-50 bg-gray-50/30">
+            <div className="flex border-b border-gray-50 bg-gray-50/30 overflow-x-auto">
               {tabs.map((tab) => (
-                <button key={tab} className={`px-8 py-5 text-sm font-bold transition-all relative ${activeTab === tab ? 'text-[#15385E] bg-white' : 'text-gray-400'}`}>
+                <button 
+                  key={tab} 
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-8 py-5 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === tab ? 'text-[#15385E] bg-white' : 'text-gray-400'}`}
+                >
                   {tab}
                   {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-1 bg-[#15385E]"></div>}
                 </button>
@@ -105,73 +200,231 @@ export const EmployeeDetailView = ({ onBack, lang }: { onBack: (shouldRefresh?: 
             </div>
 
             <div className="p-10 space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.first_name}</label>
-                  <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="مثال: أحمد" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.last_name}</label>
-                  <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="مثال: العتيبي" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.gender}</label>
-                  <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm outline-none appearance-none">
-                    <option>{lang === 'ar' ? 'ذكر' : 'Male'}</option>
-                    <option>{lang === 'ar' ? 'أنثى' : 'Female'}</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.dob}</label>
-                  <div className="relative">
-                    <input type="text" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
-                    <Calendar size={16} className={`absolute ${lang === 'ar' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-gray-400`} />
+              {/* GENERAL TAB */}
+              {activeTab === t.general && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.first_name}</label>
+                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="مثال: أحمد" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.last_name}</label>
+                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="مثال: العتيبي" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.gender}</label>
+                    <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm outline-none appearance-none">
+                      <option>{lang === 'ar' ? 'ذكر' : 'Male'}</option>
+                      <option>{lang === 'ar' ? 'أنثى' : 'Female'}</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.dob}</label>
+                    <div className="relative">
+                      <input type="text" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                      <Calendar size={16} className={`absolute ${lang === 'ar' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-gray-400`} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.email}</label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@company.com" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.phone}</label>
+                    <div className="flex gap-2" dir="ltr">
+                      <div className="w-20 px-3 py-3.5 bg-white border border-gray-100 rounded-xl text-sm flex items-center justify-between">+966 <ChevronDown size={14} /></div>
+                      <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="501234567" className="flex-1 px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm outline-none" />
+                    </div>
+                  </div>
+                  <div className="space-y-2 lg:col-span-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.address}</label>
+                    <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.nationality}</label>
+                    <input type="text" value={nationality} onChange={(e) => setNationality(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.email}</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@company.com" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+              )}
+
+              {/* JOB TAB */}
+              {activeTab === t.job && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* 1. بيانات التوظيف */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2">
+                    <Building2 size={14} /> {lang === 'ar' ? 'بيانات التوظيف' : 'Employment Details'}
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'الرقم الوظيفي (Employee ID)' : 'Employee ID'}</label>
+                    <input type="text" value={empNo} onChange={(e) => setEmpNo(e.target.value)} placeholder="EMP-XXXX" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'المسمى الوظيفي' : 'Job Title'}</label>
+                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'الشركة' : 'Company'}</label>
+                    <select value={selectedCompanyId} onChange={(e) => setSelectedCompanyId(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm outline-none appearance-none">
+                      {companies.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.department}</label>
+                    <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm outline-none appearance-none">
+                      <option>{lang === 'ar' ? 'التقنية' : 'Technology'}</option>
+                      <option>{lang === 'ar' ? 'الموارد البشرية' : 'HR'}</option>
+                      <option>{lang === 'ar' ? 'المبيعات' : 'Sales'}</option>
+                      <option>{lang === 'ar' ? 'التسويق' : 'Marketing'}</option>
+                      <option>{lang === 'ar' ? 'المالية' : 'Finance'}</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'الإدارة' : 'Administration/Management'}</label>
+                    <input type="text" value={administration} onChange={(e) => setAdministration(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'الفرع' : 'Branch'}</label>
+                    <input type="text" value={branch} onChange={(e) => setBranch(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'المدير المباشر' : 'Line Manager'}</label>
+                    <input type="text" value={lineManager} onChange={(e) => setLineManager(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+
+                  {/* 2. نوع العقد */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2 mt-4">
+                    <FileText size={14} /> {lang === 'ar' ? 'نوع العقد' : 'Contract Type'}
+                  </h3>
+                  <div className="space-y-2 col-span-full">
+                    <div className="flex flex-wrap gap-4">
+                      {[(lang === 'ar' ? 'دوام كامل' : 'Full-time'), 
+                        (lang === 'ar' ? 'دوام جزئي' : 'Part-time'), 
+                        (lang === 'ar' ? 'عقد مؤقت' : 'Temporary'), 
+                        (lang === 'ar' ? 'متدرب' : 'Intern')].map((type) => (
+                        <label key={type} className={`flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer text-xs font-bold transition-all ${contractType === type ? 'border-[#17AE9F] bg-[#E8F7F5] text-[#15385E]' : 'border-gray-100 hover:border-gray-200 text-gray-500'}`}>
+                          <input type="radio" name="contractType" value={type} checked={contractType === type} onChange={(e) => setContractType(e.target.value)} className="hidden" />
+                          {type}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 3. تواريخ العمل */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2 mt-4">
+                    <Calendar size={14} /> {lang === 'ar' ? 'تواريخ العمل' : 'Employment Dates'}
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'تاريخ التوظيف' : 'Hiring Date'}</label>
+                    <input type="date" value={hiringDate} onChange={(e) => setHiringDate(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'تاريخ بداية العقد' : 'Contract Start Date'}</label>
+                    <input type="date" value={contractStartDate} onChange={(e) => setContractStartDate(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'تاريخ نهاية العقد (إن وجد)' : 'Contract End Date'}</label>
+                    <input type="date" value={contractEndDate} onChange={(e) => setContractEndDate(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'تاريخ مباشرة العمل' : 'Work Start Date'}</label>
+                    <input type="date" value={workStartDate} onChange={(e) => setWorkStartDate(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+
+                  {/* 4. حالة الموظف */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2 mt-4">
+                    <ShieldCheck size={14} /> {lang === 'ar' ? 'حالة الموظف' : 'Employee Status'}
+                  </h3>
+                  <div className="space-y-2 col-span-full">
+                    <div className="flex flex-wrap gap-4">
+                      {[(lang === 'ar' ? 'على رأس العمل' : 'On duty'), 
+                        (lang === 'ar' ? 'إجازة' : 'On Leave'), 
+                        (lang === 'ar' ? 'موقوف' : 'Suspended'), 
+                        (lang === 'ar' ? 'مستقيل' : 'Resigned'), 
+                        (lang === 'ar' ? 'منتهي الخدمة' : 'Terminated')].map((statusOpt) => (
+                        <label key={statusOpt} className={`flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer text-xs font-bold transition-all ${employeeStatus === statusOpt ? 'border-[#15385E] bg-gray-50 text-[#15385E]' : 'border-gray-100 hover:border-gray-200 text-gray-500'}`}>
+                          <input type="radio" name="employeeStatus" value={statusOpt} checked={employeeStatus === statusOpt} onChange={(e) => setEmployeeStatus(e.target.value)} className="hidden" />
+                          {statusOpt}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 5. أوقات الدوام */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2 mt-4">
+                    <Clock size={14} /> {lang === 'ar' ? 'أوقات الدوام' : 'Work Hours'}
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'وقت الدخول' : 'Clock-In Time'}</label>
+                    <input type="time" value={workingHoursStart} onChange={(e) => setWorkingHoursStart(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'وقت الخروج' : 'Clock-Out Time'}</label>
+                    <input type="time" value={workingHoursEnd} onChange={(e) => setWorkingHoursEnd(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'ساعات العمل اليومية' : 'Daily Working Hours'}</label>
+                    <input type="number" value={dailyWorkingHours} onChange={(e) => setDailyWorkingHours(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'أيام العمل الأسبوعية' : 'Weekly Work Days'}</label>
+                    <input type="number" value={weeklyWorkDays} onChange={(e) => setWeeklyWorkDays(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                  </div>
+
+                  {/* 6. التأمينات */}
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2 mt-4">
+                    <ShieldCheck size={14} /> {lang === 'ar' ? 'التأمينات الاجتماعية' : 'Social Insurance'}
+                  </h3>
+                  <div className="space-y-2 col-span-full flex items-center gap-3">
+                    <input type="checkbox" id="hasSocialInsurance" checked={hasSocialInsurance} onChange={(e) => setHasSocialInsurance(e.target.checked)} className="w-5 h-5 accent-[#17AE9F] rounded-lg border-gray-200" />
+                    <label htmlFor="hasSocialInsurance" className="text-xs font-bold text-gray-700 cursor-pointer">{lang === 'ar' ? 'مشترك بالتأمينات الاجتماعية' : 'Enrolled in Social Insurance'}</label>
+                  </div>
+                  {hasSocialInsurance && (
+                    <div className="space-y-2 col-span-full max-w-md animate-in slide-in-from-top-2 duration-300">
+                      <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'رقم الاشتراك بالتأمينات' : 'Social Insurance Number'}</label>
+                      <input type="text" value={socialInsuranceNumber} onChange={(e) => setSocialInsuranceNumber(e.target.value)} placeholder="XXXXXXXX" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.phone}</label>
-                  <div className="flex gap-2" dir="ltr">
-                    <div className="w-20 px-3 py-3.5 bg-white border border-gray-100 rounded-xl text-sm flex items-center justify-between">+966 <ChevronDown size={14} /></div>
-                    <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="501234567" className="flex-1 px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm outline-none" />
+              )}
+
+              {/* PAYROLL TAB */}
+              {activeTab === t.payroll && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 col-span-full flex items-center gap-2">
+                    <Banknote size={14} /> {lang === 'ar' ? 'تفاصيل الراتب والتعويضات' : 'Salary Details'}
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">{t.salary}</label>
+                    <input type="number" value={salary} onChange={(e) => setSalary(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'المسمى الوظيفي' : 'Job Title'}</label>
-                  <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
+              )}
+
+              {/* DOCUMENTS TAB */}
+              {activeTab === t.documents && (
+                <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 space-y-4">
+                  <FileText size={48} className="mx-auto text-gray-300" />
+                  <p className="text-sm font-bold">{lang === 'ar' ? 'لا توجد مستندات مرفوعة بعد' : 'No documents uploaded yet'}</p>
+                  <button type="button" className="px-6 py-2 bg-gray-50 hover:bg-gray-100 text-[#15385E] rounded-xl text-xs font-bold border border-gray-100 transition-all">
+                    {lang === 'ar' ? 'إضافة مستند جديد' : 'Upload New Document'}
+                  </button>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'الشركة' : 'Company'}</label>
-                  <select value={selectedCompanyId} onChange={(e) => setSelectedCompanyId(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm outline-none appearance-none">
-                    {companies.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+              )}
+
+              {/* SETTINGS TAB */}
+              {activeTab === t.settings && (
+                <div className="space-y-6">
+                  <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 flex items-center gap-2">
+                    <Settings size={14} /> {lang === 'ar' ? 'إعدادات الحساب والصلاحيات' : 'Account & Access Settings'}
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <input type="checkbox" id="isApiUser" defaultChecked className="w-5 h-5 accent-[#15385E]" />
+                    <label htmlFor="isApiUser" className="text-xs font-bold text-gray-700">{lang === 'ar' ? 'تمكين الوصول إلى تطبيق الخدمة الذاتية للهاتف' : 'Enable Mobile Self-Service Access'}</label>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.department}</label>
-                  <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm outline-none appearance-none">
-                    <option>{lang === 'ar' ? 'التقنية' : 'Technology'}</option>
-                    <option>{lang === 'ar' ? 'الموارد البشرية' : 'HR'}</option>
-                    <option>{lang === 'ar' ? 'المبيعات' : 'Sales'}</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.salary}</label>
-                  <input type="number" value={salary} onChange={(e) => setSalary(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
-                </div>
-                <div className="space-y-2 lg:col-span-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.address}</label>
-                  <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{t.nationality}</label>
-                  <input type="text" value={nationality} onChange={(e) => setNationality(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
-                </div>
-              </div>
+              )}
             </div>
 
             <div className="px-10 py-6 bg-gray-50/30 border-t border-gray-50 flex gap-4">

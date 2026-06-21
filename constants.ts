@@ -18,4 +18,4 @@ export const INITIAL_EMPLOYEES: Employee[] = [
   { id: 2, companyId: 1, empNo: "EMP-1002", name: "سارة القحطاني", title: "أخصائية موارد بشرية", department: "الموارد البشرية", email: "s.qahtani@solutions.sa", avatar: "https://ui-avatars.com/api/?name=سارة+القحطاني&background=15385E&color=fff" },
   { id: 3, companyId: 1, empNo: "EMP-1003", name: "محمد الشمري", title: "مدير مبيعات", department: "المبيعات", email: "m.shammari@shaya.sa", avatar: "https://ui-avatars.com/api/?name=محمد+الشمري&background=17AE9F&color=fff" },
 ];
-export const API_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = 'https://beattend-api.onrender.com';

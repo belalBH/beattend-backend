@@ -554,6 +554,46 @@ app.get('/api/attendance', async (req, res) => {
   });
 });
 
+// Dashboard Stats Endpoint
+app.get('/api/dashboard/stats', async (req, res) => {
+  try {
+    const companies = await getCollection('companies');
+    const employees = await getCollection('employees');
+    const attendance = await getCollection('attendance_records');
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayAttendance = attendance.filter(r => r.date === todayStr);
+
+    let activeSubs = 0;
+    let expiredSubs = 0;
+    let monthlyRevenues = 0;
+
+    companies.forEach(company => {
+      const isExpired = company.expiryDate ? new Date(company.expiryDate) < new Date() : false;
+      if (isExpired) {
+        expiredSubs++;
+      } else {
+        activeSubs++;
+        const companyEmpCount = parseInt(company.employees) || 0;
+        monthlyRevenues += 500 + (companyEmpCount * 15);
+      }
+    });
+
+    res.json({
+      success: true,
+      companiesCount: companies.length,
+      employeesCount: employees.length,
+      todayAttendanceCount: todayAttendance.length,
+      activeSubscriptions: activeSubs,
+      expiredSubscriptions: expiredSubs,
+      monthlyRevenues: monthlyRevenues
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`🚀 Shared Backend API Server running at http://localhost:${PORT}`);
 });

@@ -12,7 +12,11 @@ import {
   FileText, 
   Clock, 
   Percent, 
-  ShieldCheck 
+  ShieldCheck,
+  Edit3,
+  Trash2,
+  Power,
+  Package
 } from 'lucide-react';
 import { translations } from '../i18n';
 import { Company } from '../types';
@@ -24,6 +28,9 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // State for tracking if we are editing an existing company
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
 
   // Form states
   const [name, setName] = useState('');
@@ -32,6 +39,7 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
   const [taxNumber, setTaxNumber] = useState('');
   const [employeesCount, setEmployeesCount] = useState('10');
   const [industry, setIndustry] = useState(lang === 'ar' ? 'التقنية' : 'Technology');
+  const [pack, setPack] = useState(lang === 'ar' ? 'الأساسية' : 'Basic');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [expiryDate, setExpiryDate] = useState(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
 
@@ -53,7 +61,35 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
     fetchCompanies();
   }, []);
 
-  const handleAddCompany = async (e: React.FormEvent) => {
+  const openAddModal = () => {
+    setEditingCompany(null);
+    setName('');
+    setDomain('');
+    setCrNumber('');
+    setTaxNumber('');
+    setEmployeesCount('10');
+    setIndustry(lang === 'ar' ? 'التقنية' : 'Technology');
+    setPack(lang === 'ar' ? 'الأساسية' : 'Basic');
+    setStartDate(new Date().toISOString().split('T')[0]);
+    setExpiryDate(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+    setShowAddModal(true);
+  };
+
+  const openEditModal = (company: Company) => {
+    setEditingCompany(company);
+    setName(company.name || '');
+    setDomain(company.domain || '');
+    setCrNumber(company.crNumber || '');
+    setTaxNumber(company.taxNumber || '');
+    setEmployeesCount(company.employees ? company.employees.toString() : '10');
+    setIndustry(company.industry || (lang === 'ar' ? 'التقنية' : 'Technology'));
+    setPack(company.package || (lang === 'ar' ? 'الأساسية' : 'Basic'));
+    setStartDate(company.startDate || new Date().toISOString().split('T')[0]);
+    setExpiryDate(company.expiryDate || '');
+    setShowAddModal(true);
+  };
+
+  const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !domain) {
       alert(lang === 'ar' ? 'الاسم والنطاق مطلوبان' : 'Name and Domain are required');
@@ -61,32 +97,35 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/companies`, {
-        method: 'POST',
+      const body = {
+        name,
+        domain: domain.trim().toLowerCase(),
+        crNumber,
+        taxNumber,
+        employees: parseInt(employeesCount) || 0,
+        industry,
+        startDate,
+        expiryDate,
+        package: pack,
+        status: editingCompany ? editingCompany.status : 'نشط'
+      };
+
+      const url = editingCompany
+        ? `${API_BASE_URL}/api/companies/${editingCompany.id}`
+        : `${API_BASE_URL}/api/companies`;
+      const method = editingCompany ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name,
-          domain: domain.trim().toLowerCase(),
-          crNumber,
-          taxNumber,
-          employees: parseInt(employeesCount) || 0,
-          industry,
-          startDate,
-          expiryDate,
-          status: 'نشط'
-        }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
         setShowAddModal(false);
-        // Reset states
-        setName('');
-        setDomain('');
-        setCrNumber('');
-        setTaxNumber('');
-        setEmployeesCount('10');
+        setEditingCompany(null);
         fetchCompanies();
       } else {
         const err = await response.json();
@@ -95,6 +134,56 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
     } catch (e) {
       console.error(e);
       alert('Error connecting to backend API');
+    }
+  };
+
+  const handleToggleSuspend = async (company: Company) => {
+    const isSuspended = company.status === 'موقوف';
+    const newStatus = isSuspended ? 'نشط' : 'موقوف';
+    const confirmMsg = lang === 'ar'
+      ? `هل أنت متأكد من ${isSuspended ? 'تفعيل' : 'إيقاف'} شركة ${company.name}؟`
+      : `Are you sure you want to ${isSuspended ? 'activate' : 'suspend'} ${company.name}?`;
+
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${company.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        fetchCompanies();
+      } else {
+        alert(lang === 'ar' ? 'فشل تعديل حالة الشركة' : 'Failed to update company status');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleDeleteCompany = async (company: Company) => {
+    const confirmMsg = lang === 'ar'
+      ? `هل أنت متأكد من حذف شركة ${company.name} نهائياً؟ سيتم إلغاء وصول جميع موظفيها.`
+      : `Are you sure you want to delete ${company.name} permanently? All associated employee access will be revoked.`;
+
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${company.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchCompanies();
+      } else {
+        alert(lang === 'ar' ? 'فشل حذف الشركة' : 'Failed to delete company');
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -117,7 +206,7 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
           />
         </div>
         <div className="flex gap-3">
-          <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-6 py-3 bg-[#15385E] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#15385E]/20 hover:bg-[#17AE9F] transition-all">
+          <button onClick={openAddModal} className="flex items-center gap-2 px-6 py-3 bg-[#15385E] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#15385E]/20 hover:bg-[#17AE9F] transition-all">
             <Plus size={18} /> {t.add_company}
           </button>
         </div>
@@ -134,49 +223,103 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCompanies.map((company) => {
             const isExpired = company.expiryDate ? new Date(company.expiryDate) < new Date() : false;
+            const isSuspended = company.status === 'موقوف';
+            
+            let statusBadge = (
+              <span className="px-3 py-1 rounded-lg text-[10px] font-bold bg-[#E8F7F5] text-[#17AE9F]">
+                {lang === 'ar' ? 'نشط' : 'Active'}
+              </span>
+            );
+            
+            if (isExpired) {
+              statusBadge = (
+                <span className="px-3 py-1 rounded-lg text-[10px] font-bold bg-red-50 text-red-500">
+                  {lang === 'ar' ? 'منتهي' : 'Expired'}
+                </span>
+              );
+            } else if (isSuspended) {
+              statusBadge = (
+                <span className="px-3 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-500">
+                  {lang === 'ar' ? 'موقوف' : 'Suspended'}
+                </span>
+              );
+            }
+
             return (
               <div key={company.id} className="bg-white border border-gray-100 p-6 rounded-[2.5rem] shadow-sm hover:shadow-md transition-all relative group flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-start mb-6">
-                    <img src={company.logo} className="w-12 h-12 rounded-2xl border border-gray-100 object-cover" alt={company.name} />
-                    <span className={`px-3 py-1 rounded-lg text-[10px] font-bold ${isExpired ? 'bg-red-50 text-red-500' : 'bg-[#E8F7F5] text-[#17AE9F]'}`}>
-                      {isExpired ? t.expired : t.active}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl border border-gray-100 overflow-hidden flex items-center justify-center bg-gray-50">
+                        {company.logo ? (
+                          <img src={company.logo} className="w-full h-full object-cover" alt={company.name} />
+                        ) : (
+                          <Building2 size={24} className="text-gray-400" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-md font-bold text-gray-900 leading-tight">{company.name}</h3>
+                        <p className="text-[10px] text-[#17AE9F] font-bold flex items-center gap-1 mt-1">
+                          <Globe size={11} /> {company.domain || 'no-domain.com'}
+                        </p>
+                      </div>
+                    </div>
+                    {statusBadge}
                   </div>
                   
-                  <div className="mb-6">
-                    <h3 className="text-lg font-bold text-gray-900">{company.name}</h3>
-                    <p className="text-xs text-[#17AE9F] font-bold flex items-center gap-1.5 mt-1">
-                      <Globe size={13} /> {company.domain || 'no-domain.com'}
-                    </p>
-                    <p className="text-[11px] text-gray-400 font-medium mt-2">
-                      {company.industry} • CR: {company.crNumber || '—'}
-                    </p>
-                    {company.taxNumber && (
-                      <p className="text-[10px] text-gray-400 font-medium mt-1">
-                        {lang === 'ar' ? 'الرقم الضريبي:' : 'VAT:'} {company.taxNumber}
-                      </p>
-                    )}
+                  <div className="space-y-3 mb-6 bg-gray-50/50 p-4 rounded-2xl">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-gray-400 font-medium">{lang === 'ar' ? 'الباقة المشترك بها' : 'Plan Package'}</span>
+                      <span className="text-[#15385E] font-black flex items-center gap-1">
+                        <Package size={12} className="text-[#17AE9F]" /> {company.package || (lang === 'ar' ? 'الأساسية' : 'Basic')}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-gray-400 font-medium">{lang === 'ar' ? 'عدد الموظفين' : 'Employees'}</span>
+                      <span className="text-gray-700 font-bold flex items-center gap-1">
+                        <Users size={12} className="text-gray-400" /> {company.employees || 0}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-gray-400 font-medium">{lang === 'ar' ? 'تاريخ الاشتراك' : 'Subscription Date'}</span>
+                      <span className="text-gray-700 font-bold flex items-center gap-1">
+                        <CalendarDays size={12} className="text-gray-400" /> {company.startDate || '—'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 <div>
-                  <div className="grid grid-cols-2 gap-4 py-4 border-t border-gray-50 text-left">
-                    <div>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">{t.employees}</p>
-                      <p className="text-sm font-bold text-gray-700">{company.employees}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">{t.expiry}</p>
-                      <p className={`text-xs font-bold ${isExpired ? 'text-red-500' : 'text-gray-700'}`}>{company.expiryDate || '—'}</p>
-                    </div>
-                  </div>
-                  
                   <div className="flex justify-between items-center pt-4 border-t border-gray-50">
-                    <span className="text-[9px] text-gray-400 font-bold">
-                      {lang === 'ar' ? `منذ: ${company.startDate || '—'}` : `Since: ${company.startDate || '—'}`}
+                    {/* Suspend or Expire Detail */}
+                    <span className="text-[9px] text-gray-400 font-medium">
+                      {company.expiryDate ? (lang === 'ar' ? `ينتهي في: ${company.expiryDate}` : `Expires: ${company.expiryDate}`) : ''}
                     </span>
-                    <button className="text-[#15385E] text-xs font-bold hover:underline">{t.view}</button>
+                    
+                    {/* CRUD Actions */}
+                    <div className="flex items-center gap-1.5">
+                      <button 
+                        onClick={() => openEditModal(company)}
+                        className="p-2 hover:bg-[#EBF2FA] text-[#15385E] rounded-xl transition-all"
+                        title={lang === 'ar' ? 'تعديل الشركة' : 'Edit Company'}
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleToggleSuspend(company)}
+                        className={`p-2 rounded-xl transition-all ${isSuspended ? 'bg-amber-50 hover:bg-amber-100 text-amber-500' : 'hover:bg-amber-50 text-gray-400 hover:text-amber-500'}`}
+                        title={isSuspended ? (lang === 'ar' ? 'تفعيل الشركة' : 'Activate Company') : (lang === 'ar' ? 'إيقاف الشركة مؤقتاً' : 'Suspend Company')}
+                      >
+                        <Power size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteCompany(company)}
+                        className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-xl transition-all"
+                        title={lang === 'ar' ? 'حذف الشركة' : 'Delete Company'}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -185,21 +328,23 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
         </div>
       )}
 
-      {/* Add Company Modal */}
+      {/* Add / Edit Company Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 flex flex-col">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 flex flex-col animate-in zoom-in-95 duration-200">
             <div className="p-6 bg-gray-50/50 border-b border-gray-50 flex justify-between items-center">
               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <Building2 className="text-[#15385E]" size={20} />
-                {lang === 'ar' ? 'إضافة شركة جديدة' : 'Add New Company'}
+                {editingCompany 
+                  ? (lang === 'ar' ? `تعديل شركة: ${editingCompany.name}` : `Edit Company: ${editingCompany.name}`)
+                  : (lang === 'ar' ? 'إضافة شركة جديدة' : 'Add New Company')}
               </h3>
               <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-900 p-1.5 hover:bg-gray-100 rounded-lg transition-all">
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleAddCompany} className="p-8 space-y-6 overflow-y-auto max-h-[70vh]">
+            <form onSubmit={handleSaveCompany} className="p-8 space-y-6 overflow-y-auto max-h-[70vh]">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'اسم الشركة' : 'Company Name'}</label>
@@ -226,6 +371,29 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
                 </div>
 
                 <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'الباقة المشترك بها' : 'Subscription Package'}</label>
+                  <select 
+                    value={pack} 
+                    onChange={(e) => setPack(e.target.value)} 
+                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm outline-none"
+                  >
+                    <option>{lang === 'ar' ? 'الأساسية' : 'Basic'}</option>
+                    <option>{lang === 'ar' ? 'المتقدمة' : 'Pro'}</option>
+                    <option>{lang === 'ar' ? 'الاحترافية' : 'Enterprise'}</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'عدد الموظفين' : 'Employees Count'}</label>
+                  <input 
+                    type="number" 
+                    value={employeesCount} 
+                    onChange={(e) => setEmployeesCount(e.target.value)} 
+                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'السجل التجاري (CR)' : 'Commercial Register (CR)'}</label>
                   <input 
                     type="text" 
@@ -243,16 +411,6 @@ export const CompaniesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang:
                     value={taxNumber} 
                     onChange={(e) => setTaxNumber(e.target.value)} 
                     placeholder="300000000000003" 
-                    className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'عدد الموظفين' : 'Employees Count'}</label>
-                  <input 
-                    type="number" 
-                    value={employeesCount} 
-                    onChange={(e) => setEmployeesCount(e.target.value)} 
                     className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none"
                   />
                 </div>

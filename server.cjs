@@ -394,7 +394,7 @@ app.get('/api/companies/validate', async (req, res) => {
 
 // Create new company
 app.post('/api/companies', async (req, res) => {
-  const { name, domain, crNumber, taxNumber, employees, startDate, expiryDate, logo, industry, status } = req.body;
+  const { name, domain, crNumber, taxNumber, employees, startDate, expiryDate, logo, industry, status, package: pack } = req.body;
   if (!name || !domain) {
     return res.status(400).json({ error: 'اسم الشركة والنطاق مطلوبان' });
   }
@@ -417,11 +417,39 @@ app.post('/api/companies', async (req, res) => {
       expiryDate: expiryDate || '',
       logo: logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=15385E&color=fff`,
       industry: industry || 'أخرى',
-      status: status || 'نشط'
+      status: status || 'نشط',
+      package: pack || 'الأساسية'
     };
 
     await saveDocument('companies', newId.toString(), newCompany);
     res.status(201).json(newCompany);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Update company
+app.put('/api/companies/:id', async (req, res) => {
+  const idStr = req.params.id;
+  try {
+    const companies = await getCollection('companies');
+    const match = companies.find(c => c.id.toString() === idStr);
+    if (!match) return res.status(404).json({ error: 'الشركة غير موجودة' });
+
+    const updated = { ...match, ...req.body };
+    await saveDocument('companies', idStr, updated);
+    res.json(updated);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Delete company
+app.delete('/api/companies/:id', async (req, res) => {
+  const idStr = req.params.id;
+  try {
+    await deleteDocument('companies', idStr);
+    res.json({ message: 'تم حذف الشركة بنجاح' });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

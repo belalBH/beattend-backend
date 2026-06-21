@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Mail, Phone, MapPin, Cake, Edit3, Plus, ChevronRight, Banknote, GraduationCap, Calendar, ChevronDown, Building2, ShieldCheck, Clock, FileText, Settings } from 'lucide-react';
+import { ChevronLeft, Mail, Phone, MapPin, Cake, Edit3, Plus, ChevronRight, Banknote, GraduationCap, Calendar, ChevronDown, Building2, ShieldCheck, Clock, FileText, Settings, Award, Briefcase, FolderOpen, Globe, UploadCloud, Trash2, ShieldAlert } from 'lucide-react';
 import { translations } from '../i18n';
 import { Company } from '../types';
 import { API_BASE_URL } from '../constants';
@@ -53,6 +53,35 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
   const [paymentMethod, setPaymentMethod] = useState(lang === 'ar' ? 'تحويل بنكي' : 'Bank Transfer');
   const [bankName, setBankName] = useState('');
   const [bankIban, setBankIban] = useState('');
+
+  interface EmployeeDoc {
+    id: string;
+    category: string;
+    categoryAr: string;
+    nameAr: string;
+    nameEn: string;
+    fileName?: string;
+    fileSize?: string;
+    issueDate?: string;
+    expiryDate?: string;
+    fileData?: string;
+  }
+
+  const defaultDocs: EmployeeDoc[] = [
+    { id: 'national_id', category: 'Identity', categoryAr: 'الهوية', nameAr: 'صورة الهوية الوطنية / الإقامة', nameEn: 'National ID / Iqama Copy', issueDate: '', expiryDate: '' },
+    { id: 'contract', category: 'Contract', categoryAr: 'العقد', nameAr: 'عقد العمل PDF', nameEn: 'Employment Contract PDF', issueDate: '', expiryDate: '' },
+    { id: 'academic', category: 'Certificates', categoryAr: 'الشهادات', nameAr: 'المؤهلات العلمية', nameEn: 'Academic Qualifications', issueDate: '', expiryDate: '' },
+    { id: 'professional', category: 'Certificates', categoryAr: 'الشهادات', nameAr: 'الشهادات المهنية', nameEn: 'Professional Certificates', issueDate: '', expiryDate: '' },
+    { id: 'cv', category: 'Other', categoryAr: 'مستندات أخرى', nameAr: 'السيرة الذاتية', nameEn: 'CV / Resume', issueDate: '', expiryDate: '' },
+    { id: 'passport', category: 'Other', categoryAr: 'مستندات أخرى', nameAr: 'جواز السفر', nameEn: 'Passport', issueDate: '', expiryDate: '' },
+    { id: 'work_permit', category: 'Other', categoryAr: 'مستندات أخرى', nameAr: 'رخصة العمل', nameEn: 'Work Permit', issueDate: '', expiryDate: '' },
+    { id: 'medical_insurance', category: 'Other', categoryAr: 'مستندات أخرى', nameAr: 'التأمين الطبي', nameEn: 'Medical Insurance', issueDate: '', expiryDate: '' }
+  ];
+
+  const [documents, setDocuments] = useState<EmployeeDoc[]>(defaultDocs);
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const [customCategory, setCustomCategory] = useState(lang === 'ar' ? 'مستندات أخرى' : 'Other');
 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('1');
@@ -126,6 +155,17 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
       setPaymentMethod(employee.paymentMethod || (lang === 'ar' ? 'تحويل بنكي' : 'Bank Transfer'));
       setBankName(employee.bankName || '');
       setBankIban(employee.bankIban || '');
+
+      if (employee.documents && Array.isArray(employee.documents)) {
+        const mergedDocs = defaultDocs.map(d => {
+          const matched = employee.documents.find((loaded: any) => loaded.id === d.id);
+          return matched ? { ...d, ...matched } : d;
+        });
+        const customDocs = employee.documents.filter((loaded: any) => !defaultDocs.some(d => d.id === loaded.id));
+        setDocuments([...mergedDocs, ...customDocs]);
+      } else {
+        setDocuments(defaultDocs);
+      }
     }
   }, [employee, lang]);
 
@@ -196,7 +236,8 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
         bankIban,
         totalAllowances,
         totalDeductions,
-        netSalary
+        netSalary,
+        documents
       };
 
       const url = employee 
@@ -558,12 +599,305 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
 
               {/* DOCUMENTS TAB */}
               {activeTab === t.documents && (
-                <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 space-y-4">
-                  <FileText size={48} className="mx-auto text-gray-300" />
-                  <p className="text-sm font-bold">{lang === 'ar' ? 'لا توجد مستندات مرفوعة بعد' : 'No documents uploaded yet'}</p>
-                  <button type="button" className="px-6 py-2 bg-gray-50 hover:bg-gray-100 text-[#15385E] rounded-xl text-xs font-bold border border-gray-100 transition-all">
-                    {lang === 'ar' ? 'إضافة مستند جديد' : 'Upload New Document'}
-                  </button>
+                <div className="space-y-8 animate-in fade-in duration-300">
+                  {/* Header & Add Custom button */}
+                  <div className="flex justify-between items-center bg-gray-50/50 p-6 rounded-2xl border border-gray-100/50">
+                    <div>
+                      <h4 className="text-xs font-black text-[#15385E]">{lang === 'ar' ? 'ملفات ومستندات الموظف' : 'Employee Files & Documents'}</h4>
+                      <p className="text-[10px] text-gray-400 mt-1">{lang === 'ar' ? 'إدارة وتتبع تواريخ انتهاء الوثائق الثبوتية ورخص العمل والشهادات' : 'Manage and track expiration dates of IDs, permits, contracts, and degrees.'}</p>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => setShowAddCustom(!showAddCustom)}
+                      className="flex items-center gap-1.5 px-4 py-2.5 bg-[#E8F7F5] hover:bg-[#17AE9F] text-[#15385E] hover:text-white rounded-xl text-xs font-bold transition-all border border-[#17AE9F]/10"
+                    >
+                      <Plus size={14} />
+                      {lang === 'ar' ? 'إضافة مستند مخصص' : 'Add Custom Document'}
+                    </button>
+                  </div>
+
+                  {/* Inline Form to Add Custom Document */}
+                  {showAddCustom && (
+                    <div className="bg-white border border-dashed border-[#17AE9F]/30 p-6 rounded-2xl space-y-4 animate-in slide-in-from-top-3 duration-300">
+                      <h4 className="text-xs font-bold text-[#15385E]">{lang === 'ar' ? 'إضافة مستند جديد للموظف' : 'Add New Document Type'}</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'اسم المستند' : 'Document Name'}</label>
+                          <input 
+                            type="text" 
+                            value={customName} 
+                            onChange={(e) => setCustomName(e.target.value)} 
+                            placeholder={lang === 'ar' ? 'مثال: رخصة القيادة' : 'e.g. Driving License'}
+                            className="w-full px-4 py-2.5 bg-white border border-gray-100 rounded-xl text-xs outline-none focus:ring-2 ring-[#15385E]/10"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase">{lang === 'ar' ? 'قسم المستند' : 'Document Category'}</label>
+                          <select 
+                            value={customCategory} 
+                            onChange={(e) => setCustomCategory(e.target.value)} 
+                            className="w-full px-4 py-2.5 bg-white border border-gray-100 rounded-xl text-xs outline-none"
+                          >
+                            <option>{lang === 'ar' ? 'الهوية' : 'Identity'}</option>
+                            <option>{lang === 'ar' ? 'العقد' : 'Contract'}</option>
+                            <option>{lang === 'ar' ? 'الشهادات' : 'Certificates'}</option>
+                            <option>{lang === 'ar' ? 'مستندات أخرى' : 'Other'}</option>
+                          </select>
+                        </div>
+                        <div className="flex gap-2">
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              if (!customName.trim()) return;
+                              const isAr = customCategory === 'الهوية' || customCategory === 'العقد' || customCategory === 'الشهادات' || customCategory === 'مستندات أخرى';
+                              const catVal = (customCategory === 'الهوية' || customCategory === 'Identity') ? 'Identity' :
+                                             (customCategory === 'العقد' || customCategory === 'Contract') ? 'Contract' :
+                                             (customCategory === 'الشهادات' || customCategory === 'Certificates') ? 'Certificates' : 'Other';
+                              const catArVal = catVal === 'Identity' ? 'الهوية' :
+                                               catVal === 'Contract' ? 'العقد' :
+                                               catVal === 'Certificates' ? 'الشهادات' : 'مستندات أخرى';
+                              const newDoc = {
+                                id: `custom_${Date.now()}`,
+                                category: catVal,
+                                categoryAr: catArVal,
+                                nameAr: customName,
+                                nameEn: customName,
+                                issueDate: '',
+                                expiryDate: ''
+                              };
+                              setDocuments(prev => [...prev, newDoc]);
+                              setCustomName('');
+                              setShowAddCustom(false);
+                            }}
+                            className="flex-1 py-2.5 bg-[#15385E] text-white rounded-xl text-xs font-bold hover:bg-[#17AE9F] transition-all"
+                          >
+                            {lang === 'ar' ? 'إضافة' : 'Add'}
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setCustomName('');
+                              setShowAddCustom(false);
+                            }}
+                            className="px-4 py-2.5 bg-white border border-gray-100 text-gray-400 hover:bg-gray-50 rounded-xl text-xs font-bold transition-all"
+                          >
+                            {lang === 'ar' ? 'إلغاء' : 'Cancel'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Document Groups by Category */}
+                  {(() => {
+                    const categories = [
+                      { id: 'Identity', nameAr: 'الهوية', nameEn: 'Identity', icon: ShieldCheck, color: 'text-blue-500 bg-blue-50' },
+                      { id: 'Contract', nameAr: 'العقد', nameEn: 'Contract', icon: FileText, color: 'text-teal-500 bg-teal-50' },
+                      { id: 'Certificates', nameAr: 'الشهادات', nameEn: 'Certificates & Degrees', icon: Award, color: 'text-orange-500 bg-orange-50' },
+                      { id: 'Other', nameAr: 'مستندات أخرى', nameEn: 'Other Documents', icon: Briefcase, color: 'text-purple-500 bg-purple-50' },
+                    ];
+
+                    const handleFileChange = (docId: string, file: File | null) => {
+                      if (!file) {
+                        setDocuments(prev => prev.map(d => d.id === docId ? { ...d, fileName: undefined, fileSize: undefined, fileData: undefined } : d));
+                        return;
+                      }
+                      if (file.size > 2 * 1024 * 1024) {
+                        alert(lang === 'ar' ? 'حجم الملف يجب أن يكون أقل من 2 ميجابايت' : 'File size must be under 2MB');
+                        return;
+                      }
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setDocuments(prev => prev.map(d => d.id === docId ? {
+                          ...d,
+                          fileName: file.name,
+                          fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+                          fileData: reader.result as string
+                        } : d));
+                      };
+                      reader.readAsDataURL(file);
+                    };
+
+                    const handleDateChange = (docId: string, field: 'issueDate' | 'expiryDate', val: string) => {
+                      setDocuments(prev => prev.map(d => d.id === docId ? { ...d, [field]: val } : d));
+                    };
+
+                    const handleDeleteFile = (docId: string) => {
+                      setDocuments(prev => prev.map(d => d.id === docId ? { ...d, fileName: undefined, fileSize: undefined, fileData: undefined } : d));
+                    };
+
+                    const handleDeleteDoc = (docId: string) => {
+                      if (confirm(lang === 'ar' ? 'هل أنت متأكد من حذف هذا المستند المخصص؟' : 'Are you sure you want to delete this custom document?')) {
+                        setDocuments(prev => prev.filter(d => d.id !== docId));
+                      }
+                    };
+
+                    const getDocStatus = (doc: any) => {
+                      if (!doc.fileName) {
+                        return {
+                          text: lang === 'ar' ? 'لم يتم الرفع' : 'Not Uploaded',
+                          colorClass: 'bg-gray-50 text-gray-400 border border-gray-100'
+                        };
+                      }
+                      if (doc.expiryDate) {
+                        const expiry = new Date(doc.expiryDate);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        if (expiry < today) {
+                          return {
+                            text: lang === 'ar' ? 'منتهي الصلاحية' : 'Expired',
+                            colorClass: 'bg-red-50 text-red-500 border border-red-100 animate-pulse'
+                          };
+                        }
+                      }
+                      return {
+                        text: lang === 'ar' ? 'نشط / تم الرفع' : 'Active / Uploaded',
+                        colorClass: 'bg-[#E8F7F5] text-[#17AE9F] border border-[#17AE9F]/10'
+                      };
+                    };
+
+                    const getDocIcon = (id: string) => {
+                      switch (id) {
+                        case 'national_id': return <ShieldCheck size={20} />;
+                        case 'contract': return <FileText size={20} />;
+                        case 'academic': return <GraduationCap size={20} />;
+                        case 'professional': return <Award size={20} />;
+                        case 'cv': return <FileText size={20} />;
+                        case 'passport': return <Globe size={20} />;
+                        case 'work_permit': return <Briefcase size={20} />;
+                        case 'medical_insurance': return <FolderOpen size={20} />;
+                        default: return <FolderOpen size={20} />;
+                      }
+                    };
+
+                    return (
+                      <div className="space-y-8">
+                        {categories.map((cat) => {
+                          const catDocs = documents.filter(d => d.category === cat.id);
+                          if (catDocs.length === 0) return null;
+
+                          const CatIcon = cat.icon;
+
+                          return (
+                            <div key={cat.id} className="space-y-4">
+                              <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 flex items-center gap-2">
+                                <span className={`p-1.5 rounded-lg ${cat.color}`}><CatIcon size={14} /></span>
+                                {lang === 'ar' ? cat.nameAr : cat.nameEn}
+                              </h3>
+
+                              <div className="grid grid-cols-1 gap-4">
+                                {catDocs.map((doc) => {
+                                  const status = getDocStatus(doc);
+                                  const isCustom = doc.id.startsWith('custom_');
+
+                                  return (
+                                    <div 
+                                      key={doc.id}
+                                      className="bg-white border border-gray-100 hover:border-gray-200 p-5 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition-all"
+                                    >
+                                      {/* Doc Info & Icon */}
+                                      <div className="flex items-start gap-4 lg:w-1/3">
+                                        <div className="p-3 bg-gray-50 rounded-xl text-gray-500 shrink-0">
+                                          {getDocIcon(doc.id)}
+                                        </div>
+                                        <div className="space-y-1">
+                                          <h4 className="text-xs font-bold text-gray-900">{lang === 'ar' ? doc.nameAr : doc.nameEn}</h4>
+                                          <div className="flex flex-wrap items-center gap-2">
+                                            <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black border ${status.colorClass}`}>
+                                              {status.text}
+                                            </span>
+                                            {doc.fileName && (
+                                              <span className="text-[9px] text-gray-400 font-bold bg-gray-50 px-2 py-0.5 rounded border border-gray-100/50 truncate max-w-[150px]" title={doc.fileName}>
+                                                {doc.fileName} ({doc.fileSize})
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Dates */}
+                                      <div className="flex flex-col sm:flex-row gap-4 lg:w-2/5">
+                                        <div className="space-y-1.5 flex-1">
+                                          <label className="text-[9px] font-bold text-gray-400 uppercase">{lang === 'ar' ? 'تاريخ الإصدار' : 'Issue Date'}</label>
+                                          <input 
+                                            type="date" 
+                                            value={doc.issueDate || ''}
+                                            onChange={(e) => handleDateChange(doc.id, 'issueDate', e.target.value)}
+                                            className="w-full px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs outline-none focus:ring-2 ring-[#15385E]/10"
+                                          />
+                                        </div>
+                                        <div className="space-y-1.5 flex-1">
+                                          <label className="text-[9px] font-bold text-gray-400 uppercase">{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date'}</label>
+                                          <input 
+                                            type="date" 
+                                            value={doc.expiryDate || ''}
+                                            onChange={(e) => handleDateChange(doc.id, 'expiryDate', e.target.value)}
+                                            className="w-full px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs outline-none focus:ring-2 ring-[#15385E]/10"
+                                          />
+                                        </div>
+                                      </div>
+
+                                      {/* Actions & File Input */}
+                                      <div className="flex items-center gap-3 lg:w-1/4 lg:justify-end">
+                                        <input 
+                                          type="file" 
+                                          id={`file-input-${doc.id}`}
+                                          onChange={(e) => handleFileChange(doc.id, e.target.files?.[0] || null)}
+                                          className="hidden"
+                                          accept=".pdf,.png,.jpg,.jpeg"
+                                        />
+                                        
+                                        {!doc.fileName ? (
+                                          <label 
+                                            htmlFor={`file-input-${doc.id}`}
+                                            className="flex items-center justify-center gap-1.5 w-full sm:w-auto px-5 py-2.5 bg-gray-50 hover:bg-[#E8F7F5] hover:text-[#17AE9F] border border-gray-100 hover:border-[#17AE9F]/10 text-gray-500 rounded-xl text-[11px] font-bold cursor-pointer transition-all"
+                                          >
+                                            <UploadCloud size={14} />
+                                            {lang === 'ar' ? 'رفع الملف' : 'Upload File'}
+                                          </label>
+                                        ) : (
+                                          <div className="flex gap-2 w-full sm:w-auto">
+                                            {doc.fileData && (
+                                              <a 
+                                                href={doc.fileData} 
+                                                download={doc.fileName}
+                                                className="flex-1 sm:flex-initial text-center px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-[#15385E] border border-gray-100 rounded-xl text-[11px] font-bold transition-all"
+                                              >
+                                                {lang === 'ar' ? 'تحميل' : 'Download'}
+                                              </a>
+                                            )}
+                                            <button 
+                                              type="button"
+                                              onClick={() => handleDeleteFile(doc.id)}
+                                              className="p-2.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl border border-red-100 transition-all"
+                                              title={lang === 'ar' ? 'حذف الملف' : 'Delete File'}
+                                            >
+                                              <Trash2 size={14} />
+                                            </button>
+                                          </div>
+                                        )}
+
+                                        {isCustom && (
+                                          <button 
+                                            type="button"
+                                            onClick={() => handleDeleteDoc(doc.id)}
+                                            className="p-2.5 bg-gray-50 hover:bg-red-50 hover:text-red-500 text-gray-400 rounded-xl border border-gray-100 transition-all"
+                                            title={lang === 'ar' ? 'حذف المستند بالكامل' : 'Delete Document'}
+                                          >
+                                            <Trash2 size={14} />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 

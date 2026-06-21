@@ -497,6 +497,24 @@ app.post('/api/office-locations', async (req, res) => {
   res.status(201).json(newLoc);
 });
 
+app.put('/api/office-locations/:id', async (req, res) => {
+  const { id } = req.params;
+  const locations = await getCollection('office_locations');
+  const match = locations.find(l => l.id === id);
+  if (!match) {
+    return res.status(404).json({ error: 'Location not found' });
+  }
+  const updated = { ...match, ...req.body };
+  await saveDocument('office_locations', id, updated);
+  res.json(updated);
+});
+
+app.delete('/api/office-locations/:id', async (req, res) => {
+  const { id } = req.params;
+  await deleteDocument('office_locations', id);
+  res.json({ success: true });
+});
+
 // Attendance Endpoints
 app.post('/api/attendance/clock-in', async (req, res) => {
   const { employee_id, latitude, longitude, address } = req.body;

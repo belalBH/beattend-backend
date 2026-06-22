@@ -33,14 +33,50 @@ import { PackagesView } from './views/Packages';
 import { ReportsView } from './views/Reports';
 import { EmployeesView } from './views/Employees';
 import { translations } from './i18n';
+import { API_BASE_URL } from './constants';
 
 function App() {
-  const [user, setUser] = useState<{ role: 'superadmin' } | null>(null);
+  const [user, setUser] = useState<{ role: 'superadmin' } | null>(() => {
+    const saved = localStorage.getItem('beattend_admin_session');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
 
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
   const t = translations[lang];
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const session = { role: 'superadmin' };
+        setUser(session);
+        localStorage.setItem('beattend_admin_session', JSON.stringify(session));
+      } else {
+        setLoginError(data.message || (lang === 'ar' ? 'اسم المستخدم أو كلمة المرور غير صحيحة' : 'Incorrect username or password'));
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setLoginError(lang === 'ar' ? 'تعذر الاتصال بالخادم' : 'Could not connect to the server');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
 
   useEffect(() => {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -50,20 +86,67 @@ function App() {
   if (!user) {
     return (
       <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-6 font-sans" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-12 text-center space-y-8 border border-gray-100">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-12 text-center space-y-6 border border-gray-100 animate-in fade-in duration-500">
             <div className="w-24 h-24 mx-auto rounded-3xl overflow-hidden shadow-lg border-2 border-[#17AE9F] bg-white flex items-center justify-center">
               <img src="/logo.jpg" className="w-full h-full object-cover" />
             </div>
             <div className="space-y-2">
               <h1 className="text-3xl font-bold text-[#15385E]">be <span className="text-[#17AE9F]">attend</span></h1>
-              <p className="text-gray-500 text-sm">{lang === 'ar' ? 'نظام الحضور والانصراف الذكي' : 'Smart Attendance System'}</p>
+              <p className="text-gray-500 text-xs">{lang === 'ar' ? 'نظام الحضور والانصراف الذكي' : 'Smart Attendance System'}</p>
             </div>
-           <button onClick={() => setUser({ role: 'superadmin' })} className="w-full py-4 bg-[#15385E] text-white rounded-xl font-bold shadow-lg hover:bg-[#17AE9F] transition-all flex items-center justify-center gap-2">
-            {lang === 'ar' ? 'دخول النظام' : 'Enter System'} <ArrowRight size={18} className={lang === 'ar' ? '' : 'rotate-180'} />
-           </button>
-           <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="text-xs font-bold text-gray-400 hover:text-[#15385E] transition-colors uppercase tracking-widest">
-             {lang === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
-           </button>
+
+            <form onSubmit={handleLogin} className="space-y-4 text-right">
+              {loginError && (
+                <div className="p-3 bg-red-50 text-red-500 text-xs font-bold rounded-xl text-center border border-red-100 animate-in shake duration-300">
+                  {loginError}
+                </div>
+              )}
+              
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-[#15385E] uppercase tracking-wider block">
+                  {lang === 'ar' ? 'اسم المستخدم' : 'Username'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={loginUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
+                  placeholder={lang === 'ar' ? 'مثال: admin' : 'e.g. admin'}
+                  className={`w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold focus:outline-none focus:border-[#17AE9F] focus:bg-white transition-all ${
+                    lang === 'ar' ? 'text-right' : 'text-left'
+                  }`}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-[#15385E] uppercase tracking-wider block">
+                  {lang === 'ar' ? 'كلمة المرور' : 'Password'}
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder={lang === 'ar' ? '••••••••' : '••••••••'}
+                  className={`w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold focus:outline-none focus:border-[#17AE9F] focus:bg-white transition-all ${
+                    lang === 'ar' ? 'text-right' : 'text-left'
+                  }`}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={loginLoading}
+                className="w-full py-4 mt-2 bg-[#15385E] text-white rounded-xl font-bold shadow-lg hover:bg-[#17AE9F] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {loginLoading ? (lang === 'ar' ? 'جاري التحقق...' : 'Verifying...') : (lang === 'ar' ? 'دخول النظام' : 'Enter System')}
+                {!loginLoading && <ArrowRight size={18} className={lang === 'ar' ? '' : 'rotate-180'} />}
+              </button>
+            </form>
+
+            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="text-[10px] font-bold text-gray-400 hover:text-[#15385E] transition-colors uppercase tracking-widest mt-2 block mx-auto">
+              {lang === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
+            </button>
         </div>
       </div>
     );
@@ -134,7 +217,7 @@ function App() {
             <button onClick={() => setIsDarkMode(false)} className={`flex-1 flex justify-center py-2 rounded-lg ${!isDarkMode ? 'bg-white shadow-sm' : ''}`}><Sun size={16} /></button>
             <button onClick={() => setIsDarkMode(true)} className={`flex-1 flex justify-center py-2 rounded-lg ${isDarkMode ? 'bg-white shadow-sm text-gray-900' : ''}`}><Moon size={16} /></button>
           </div>
-          <button onClick={() => setUser(null)} className="w-full flex items-center gap-3 px-4 py-2 text-red-500 font-medium hover:bg-red-50 rounded-xl transition-all">
+          <button onClick={() => { setUser(null); localStorage.removeItem('beattend_admin_session'); }} className="w-full flex items-center gap-3 px-4 py-2 text-red-500 font-medium hover:bg-red-50 rounded-xl transition-all">
             <LogOut size={18} />
             <span>{t.logout}</span>
           </button>

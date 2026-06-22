@@ -230,10 +230,17 @@ async function seedDatabaseIfEmpty() {
       for (const loc of seedLocations) {
         await saveDocument('office_locations', loc.id, loc);
       }
-      
       console.log('[Firebase] 🎉 Seeding complete.');
     } else {
       console.log('[Firebase] 👍 Firestore already populated.');
+    }
+
+    // Seed admin credentials if missing
+    const adminSettings = await getCollection('admin_settings');
+    const hasAdmin = adminSettings.find(a => a.id === 'credentials');
+    if (!hasAdmin) {
+      console.log('[Firebase] 🔑 Seeding default admin credentials...');
+      await saveDocument('admin_settings', 'credentials', { username: 'admin', password: 'admin' });
     }
   } catch (e) {
     console.error('[Firebase] ❌ Error seeding database:', e.message);
@@ -246,6 +253,60 @@ seedDatabaseIfEmpty();
 // ----------------------------------------------------
 // API ROUTES
 // ----------------------------------------------------
+
+// Admin Login Endpoint
+app.post('/api/admin/login', async (req, res) => {
+  const { username, password } = req.body;
+  console.log(`[API] Admin login request: username=${username}`);
+  
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'اسم المستخدم وكلمة المرور مطلوبة' });
+  }
+
+  try {
+    const adminSettings = await getCollection('admin_settings');
+    const creds = adminSettings.find(a => a.id === 'credentials');
+    
+    const storedUser = creds ? creds.username : 'admin';
+    const storedPass = creds ? creds.password : 'admin';
+
+    if (username.trim() === storedUser && password === storedPass) {
+      return res.json({ success: true, message: 'تم تسجيل الدخول بنجاح', token: 'superadmin-token' });
+    } else {
+      return res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+    }
+  } catch (e) {
+    return res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// Admin Change Password Endpoint
+app.post('/api/admin/change-password', async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  console.log(`[API] Admin change-password request`);
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ success: false, message: 'كلمة المرور القديمة والجديدة مطلوبة' });
+  }
+
+  try {
+    const adminSettings = await getCollection('admin_settings');
+    const creds = adminSettings.find(a => a.id === 'credentials');
+    
+    const storedUser = creds ? creds.username : 'admin';
+    const storedPass = creds ? creds.password : 'admin';
+
+    if (oldPassword !== storedPass) {
+      return res.status(401).json({ success: false, message: 'كلمة المرور القديمة غير صحيحة' });
+    }
+
+    const updated = { username: storedUser, password: newPassword };
+    await saveDocument('admin_settings', 'credentials', updated);
+    return res.json({ success: true, message: 'تم تغيير كلمة المرور بنجاح' });
+  } catch (e) {
+    return res.status(500).json({ success: false, error: e.message });
+  }
+});
 
 // Login Endpoint
 app.post('/api/login', async (req, res) => {

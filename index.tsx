@@ -32,6 +32,7 @@ import { SubscriptionsView } from './views/Subscriptions';
 import { PackagesView } from './views/Packages';
 import { ReportsView } from './views/Reports';
 import { EmployeesView } from './views/Employees';
+import { PayrollView } from './views/Payroll';
 import { translations } from './i18n';
 import { API_BASE_URL } from './constants';
 
@@ -244,6 +245,7 @@ function App() {
           {activeTab === 'packages' && <PackagesView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'reports' && <ReportsView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'employees' && <EmployeesView isDarkMode={isDarkMode} lang={lang} />}
+          {activeTab === 'payroll' && <PayrollView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'locations' && <AttendanceLocationView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'settings' && <SettingsView isDarkMode={isDarkMode} lang={lang} />}
         </div>

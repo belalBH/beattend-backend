@@ -12,31 +12,39 @@
         theme: {
           extend: {
             colors: {
+              brand: {
+                dark: '#030303',
+                gray: '#0f0f12',
+                purple: '#8b5cf6',
+                violet: '#7c3aed',
+                accent: '#a78bfa',
+                card: 'rgba(20, 20, 28, 0.6)'
+              },
               emerald: {
-                50: '#F0F5FA',
-                100: '#EBF2FA',
-                200: '#D5E4F5',
-                300: '#B0CCE9',
-                400: '#7FAAD8',
-                500: '#17AE9F',
-                600: '#15385E',
-                700: '#112C4B',
-                800: '#0E243D',
-                900: '#0B1C30',
-                950: '#060F1A'
+                50: '#F5F3FF',
+                100: '#EDE9FE',
+                200: '#DDD6FE',
+                300: '#C4B5FD',
+                400: '#A78BFA',
+                500: '#8B5CF6',
+                600: '#7C3AED',
+                700: '#6D28D9',
+                800: '#5B21B6',
+                900: '#4C1D95',
+                950: '#2E1065'
               },
               teal: {
-                50: '#E8F7F5',
-                100: '#D1F0EC',
-                200: '#A3E1D9',
-                300: '#75D2C6',
-                400: '#47C3B3',
-                500: '#17AE9F',
-                600: '#138C80',
-                700: '#0F6B61',
-                800: '#0A4A43',
-                900: '#062925',
-                950: '#031412'
+                50: '#F5F3FF',
+                100: '#EDE9FE',
+                200: '#DDD6FE',
+                300: '#C4B5FD',
+                400: '#A78BFA',
+                500: '#8B5CF6',
+                600: '#7C3AED',
+                700: '#6D28D9',
+                800: '#5B21B6',
+                900: '#4C1D95',
+                950: '#2E1065'
               }
             }
           }
@@ -53,10 +61,142 @@
         font-family: 'Tajawal', sans-serif;
         margin: 0;
         padding: 0;
-        background-color: #f8f9fc;
+        background-color: #030303;
+        background-image: 
+          radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 40%),
+          radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 45%);
+        background-attachment: fixed;
+        color: #f3f4f6;
+        overflow: hidden;
       }
       #root {
         height: 100vh;
+      }
+      /* Premium glassmorphism utility classes */
+      .glass-panel {
+        background: rgba(10, 10, 15, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .glass-card {
+        background: rgba(20, 20, 28, 0.45);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .glass-card:hover {
+        background: rgba(28, 28, 38, 0.55);
+        border-color: rgba(139, 92, 246, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(124, 58, 237, 0.08);
+      }
+      .glass-input {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #fff;
+        backdrop-filter: blur(4px);
+      }
+      .glass-input:focus {
+        border-color: #8b5cf6;
+        background: rgba(255, 255, 255, 0.05);
+        outline: none;
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+      }
+      .purple-glow {
+        box-shadow: 0 0 30px rgba(124, 58, 237, 0.25);
+      }
+      .purple-gradient {
+        background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+      }
+      /* Custom scrollbar for dark modern SaaS */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.01);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(139, 92, 246, 0.3);
+      }
+      /* Global Dark Mode SaaS overrides */
+      .bg-white {
+        background: rgba(20, 20, 28, 0.45) !important;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-color: rgba(255, 255, 255, 0.05) !important;
+        color: #f3f4f6 !important;
+      }
+      .text-gray-900 {
+        color: #ffffff !important;
+      }
+      .text-gray-700 {
+        color: #d1d5db !important;
+      }
+      .text-gray-600 {
+        color: #9ca3af !important;
+      }
+      .text-gray-500 {
+        color: #9ca3af !important;
+      }
+      .text-gray-400 {
+        color: #6b7280 !important;
+      }
+      .border-gray-100, .border-gray-50 {
+        border-color: rgba(255, 255, 255, 0.05) !important;
+      }
+      .bg-gray-50 {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-color: rgba(255, 255, 255, 0.05) !important;
+      }
+      .bg-gray-100 {
+        background: rgba(255, 255, 255, 0.04) !important;
+      }
+      input[type="text"], input[type="password"], input[type="number"], input[type="date"], select, textarea {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: #fff !important;
+        border-radius: 0.75rem !important;
+      }
+      input:focus, select:focus, textarea:focus {
+        border-color: #8b5cf6 !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.15) !important;
+      }
+      [class*="text-[#15385E]"], 
+      [class*="text-[#17AE9F]"] {
+        color: #a78bfa !important;
+      }
+      [class*="bg-[#15385E]"], 
+      [class*="bg-[#17AE9F]"] {
+        background-color: #7c3aed !important;
+        color: #ffffff !important;
+      }
+      [class*="bg-[#15385E]"]:hover, 
+      [class*="bg-[#17AE9F]"]:hover {
+        background-color: #8b5cf6 !important;
+      }
+      [class*="border-[#17AE9F]"],
+      [class*="border-[#15385E]"] {
+        border-color: rgba(139, 92, 246, 0.4) !important;
+      }
+      [class*="bg-[#E8F7F5]"], 
+      [class*="bg-[#EBF2FA]"], 
+      [class*="bg-[#E6F6F4]"] {
+        background-color: rgba(124, 58, 237, 0.12) !important;
+        color: #a78bfa !important;
+      }
+      [class*="ring-[#15385E]"] {
+        --tw-ring-color: rgba(124, 58, 237, 0.3) !important;
+      }
+      [class*="shadow-[#15385E]"] {
+        box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.25) !important;
       }
       /* Ensure Google Maps buttons look good in RTL */
       .gm-style {

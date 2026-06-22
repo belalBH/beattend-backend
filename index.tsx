@@ -96,16 +96,16 @@ function App() {
       <div className="min-h-screen bg-[#1F1F1f] flex items-center justify-center p-6 font-sans relative overflow-hidden" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         {/* Colorful background blobs for login screen */}
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] rounded-full bg-violet-600/10 blur-[120px]"></div>
-          <div className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] rounded-full bg-sky-500/10 blur-[100px]"></div>
+          <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] rounded-full bg-white/[0.02] blur-[120px]"></div>
+          <div className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] rounded-full bg-white/[0.01] blur-[100px]"></div>
         </div>
 
         <div className="w-full max-w-md glass-panel rounded-3xl p-10 text-center space-y-6 border border-white/5 shadow-2xl animate-in fade-in duration-500 relative z-10">
-            <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden shadow-lg border border-violet-500/20 flex items-center justify-center" style={{ backgroundColor: '#ffffff' }}>
+            <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden shadow-lg border border-white/10 flex items-center justify-center" style={{ backgroundColor: '#ffffff' }}>
               <img src="/logo.jpg" className="w-full h-full object-cover" />
             </div>
             <div className="space-y-1">
-              <h1 className="text-2xl font-black text-white">be <span className="text-violet-400">attend</span></h1>
+              <h1 className="text-2xl font-black text-white">be <span className="text-gray-300">attend</span></h1>
               <p className="text-gray-400 text-[10px] font-bold tracking-wide">{lang === 'ar' ? 'نظام الحضور والانصراف الذكي' : 'Smart Attendance System'}</p>
             </div>
 
@@ -117,7 +117,7 @@ function App() {
               )}
               
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-violet-300 uppercase tracking-wider block">
+                <label className="text-[10px] font-black text-gray-300 uppercase tracking-wider block">
                   {lang === 'ar' ? 'اسم المستخدم' : 'Username'}
                 </label>
                 <input
@@ -133,7 +133,7 @@ function App() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-violet-300 uppercase tracking-wider block">
+                <label className="text-[10px] font-black text-gray-300 uppercase tracking-wider block">
                   {lang === 'ar' ? 'كلمة المرور' : 'Password'}
                 </label>
                 <input
@@ -151,14 +151,14 @@ function App() {
               <button 
                 type="submit" 
                 disabled={loginLoading}
-                className="w-full py-3.5 mt-2 purple-gradient text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 purple-glow"
+                className="w-full py-3.5 mt-2 bg-[#E5E7EB] hover:bg-[#F3F4F6] text-[#1F1F1f] rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loginLoading ? (lang === 'ar' ? 'جاري التحقق...' : 'Verifying...') : (lang === 'ar' ? 'دخول النظام' : 'Enter System')}
                 {!loginLoading && <ArrowRight size={16} className={lang === 'ar' ? '' : 'rotate-180'} />}
               </button>
             </form>
 
-            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="text-[10px] font-bold text-gray-400 hover:text-violet-400 transition-colors uppercase tracking-widest mt-2 block mx-auto">
+            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="text-[10px] font-bold text-gray-400 hover:text-white transition-colors uppercase tracking-widest mt-2 block mx-auto">
               {lang === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
             </button>
         </div>
@@ -194,10 +194,10 @@ function App() {
       {/* Sidebar */}
       <aside className={`w-64 glass-panel ${lang === 'ar' ? 'border-l' : 'border-r'} border-white/5 flex flex-col p-6 transition-all duration-300 relative z-20`}>
         <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-violet-500/30 bg-violet-950/50 flex items-center justify-center purple-glow">
-            <img src="/logo.jpg" className="w-full h-full object-cover opacity-80" />
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
+            <img src="/logo.jpg" className="w-full h-full object-cover opacity-85" />
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-white">be <span className="text-violet-400">attend</span></span>
+          <span className="text-xl font-extrabold tracking-tight text-white">be <span className="text-gray-300">attend</span></span>
         </div>
 
         <nav className="flex-1 space-y-8 overflow-y-auto no-scrollbar">
@@ -210,11 +210,11 @@ function App() {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
                     activeTab === item.id 
-                    ? 'bg-violet-600/15 text-violet-300 border-violet-500/20 purple-glow' 
+                    ? 'bg-white/10 text-white border-white/10 shadow-sm' 
                     : 'text-gray-400 border-transparent hover:text-gray-100 hover:bg-white/5'
                   }`}
                 >
-                  <item.icon size={18} className={activeTab === item.id ? 'text-violet-400' : ''} />
+                  <item.icon size={18} className={activeTab === item.id ? 'text-white' : ''} />
                   <span>{item.label}</span>
                 </button>
               ))}
@@ -256,7 +256,7 @@ function App() {
           <div className="flex items-center gap-6">
             <button className="relative p-2.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all">
               <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-violet-500 purple-glow"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-gray-300"></span>
             </button>
             
             <div className="h-8 w-px bg-white/5"></div>
@@ -264,10 +264,10 @@ function App() {
             <div className="flex items-center gap-3.5">
                <div className={lang === 'ar' ? 'text-right' : 'text-left'}>
                   <p className="text-xs font-bold text-white">Scarlette !</p>
-                  <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest">{lang === 'ar' ? 'مدير النظام' : 'SYSTEM ADMIN'}</p>
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{lang === 'ar' ? 'مدير النظام' : 'SYSTEM ADMIN'}</p>
                </div>
-               <div className="w-10 h-10 rounded-xl overflow-hidden border border-violet-500/30 purple-glow">
-                 <img src="https://ui-avatars.com/api/?name=Scarlette&background=7C3AED&color=fff" className="w-full h-full object-cover" />
+               <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10">
+                 <img src="https://ui-avatars.com/api/?name=Scarlette&background=888888&color=fff" className="w-full h-full object-cover" />
                </div>
             </div>
           </div>
@@ -302,10 +302,10 @@ function App() {
         <div className="grid grid-cols-1 gap-2.5">
           <button 
             onClick={() => setActiveTab('employees')} 
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-violet-500/30 transition-all group"
+            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center group-hover:bg-violet-500/20 transition-all">
+              <div className="w-8 h-8 rounded-lg bg-white/5 text-gray-300 flex items-center justify-center group-hover:bg-white/10 transition-all">
                 <UserPlus size={16} />
               </div>
               <span className="text-xs font-bold">{lang === 'ar' ? 'إضافة موظف جديد' : 'Add Employee'}</span>
@@ -315,10 +315,10 @@ function App() {
 
           <button 
             onClick={() => setActiveTab('companies')} 
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-violet-500/30 transition-all group"
+            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center group-hover:bg-violet-500/20 transition-all">
+              <div className="w-8 h-8 rounded-lg bg-white/5 text-gray-300 flex items-center justify-center group-hover:bg-white/10 transition-all">
                 <Globe size={16} />
               </div>
               <span className="text-xs font-bold">{lang === 'ar' ? 'تسجيل شركة جديدة' : 'Add Company'}</span>
@@ -328,10 +328,10 @@ function App() {
 
           <button 
             onClick={() => setActiveTab('locations')} 
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-violet-500/30 transition-all group"
+            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center group-hover:bg-violet-500/20 transition-all">
+              <div className="w-8 h-8 rounded-lg bg-white/5 text-gray-300 flex items-center justify-center group-hover:bg-white/10 transition-all">
                 <MapPinned size={16} />
               </div>
               <span className="text-xs font-bold">{lang === 'ar' ? 'ضبط موقع الفرع' : 'Set Branch Location'}</span>
@@ -355,14 +355,14 @@ function App() {
           <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-400 flex items-center gap-1.5">
-                <Cpu size={14} className="text-violet-400" />
+                <Cpu size={14} className="text-gray-300" />
                 {lang === 'ar' ? 'استجابة الخادم' : 'Server Response'}
               </span>
               <span className="font-bold text-white">45ms</span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-400 flex items-center gap-1.5">
-                <Zap size={14} className="text-violet-400" />
+                <Zap size={14} className="text-gray-300" />
                 {lang === 'ar' ? 'مزامنة السجلات' : 'DB Sync Status'}
               </span>
               <span className="font-bold text-white">100%</span>
@@ -378,7 +378,7 @@ function App() {
           
           <div className="space-y-4 overflow-y-auto no-scrollbar flex-1 pr-1" dir="ltr">
             <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-              <div className="w-6 h-6 rounded-full bg-violet-500/10 text-violet-400 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-white/5 text-gray-300 flex items-center justify-center shrink-0 mt-0.5">
                 <CheckCircle size={12} />
               </div>
               <div>
@@ -388,7 +388,7 @@ function App() {
             </div>
 
             <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-              <div className="w-6 h-6 rounded-full bg-violet-500/10 text-violet-400 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-white/5 text-gray-300 flex items-center justify-center shrink-0 mt-0.5">
                 <CheckCircle size={12} />
               </div>
               <div>
@@ -398,7 +398,7 @@ function App() {
             </div>
 
             <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-              <div className="w-6 h-6 rounded-full bg-violet-500/10 text-violet-400 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-white/5 text-gray-300 flex items-center justify-center shrink-0 mt-0.5">
                 <CheckCircle size={12} />
               </div>
               <div>

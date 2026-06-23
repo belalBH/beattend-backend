@@ -51,7 +51,7 @@ function App() {
     return saved ? JSON.parse(saved) : null;
   });
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
 
   const [loginUsername, setLoginUsername] = useState('');
@@ -95,11 +95,11 @@ function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#F3F5F9] flex items-center justify-center p-6 font-sans relative overflow-hidden" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-6 font-sans relative overflow-hidden" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         {/* Colorful background blobs for login screen */}
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] rounded-full bg-indigo-600/10 blur-[120px]"></div>
-          <div className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] rounded-full bg-[#2563EB]/10 blur-[100px]"></div>
+          <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] rounded-full bg-violet-600/15 blur-[120px]"></div>
+          <div className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] rounded-full bg-[#06B6D4]/15 blur-[100px]"></div>
         </div>
 
         <div className="w-full max-w-md glass-panel rounded-3xl p-10 text-center space-y-6 border border-white/5 shadow-2xl animate-in fade-in duration-500 relative z-10">
@@ -107,8 +107,8 @@ function App() {
               <img src="/logo.jpg" className="w-full h-full object-cover" />
             </div>
             <div className="space-y-1">
-              <h1 className="text-2xl font-black text-slate-800">be <span className="text-[#2563EB] drop-shadow-[0_0_8px_rgba(37,99,235,0.2)]">attend</span></h1>
-              <p className="text-slate-500 text-[10px] font-bold tracking-wide">{lang === 'ar' ? 'نظام الحضور والانصراف الذكي' : 'Smart Attendance System'}</p>
+              <h1 className="text-2xl font-black text-white">be <span className="text-[#06B6D4] drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]">attend</span></h1>
+              <p className="text-slate-400 text-[10px] font-bold tracking-wide">{lang === 'ar' ? 'نظام الحضور والانصراف الذكي' : 'Smart Attendance System'}</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4 text-right">
@@ -119,7 +119,7 @@ function App() {
               )}
               
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-[#2563EB] uppercase tracking-wider block">
+                <label className="text-[10px] font-black text-[#06B6D4] uppercase tracking-wider block">
                   {lang === 'ar' ? 'اسم المستخدم' : 'Username'}
                 </label>
                 <input
@@ -135,7 +135,7 @@ function App() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-[#2563EB] uppercase tracking-wider block">
+                <label className="text-[10px] font-black text-[#06B6D4] uppercase tracking-wider block">
                   {lang === 'ar' ? 'كلمة المرور' : 'Password'}
                 </label>
                 <input
@@ -153,14 +153,14 @@ function App() {
               <button 
                 type="submit" 
                 disabled={loginLoading}
-                className="w-full py-3.5 mt-2 bg-gradient-to-r from-[#2563EB] to-[#00F5D4] text-white hover:brightness-110 shadow-lg shadow-[#2563EB]/20 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 mt-2 bg-gradient-to-r from-[#7C3AED] to-[#06B6D4] text-white hover:brightness-110 shadow-lg shadow-[#7C3AED]/20 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loginLoading ? (lang === 'ar' ? 'جاري التحقق...' : 'Verifying...') : (lang === 'ar' ? 'دخول النظام' : 'Enter System')}
                 {!loginLoading && <ArrowRight size={16} className={lang === 'ar' ? '' : 'rotate-180'} />}
               </button>
             </form>
 
-            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="text-[10px] font-bold text-slate-500 hover:text-[#2563EB] transition-colors uppercase tracking-widest mt-2 block mx-auto">
+            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="text-[10px] font-bold text-slate-400 hover:text-[#06B6D4] transition-colors uppercase tracking-widest mt-2 block mx-auto">
               {lang === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
             </button>
         </div>
@@ -193,31 +193,31 @@ function App() {
   ];
 
   return (
-    <div className={`flex h-screen bg-[#0B0E14] text-gray-100 font-sans overflow-hidden`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="flex h-screen bg-transparent text-gray-100 font-sans overflow-hidden" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Sidebar */}
-      <aside className={`w-64 glass-panel ${lang === 'ar' ? 'border-l' : 'border-r'} border-white/5 flex flex-col p-6 transition-all duration-300 relative z-20`}>
+      <aside className={`w-64 glass-panel my-6 ${lang === 'ar' ? 'mr-6 border-l' : 'ml-6 border-r'} border-white/5 flex flex-col p-6 transition-all duration-300 relative z-20 rounded-3xl shadow-2xl`}>
         <div className="flex items-center gap-3 mb-10 px-2">
           <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center shadow-[inset_1px_1px_0px_rgba(255,255,255,0.05),4px_4px_10px_rgba(0,0,0,0.3)]">
             <img src="/logo.jpg" className="w-full h-full object-cover opacity-85" />
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-slate-800">be <span className="text-[#2563EB] drop-shadow-[0_0_8px_rgba(37,99,235,0.2)]">attend</span></span>
+          <span className="text-xl font-extrabold tracking-tight text-white">be <span className="text-[#06B6D4] drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]">attend</span></span>
         </div>
 
         <nav className="flex-1 space-y-8 overflow-y-auto no-scrollbar">
           {menuItems.map((section) => (
             <div key={section.section} className="space-y-2">
-              <h3 className="text-[10px] font-black text-gray-500 tracking-wider px-2 uppercase">{section.section}</h3>
+              <h3 className="text-[10px] font-black text-slate-400 tracking-wider px-2 uppercase">{section.section}</h3>
               {section.items.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
                     activeTab === item.id 
-                    ? 'bg-gradient-to-r from-[#2563EB]/10 to-[#00F5D4]/5 text-[#2563EB] border-[#2563EB]/20 shadow-[0_4px_15px_rgba(37,99,235,0.06),inset_0_1px_0px_rgba(255,255,255,0.4)]' 
-                    : 'text-slate-500 border-transparent hover:text-[#2563EB] hover:bg-black/5'
+                    ? 'bg-gradient-to-r from-[#7C3AED]/20 to-[#06B6D4]/10 text-white border-[#7C3AED]/35 shadow-[0_4px_15px_rgba(124,58,237,0.15),inset_0_1px_0px_rgba(255,255,255,0.15)]' 
+                    : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <item.icon size={18} className={activeTab === item.id ? 'text-[#2563EB] drop-shadow-[0_0_8px_rgba(37,99,235,0.2)]' : ''} />
+                  <item.icon size={18} className={activeTab === item.id ? 'text-[#06B6D4] drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]' : 'text-slate-400'} />
                   <span>{item.label}</span>
                 </button>
               ))}
@@ -225,16 +225,16 @@ function App() {
           ))}
         </nav>
 
-        <div className="pt-6 mt-6 border-t border-black/5 space-y-4">
-          <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-600 font-semibold hover:text-[#2563EB] hover:bg-black/5 rounded-xl border border-transparent transition-all">
+        <div className="pt-6 mt-6 border-t border-white/5 space-y-4">
+          <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-300 font-semibold hover:text-white hover:bg-white/5 rounded-xl border border-transparent transition-all">
             <Languages size={18} />
             <span>{lang === 'ar' ? 'English' : 'العربية'}</span>
           </button>
-          <div className="flex bg-black/5 border border-black/5 p-1 rounded-xl">
-            <button onClick={() => setIsDarkMode(false)} className={`flex-1 flex justify-center py-2 rounded-lg text-slate-500 hover:text-slate-800 ${!isDarkMode ? 'bg-white text-slate-800 shadow-sm font-bold' : ''}`}><Sun size={16} /></button>
-            <button onClick={() => setIsDarkMode(true)} className={`flex-1 flex justify-center py-2 rounded-lg text-slate-500 hover:text-slate-800 ${isDarkMode ? 'bg-white text-slate-800 shadow-sm font-bold' : ''}`}><Moon size={16} /></button>
+          <div className="flex bg-slate-900/60 border border-white/10 p-1 rounded-xl">
+            <button onClick={() => setIsDarkMode(false)} className={`flex-1 flex justify-center py-2 rounded-lg text-slate-400 hover:text-white ${!isDarkMode ? 'bg-white/10 text-white shadow-sm font-bold' : ''}`}><Sun size={16} /></button>
+            <button onClick={() => setIsDarkMode(true)} className={`flex-1 flex justify-center py-2 rounded-lg text-slate-400 hover:text-white ${isDarkMode ? 'bg-white/10 text-white shadow-sm font-bold' : ''}`}><Moon size={16} /></button>
           </div>
-          <button onClick={() => { setUser(null); localStorage.removeItem('beattend_admin_session'); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-red-500 font-semibold hover:text-red-600 hover:bg-red-500/10 rounded-xl border border-transparent transition-all">
+          <button onClick={() => { setUser(null); localStorage.removeItem('beattend_admin_session'); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 font-semibold hover:text-red-300 hover:bg-red-500/10 rounded-xl border border-transparent transition-all">
             <LogOut size={18} />
             <span>{t.logout}</span>
           </button>
@@ -244,10 +244,10 @@ function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden bg-transparent">
         {/* Top Navigation Bar */}
-        <header className="h-20 bg-white/55 backdrop-blur-2xl border-b border-black/5 flex items-center justify-between px-8 shrink-0 relative z-10">
+        <header className="h-20 glass-panel mt-6 mx-6 flex items-center justify-between px-8 shrink-0 relative z-10 rounded-3xl shadow-2xl">
           <div className="flex items-center gap-4 w-96">
             <div className="relative w-full">
-              <Search className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-2.5 text-slate-500`} size={16} />
+              <Search className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-2.5 text-slate-400`} size={16} />
               <input 
                 type="text" 
                 placeholder={lang === 'ar' ? 'البحث الذكي عن الشركات والموظفين...' : 'Smart search companies, employees...'}
@@ -257,20 +257,20 @@ function App() {
           </div>
           
           <div className="flex items-center gap-6">
-            <button className="relative p-2.5 rounded-xl bg-black/5 border border-black/5 text-slate-600 hover:text-slate-800 hover:bg-black/10 transition-all">
+            <button className="relative p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all shadow-lg">
               <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#2563EB] animate-pulse"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
             </button>
             
-            <div className="h-8 w-px bg-black/5"></div>
+            <div className="h-8 w-px bg-white/10"></div>
             
             <div className="flex items-center gap-3.5">
                <div className={lang === 'ar' ? 'text-right' : 'text-left'}>
-                  <p className="text-xs font-bold text-slate-800">Scarlette !</p>
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{lang === 'ar' ? 'مدير النظام' : 'SYSTEM ADMIN'}</p>
+                  <p className="text-xs font-bold text-white">Scarlette !</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{lang === 'ar' ? 'مدير النظام' : 'SYSTEM ADMIN'}</p>
                </div>
-               <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#2563EB]/30 shadow-[0_0_10px_rgba(37,99,235,0.15)]">
-                 <img src="https://ui-avatars.com/api/?name=Scarlette&background=2563EB&color=fff" className="w-full h-full object-cover" />
+               <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#7C3AED]/40 shadow-[0_0_10px_rgba(124,58,237,0.3)]">
+                 <img src="https://ui-avatars.com/api/?name=Scarlette&background=7C3AED&color=fff" className="w-full h-full object-cover" />
                </div>
             </div>
           </div>
@@ -293,12 +293,12 @@ function App() {
       </main>
 
       {/* Right-Side Quick Actions Panel */}
-      <aside className="w-80 glass-panel border-l border-black/5 p-6 flex flex-col gap-6 overflow-y-auto relative z-10 shrink-0">
+      <aside className={`w-80 glass-panel my-6 ${lang === 'ar' ? 'ml-6' : 'mr-6'} p-6 flex flex-col gap-6 overflow-y-auto relative z-10 shrink-0 rounded-3xl shadow-2xl`}>
         <div>
-          <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider mb-1">
+          <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">
             {lang === 'ar' ? 'الإجراءات السريعة' : 'Quick Actions'}
           </h3>
-          <p className="text-[10px] text-slate-500">
+          <p className="text-[10px] text-slate-400">
             {lang === 'ar' ? 'التحكم السريع في لوحة النظام' : 'Manage system operations'}
           </p>
         </div>
@@ -307,108 +307,108 @@ function App() {
         <div className="grid grid-cols-1 gap-2.5">
           <button 
             onClick={() => setActiveTab('employees')} 
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-black/5 border border-black/5 text-slate-700 hover:text-slate-900 hover:bg-black/10 hover:border-black/10 transition-all group"
+            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#7C3AED]/30 transition-all group shadow-md"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center group-hover:bg-[#2563EB]/20 transition-all shadow-[0_0_8px_rgba(37,99,235,0.1)]">
+              <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 text-[#7C3AED] flex items-center justify-center group-hover:bg-[#7C3AED]/20 transition-all shadow-[0_0_8px_rgba(124,58,237,0.2)]">
                 <UserPlus size={16} />
               </div>
               <span className="text-xs font-bold">{lang === 'ar' ? 'إضافة موظف جديد' : 'Add Employee'}</span>
             </div>
-            <ArrowRight size={14} className={`text-slate-500 group-hover:text-slate-900 transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+            <ArrowRight size={14} className={`text-slate-400 group-hover:text-white transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
           </button>
 
           <button 
             onClick={() => setActiveTab('companies')} 
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-black/5 border border-black/5 text-slate-700 hover:text-slate-900 hover:bg-black/10 hover:border-black/10 transition-all group"
+            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all group shadow-md"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center group-hover:bg-[#2563EB]/20 transition-all shadow-[0_0_8px_rgba(37,99,235,0.1)]">
+              <div className="w-8 h-8 rounded-lg bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center group-hover:bg-[#06B6D4]/20 transition-all shadow-[0_0_8px_rgba(6,182,212,0.2)]">
                 <Globe size={16} />
               </div>
               <span className="text-xs font-bold">{lang === 'ar' ? 'تسجيل شركة جديدة' : 'Add Company'}</span>
             </div>
-            <ArrowRight size={14} className={`text-slate-500 group-hover:text-slate-900 transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+            <ArrowRight size={14} className={`text-slate-400 group-hover:text-white transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
           </button>
 
           <button 
             onClick={() => setActiveTab('locations')} 
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-black/5 border border-black/5 text-slate-700 hover:text-slate-900 hover:bg-black/10 hover:border-black/10 transition-all group"
+            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#7C3AED]/30 transition-all group shadow-md"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center group-hover:bg-[#2563EB]/20 transition-all shadow-[0_0_8px_rgba(37,99,235,0.1)]">
+              <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 text-[#7C3AED] flex items-center justify-center group-hover:bg-[#7C3AED]/20 transition-all shadow-[0_0_8px_rgba(124,58,237,0.2)]">
                 <MapPinned size={16} />
               </div>
               <span className="text-xs font-bold">{lang === 'ar' ? 'ضبط موقع الفرع' : 'Set Branch Location'}</span>
             </div>
-            <ArrowRight size={14} className={`text-slate-500 group-hover:text-slate-900 transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+            <ArrowRight size={14} className={`text-slate-400 group-hover:text-white transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
           </button>
         </div>
 
-        <div className="h-px bg-black/5"></div>
+        <div className="h-px bg-white/10"></div>
 
         {/* System Health */}
         <div className="space-y-3.5">
           <div className="flex items-center justify-between">
-            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{lang === 'ar' ? 'حالة النظام' : 'System Health'}</h4>
-            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{lang === 'ar' ? 'حالة النظام' : 'System Health'}</h4>
+            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               {lang === 'ar' ? 'متصل' : 'Online'}
             </span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-black/[0.02] border border-black/5 space-y-3">
+          <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3 shadow-inner">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 flex items-center gap-1.5">
-                <Cpu size={14} className="text-slate-600" />
+              <span className="text-slate-400 flex items-center gap-1.5">
+                <Cpu size={14} className="text-slate-400" />
                 {lang === 'ar' ? 'استجابة الخادم' : 'Server Response'}
               </span>
-              <span className="font-bold text-slate-800">45ms</span>
+              <span className="font-bold text-slate-200">45ms</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 flex items-center gap-1.5">
-                <Zap size={14} className="text-slate-600" />
+              <span className="text-slate-400 flex items-center gap-1.5">
+                <Zap size={14} className="text-slate-400" />
                 {lang === 'ar' ? 'مزامنة السجلات' : 'DB Sync Status'}
               </span>
-              <span className="font-bold text-slate-800">100%</span>
+              <span className="font-bold text-slate-200">100%</span>
             </div>
           </div>
         </div>
 
-        <div className="h-px bg-black/5"></div>
+        <div className="h-px bg-white/10"></div>
 
         {/* Recent Activities Feed */}
         <div className="space-y-3.5 flex-1 flex flex-col min-h-0">
-          <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest shrink-0">{lang === 'ar' ? 'سجل العمليات الأخير' : 'Recent Activities'}</h4>
+          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">{lang === 'ar' ? 'سجل العمليات الأخير' : 'Recent Activities'}</h4>
           
           <div className="space-y-4 overflow-y-auto no-scrollbar flex-1 pr-1" dir="ltr">
             <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-              <div className="w-6 h-6 rounded-full bg-black/5 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-white/5 text-[#06B6D4] flex items-center justify-center shrink-0 mt-0.5 border border-white/5 shadow-sm">
                 <CheckCircle size={12} />
               </div>
               <div>
-                <p className="font-bold text-slate-800">{lang === 'ar' ? 'تحديث رواتب شهر يونيو' : 'June salaries updated'}</p>
-                <p className="text-[9px] text-slate-500 mt-0.5">{lang === 'ar' ? 'منذ 5 دقائق' : '5 mins ago'}</p>
+                <p className="font-bold text-slate-200">{lang === 'ar' ? 'تحديث رواتب شهر يونيو' : 'June salaries updated'}</p>
+                <p className="text-[9px] text-slate-400 mt-0.5">{lang === 'ar' ? 'منذ 5 دقائق' : '5 mins ago'}</p>
               </div>
             </div>
 
             <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-              <div className="w-6 h-6 rounded-full bg-black/5 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-white/5 text-[#06B6D4] flex items-center justify-center shrink-0 mt-0.5 border border-white/5 shadow-sm">
                 <CheckCircle size={12} />
               </div>
               <div>
-                <p className="font-bold text-slate-800">{lang === 'ar' ? 'إضافة فرع مكة المكرمة' : 'Makkah branch added'}</p>
-                <p className="text-[9px] text-slate-500 mt-0.5">{lang === 'ar' ? 'منذ ساعة' : '1 hr ago'}</p>
+                <p className="font-bold text-slate-200">{lang === 'ar' ? 'إضافة فرع مكة المكرمة' : 'Makkah branch added'}</p>
+                <p className="text-[9px] text-slate-400 mt-0.5">{lang === 'ar' ? 'منذ ساعة' : '1 hr ago'}</p>
               </div>
             </div>
 
             <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-              <div className="w-6 h-6 rounded-full bg-black/5 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-white/5 text-[#06B6D4] flex items-center justify-center shrink-0 mt-0.5 border border-white/5 shadow-sm">
                 <CheckCircle size={12} />
               </div>
               <div>
-                <p className="font-bold text-slate-800">{lang === 'ar' ? 'التحقق من نطاق شركة الحلول' : 'Solutions geofence checked'}</p>
-                <p className="text-[9px] text-slate-500 mt-0.5">{lang === 'ar' ? 'منذ 4 ساعات' : '4 hrs ago'}</p>
+                <p className="font-bold text-slate-200">{lang === 'ar' ? 'التحقق من نطاق شركة الحلول' : 'Solutions geofence checked'}</p>
+                <p className="text-[9px] text-slate-400 mt-0.5">{lang === 'ar' ? 'منذ 4 ساعات' : '4 hrs ago'}</p>
               </div>
             </div>
           </div>

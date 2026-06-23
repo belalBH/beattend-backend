@@ -28,7 +28,13 @@ import {
   Sparkles,
   Cpu,
   Zap,
-  CheckCircle
+  CheckCircle,
+  Calculator,
+  Send,
+  Download,
+  AlertCircle,
+  Clock,
+  ArrowUpRight
 } from 'lucide-react';
 
 import { DashboardView } from './views/Dashboard';
@@ -294,125 +300,310 @@ function App() {
 
       {/* Right-Side Quick Actions Panel */}
       <aside className={`w-80 glass-panel my-6 ${lang === 'ar' ? 'ml-6' : 'mr-6'} p-6 flex flex-col gap-6 overflow-y-auto relative z-10 shrink-0 rounded-3xl shadow-2xl`}>
-        <div>
-          <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">
-            {lang === 'ar' ? 'الإجراءات السريعة' : 'Quick Actions'}
-          </h3>
-          <p className="text-[10px] text-slate-400">
-            {lang === 'ar' ? 'التحكم السريع في لوحة النظام' : 'Manage system operations'}
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-1 gap-2.5">
-          <button 
-            onClick={() => setActiveTab('employees')} 
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#7C3AED]/30 transition-all group shadow-md"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 text-[#7C3AED] flex items-center justify-center group-hover:bg-[#7C3AED]/20 transition-all shadow-[0_0_8px_rgba(124,58,237,0.2)]">
-                <UserPlus size={16} />
-              </div>
-              <span className="text-xs font-bold">{lang === 'ar' ? 'إضافة موظف جديد' : 'Add Employee'}</span>
-            </div>
-            <ArrowRight size={14} className={`text-slate-400 group-hover:text-white transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('companies')} 
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all group shadow-md"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center group-hover:bg-[#06B6D4]/20 transition-all shadow-[0_0_8px_rgba(6,182,212,0.2)]">
-                <Globe size={16} />
-              </div>
-              <span className="text-xs font-bold">{lang === 'ar' ? 'تسجيل شركة جديدة' : 'Add Company'}</span>
-            </div>
-            <ArrowRight size={14} className={`text-slate-400 group-hover:text-white transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('locations')} 
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#7C3AED]/30 transition-all group shadow-md"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 text-[#7C3AED] flex items-center justify-center group-hover:bg-[#7C3AED]/20 transition-all shadow-[0_0_8px_rgba(124,58,237,0.2)]">
-                <MapPinned size={16} />
-              </div>
-              <span className="text-xs font-bold">{lang === 'ar' ? 'ضبط موقع الفرع' : 'Set Branch Location'}</span>
-            </div>
-            <ArrowRight size={14} className={`text-slate-400 group-hover:text-white transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
-          </button>
-        </div>
-
-        <div className="h-px bg-white/10"></div>
-
-        {/* System Health */}
-        <div className="space-y-3.5">
-          <div className="flex items-center justify-between">
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{lang === 'ar' ? 'حالة النظام' : 'System Health'}</h4>
-            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              {lang === 'ar' ? 'متصل' : 'Online'}
-            </span>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3 shadow-inner">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400 flex items-center gap-1.5">
-                <Cpu size={14} className="text-slate-400" />
-                {lang === 'ar' ? 'استجابة الخادم' : 'Server Response'}
-              </span>
-              <span className="font-bold text-slate-200">45ms</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400 flex items-center gap-1.5">
-                <Zap size={14} className="text-slate-400" />
-                {lang === 'ar' ? 'مزامنة السجلات' : 'DB Sync Status'}
-              </span>
-              <span className="font-bold text-slate-200">100%</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="h-px bg-white/10"></div>
-
-        {/* Recent Activities Feed */}
-        <div className="space-y-3.5 flex-1 flex flex-col min-h-0">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">{lang === 'ar' ? 'سجل العمليات الأخير' : 'Recent Activities'}</h4>
-          
-          <div className="space-y-4 overflow-y-auto no-scrollbar flex-1 pr-1" dir="ltr">
-            <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-              <div className="w-6 h-6 rounded-full bg-white/5 text-[#06B6D4] flex items-center justify-center shrink-0 mt-0.5 border border-white/5 shadow-sm">
-                <CheckCircle size={12} />
-              </div>
-              <div>
-                <p className="font-bold text-slate-200">{lang === 'ar' ? 'تحديث رواتب شهر يونيو' : 'June salaries updated'}</p>
-                <p className="text-[9px] text-slate-400 mt-0.5">{lang === 'ar' ? 'منذ 5 دقائق' : '5 mins ago'}</p>
-              </div>
+        {activeTab === 'payroll' ? (
+          <>
+            {/* 1. Quick Actions */}
+            <div>
+              <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">
+                {lang === 'ar' ? 'إجراءات سريعة' : 'Quick Actions'}
+              </h3>
+              <p className="text-[10px] text-slate-400">
+                {lang === 'ar' ? 'التحكم السريع في مسيرات الرواتب' : 'Manage payroll runs'}
+              </p>
             </div>
 
-            <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-              <div className="w-6 h-6 rounded-full bg-white/5 text-[#06B6D4] flex items-center justify-center shrink-0 mt-0.5 border border-white/5 shadow-sm">
-                <CheckCircle size={12} />
-              </div>
-              <div>
-                <p className="font-bold text-slate-200">{lang === 'ar' ? 'إضافة فرع مكة المكرمة' : 'Makkah branch added'}</p>
-                <p className="text-[9px] text-slate-400 mt-0.5">{lang === 'ar' ? 'منذ ساعة' : '1 hr ago'}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('payroll-action', { detail: 'calculate' });
+                  window.dispatchEvent(event);
+                }}
+                className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center group-hover:bg-[#06B6D4]/20 transition-all shadow-[0_0_8px_rgba(6,182,212,0.2)]">
+                  <Calculator size={16} />
+                </div>
+                <span className="text-[10px] font-black text-slate-200">{lang === 'ar' ? 'احتساب مسير' : 'Calc Payroll'}</span>
+              </button>
+
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('payroll-action', { detail: 'create' });
+                  window.dispatchEvent(event);
+                }}
+                className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center group-hover:bg-[#06B6D4]/20 transition-all shadow-[0_0_8px_rgba(6,182,212,0.2)]">
+                  <Plus size={16} />
+                </div>
+                <span className="text-[10px] font-black text-slate-200">{lang === 'ar' ? 'إنشاء مسير' : 'Create Run'}</span>
+              </button>
+
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('payroll-action', { detail: 'export-bank' });
+                  window.dispatchEvent(event);
+                }}
+                className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center group-hover:bg-[#06B6D4]/20 transition-all shadow-[0_0_8px_rgba(6,182,212,0.2)]">
+                  <ArrowUpRight size={16} />
+                </div>
+                <span className="text-[10px] font-black text-slate-200">{lang === 'ar' ? 'تصدير للبنك' : 'Bank Export'}</span>
+              </button>
+
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('payroll-action', { detail: 'import-attendance' });
+                  window.dispatchEvent(event);
+                }}
+                className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center group-hover:bg-[#06B6D4]/20 transition-all shadow-[0_0_8px_rgba(6,182,212,0.2)]">
+                  <Download size={16} />
+                </div>
+                <span className="text-[10px] font-black text-slate-200">{lang === 'ar' ? 'استيراد حضور' : 'Import Att.'}</span>
+              </button>
+
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('payroll-action', { detail: 'settings' });
+                  window.dispatchEvent(event);
+                }}
+                className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center group-hover:bg-[#06B6D4]/20 transition-all shadow-[0_0_8px_rgba(6,182,212,0.2)]">
+                  <Settings size={16} />
+                </div>
+                <span className="text-[10px] font-black text-slate-200">{lang === 'ar' ? 'قواعد الرواتب' : 'Rules Setup'}</span>
+              </button>
+
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('payroll-action', { detail: 'report' });
+                  window.dispatchEvent(event);
+                }}
+                className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center group-hover:bg-[#06B6D4]/20 transition-all shadow-[0_0_8px_rgba(6,182,212,0.2)]">
+                  <FileText size={16} />
+                </div>
+                <span className="text-[10px] font-black text-slate-200">{lang === 'ar' ? 'تقرير الرواتب' : 'Runs Report'}</span>
+              </button>
+            </div>
+
+            <div className="h-px bg-white/10"></div>
+
+            {/* 2. Payroll Status Timeline */}
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{lang === 'ar' ? 'حالة الرواتب' : 'Payroll Status'}</h4>
+              <div className="space-y-3.5 pr-1" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-[10px] font-bold">✓</span>
+                    <span className="text-slate-350 font-bold">{lang === 'ar' ? 'تم احتساب' : 'Calculated'}</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-slate-400">23/07/2025</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-[10px] font-bold">✓</span>
+                    <span className="text-slate-350 font-bold">{lang === 'ar' ? 'آخر اعتماد' : 'Last Approved'}</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-slate-400">23/07/2025</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-[10px] font-bold">✓</span>
+                    <span className="text-slate-350 font-bold">{lang === 'ar' ? 'آخر تصدير للبنك' : 'Last Bank Export'}</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-slate-400">23/07/2025</span>
+                </div>
               </div>
             </div>
 
-            <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-              <div className="w-6 h-6 rounded-full bg-white/5 text-[#06B6D4] flex items-center justify-center shrink-0 mt-0.5 border border-white/5 shadow-sm">
-                <CheckCircle size={12} />
+            <div className="h-px bg-white/10"></div>
+
+            {/* 3. Alerts */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{lang === 'ar' ? 'التنبيهات' : 'Alerts'}</h4>
+                <span className="text-[9px] font-black text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">{lang === 'ar' ? 'عرض الكل' : 'View All'}</span>
               </div>
-              <div>
-                <p className="font-bold text-slate-200">{lang === 'ar' ? 'التحقق من نطاق شركة الحلول' : 'Solutions geofence checked'}</p>
-                <p className="text-[9px] text-slate-400 mt-0.5">{lang === 'ar' ? 'منذ 4 ساعات' : '4 hrs ago'}</p>
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div className="w-7 h-7 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center shrink-0">
+                    <AlertCircle size={14} />
+                  </div>
+                  <div className={lang === 'ar' ? 'text-right' : 'text-left'}>
+                    <p className="text-[10px] font-bold text-slate-200">{lang === 'ar' ? '8 مسيرات قيد الاعتماد' : '8 payrolls pending approval'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div className="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0">
+                    <Users size={14} />
+                  </div>
+                  <div className={lang === 'ar' ? 'text-right' : 'text-left'}>
+                    <p className="text-[10px] font-bold text-slate-200">{lang === 'ar' ? '12 موظف بدون عقد' : '12 employees without contracts'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div className="w-7 h-7 rounded-lg bg-yellow-500/10 text-yellow-400 flex items-center justify-center shrink-0">
+                    <FileText size={14} />
+                  </div>
+                  <div className={lang === 'ar' ? 'text-right' : 'text-left'}>
+                    <p className="text-[10px] font-bold text-slate-200">{lang === 'ar' ? '5 عهود تنتهي قريباً' : '5 agreements expiring soon'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+                    <Clock size={14} />
+                  </div>
+                  <div className={lang === 'ar' ? 'text-right' : 'text-left'}>
+                    <p className="text-[10px] font-bold text-slate-200">{lang === 'ar' ? '3 سلف متأخرة السداد' : '3 overdue loans'}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+
+            <div className="h-px bg-white/10"></div>
+
+            {/* 4. Help Section */}
+            <div className="p-3.5 rounded-2xl bg-white/[0.01] border border-white/5 flex gap-3 text-[10px]">
+              <HelpCircle className="text-[#06B6D4] shrink-0 mt-0.5" size={16} />
+              <div className={lang === 'ar' ? 'text-right' : 'text-left'}>
+                <h5 className="font-black text-white">{lang === 'ar' ? 'المساعدة' : 'Help & Support'}</h5>
+                <p className="font-bold text-slate-200 mt-1">{lang === 'ar' ? 'دليل استخدام الرواتب' : 'Payroll User Guide'}</p>
+                <p className="text-slate-400 mt-0.5">{lang === 'ar' ? 'تعرف على كيفية إدارة مسيرات الرواتب' : 'Learn how to manage payroll sheets.'}</p>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">
+                {lang === 'ar' ? 'الإجراءات السريعة' : 'Quick Actions'}
+              </h3>
+              <p className="text-[10px] text-slate-400">
+                {lang === 'ar' ? 'التحكم السريع في لوحة النظام' : 'Manage system operations'}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-1 gap-2.5">
+              <button 
+                onClick={() => setActiveTab('employees')} 
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#7C3AED]/30 transition-all group shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 text-[#7C3AED] flex items-center justify-center group-hover:bg-[#7C3AED]/20 transition-all shadow-[0_0_8px_rgba(124,58,237,0.2)]">
+                    <UserPlus size={16} />
+                  </div>
+                  <span className="text-xs font-bold">{lang === 'ar' ? 'إضافة موظف جديد' : 'Add Employee'}</span>
+                </div>
+                <ArrowRight size={14} className={`text-slate-400 group-hover:text-white transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('companies')} 
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all group shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center group-hover:bg-[#06B6D4]/20 transition-all shadow-[0_0_8px_rgba(6,182,212,0.2)]">
+                    <Globe size={16} />
+                  </div>
+                  <span className="text-xs font-bold">{lang === 'ar' ? 'تسجيل شركة جديدة' : 'Add Company'}</span>
+                </div>
+                <ArrowRight size={14} className={`text-slate-400 group-hover:text-white transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('locations')} 
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#7C3AED]/30 transition-all group shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/10 text-[#7C3AED] flex items-center justify-center group-hover:bg-[#7C3AED]/20 transition-all shadow-[0_0_8px_rgba(124,58,237,0.2)]">
+                    <Briefcase size={16} />
+                  </div>
+                  <span className="text-xs font-bold">{lang === 'ar' ? 'ضبط موقع الفرع' : 'Set Branch Location'}</span>
+                </div>
+                <ArrowRight size={14} className={`text-slate-400 group-hover:text-white transition-all transform group-hover:translate-x-0.5 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+
+            <div className="h-px bg-white/10"></div>
+
+            {/* System Health */}
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{lang === 'ar' ? 'حالة النظام' : 'System Health'}</h4>
+                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  {lang === 'ar' ? 'متصل' : 'Online'}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3 shadow-inner">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <Cpu size={14} className="text-slate-400" />
+                    {lang === 'ar' ? 'استجابة الخادم' : 'Server Response'}
+                  </span>
+                  <span className="font-bold text-slate-200">45ms</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <Zap size={14} className="text-slate-400" />
+                    {lang === 'ar' ? 'مزامنة السجلات' : 'DB Sync Status'}
+                  </span>
+                  <span className="font-bold text-slate-200">100%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-px bg-white/10"></div>
+
+            {/* Recent Activities Feed */}
+            <div className="space-y-3.5 flex-1 flex flex-col min-h-0">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">{lang === 'ar' ? 'سجل العمليات الأخير' : 'Recent Activities'}</h4>
+              
+              <div className="space-y-4 overflow-y-auto no-scrollbar flex-1 pr-1" dir="ltr">
+                <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
+                  <div className="w-6 h-6 rounded-full bg-white/5 text-[#06B6D4] flex items-center justify-center shrink-0 mt-0.5 border border-white/5 shadow-sm">
+                    <CheckCircle size={12} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-200">{lang === 'ar' ? 'تحديث رواتب شهر يونيو' : 'June salaries updated'}</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5">{lang === 'ar' ? 'منذ 5 دقائق' : '5 mins ago'}</p>
+                  </div>
+                </div>
+
+                <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
+                  <div className="w-6 h-6 rounded-full bg-white/5 text-[#06B6D4] flex items-center justify-center shrink-0 mt-0.5 border border-white/5 shadow-sm">
+                    <CheckCircle size={12} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-200">{lang === 'ar' ? 'إضافة فرع مكة المكرمة' : 'Makkah branch added'}</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5">{lang === 'ar' ? 'منذ ساعة' : '1 hr ago'}</p>
+                  </div>
+                </div>
+
+                <div className={`flex gap-3 text-xs ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
+                  <div className="w-6 h-6 rounded-full bg-white/5 text-[#06B6D4] flex items-center justify-center shrink-0 mt-0.5 border border-white/5 shadow-sm">
+                    <CheckCircle size={12} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-200">{lang === 'ar' ? 'التحقق من نطاق شركة الحلول' : 'Solutions geofence checked'}</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5">{lang === 'ar' ? 'منذ 4 ساعات' : '4 hrs ago'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </aside>
 
       <style>{`

@@ -103,7 +103,7 @@ function App() {
         </div>
 
         <div className="w-full max-w-md glass-panel rounded-3xl p-10 text-center space-y-6 border border-white/5 shadow-2xl animate-in fade-in duration-500 relative z-10">
-            <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden shadow-lg border border-[#17AE9F]/20 flex items-center justify-center" style={{ backgroundColor: '#ffffff' }}>
+            <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden border border-white/10 flex items-center justify-center bg-white shadow-[inset_1px_1px_0px_rgba(255,255,255,0.05),4px_4px_10px_rgba(0,0,0,0.3)]">
               <img src="/logo.jpg" className="w-full h-full object-cover" />
             </div>
             <div className="space-y-1">
@@ -193,11 +193,11 @@ function App() {
   ];
 
   return (
-    <div className={`flex h-screen bg-[#05070C] text-gray-100 font-sans overflow-hidden`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <div className={`flex h-screen bg-[#0B0E14] text-gray-100 font-sans overflow-hidden`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Sidebar */}
       <aside className={`w-64 glass-panel ${lang === 'ar' ? 'border-l' : 'border-r'} border-white/5 flex flex-col p-6 transition-all duration-300 relative z-20`}>
         <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-[#17AE9F]/20 bg-white/5 flex items-center justify-center shadow-[0_0_10px_rgba(23,174,159,0.15)]">
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center shadow-[inset_1px_1px_0px_rgba(255,255,255,0.05),4px_4px_10px_rgba(0,0,0,0.3)]">
             <img src="/logo.jpg" className="w-full h-full object-cover opacity-85" />
           </div>
           <span className="text-xl font-extrabold tracking-tight text-white">be <span className="text-[#00F5D4] drop-shadow-[0_0_8px_rgba(0,245,212,0.4)]">attend</span></span>
@@ -213,7 +213,7 @@ function App() {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
                     activeTab === item.id 
-                    ? 'bg-gradient-to-r from-[#2563EB]/15 to-[#00F5D4]/5 text-white border-[#2563EB]/30 shadow-sm' 
+                    ? 'bg-gradient-to-r from-[#2563EB]/10 to-[#00F5D4]/5 text-white border-white/10 shadow-[inset_1px_1px_0px_rgba(255,255,255,0.05),4px_4px_10px_rgba(0,0,0,0.3)]' 
                     : 'text-gray-400 border-transparent hover:text-gray-100 hover:bg-white/5'
                   }`}
                 >
@@ -244,7 +244,7 @@ function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden bg-transparent">
         {/* Top Navigation Bar */}
-        <header className="h-20 bg-[#0A0D14]/75 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between px-8 shrink-0 relative z-10">
+        <header className="h-20 bg-[#0D111A]/70 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between px-8 shrink-0 relative z-10">
           <div className="flex items-center gap-4 w-96">
             <div className="relative w-full">
               <Search className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-2.5 text-gray-400`} size={16} />

@@ -51,7 +51,7 @@ function App() {
     return saved ? JSON.parse(saved) : null;
   });
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
 
   const [loginUsername, setLoginUsername] = useState('');
@@ -95,11 +95,11 @@ function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#080C14] flex items-center justify-center p-6 font-sans relative overflow-hidden" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="min-h-screen bg-[#F3F5F9] flex items-center justify-center p-6 font-sans relative overflow-hidden" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         {/* Colorful background blobs for login screen */}
         <div className="absolute inset-0 pointer-events-none z-0">
           <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] rounded-full bg-indigo-600/10 blur-[120px]"></div>
-          <div className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] rounded-full bg-[#17AE9F]/10 blur-[100px]"></div>
+          <div className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] rounded-full bg-[#2563EB]/10 blur-[100px]"></div>
         </div>
 
         <div className="w-full max-w-md glass-panel rounded-3xl p-10 text-center space-y-6 border border-white/5 shadow-2xl animate-in fade-in duration-500 relative z-10">
@@ -107,8 +107,8 @@ function App() {
               <img src="/logo.jpg" className="w-full h-full object-cover" />
             </div>
             <div className="space-y-1">
-              <h1 className="text-2xl font-black text-white">be <span className="text-[#00F5D4] drop-shadow-[0_0_8px_rgba(0,245,212,0.4)]">attend</span></h1>
-              <p className="text-gray-400 text-[10px] font-bold tracking-wide">{lang === 'ar' ? 'نظام الحضور والانصراف الذكي' : 'Smart Attendance System'}</p>
+              <h1 className="text-2xl font-black text-slate-800">be <span className="text-[#2563EB] drop-shadow-[0_0_8px_rgba(37,99,235,0.2)]">attend</span></h1>
+              <p className="text-slate-500 text-[10px] font-bold tracking-wide">{lang === 'ar' ? 'نظام الحضور والانصراف الذكي' : 'Smart Attendance System'}</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4 text-right">
@@ -119,7 +119,7 @@ function App() {
               )}
               
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-[#00F5D4] uppercase tracking-wider block">
+                <label className="text-[10px] font-black text-[#2563EB] uppercase tracking-wider block">
                   {lang === 'ar' ? 'اسم المستخدم' : 'Username'}
                 </label>
                 <input
@@ -135,7 +135,7 @@ function App() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-[#00F5D4] uppercase tracking-wider block">
+                <label className="text-[10px] font-black text-[#2563EB] uppercase tracking-wider block">
                   {lang === 'ar' ? 'كلمة المرور' : 'Password'}
                 </label>
                 <input
@@ -160,7 +160,7 @@ function App() {
               </button>
             </form>
 
-            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="text-[10px] font-bold text-gray-400 hover:text-[#00F5D4] transition-colors uppercase tracking-widest mt-2 block mx-auto">
+            <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="text-[10px] font-bold text-slate-500 hover:text-[#2563EB] transition-colors uppercase tracking-widest mt-2 block mx-auto">
               {lang === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
             </button>
         </div>
@@ -200,7 +200,7 @@ function App() {
           <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center shadow-[inset_1px_1px_0px_rgba(255,255,255,0.05),4px_4px_10px_rgba(0,0,0,0.3)]">
             <img src="/logo.jpg" className="w-full h-full object-cover opacity-85" />
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-white">be <span className="text-[#00F5D4] drop-shadow-[0_0_8px_rgba(0,245,212,0.4)]">attend</span></span>
+          <span className="text-xl font-extrabold tracking-tight text-slate-800">be <span className="text-[#2563EB] drop-shadow-[0_0_8px_rgba(37,99,235,0.2)]">attend</span></span>
         </div>
 
         <nav className="flex-1 space-y-8 overflow-y-auto no-scrollbar">

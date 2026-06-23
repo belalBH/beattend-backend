@@ -64,9 +64,9 @@
         background-color: #F3F5F9; /* Light Slate Canvas */
         /* Dynamic pastel organic backdrop gradient blobs */
         background-image: 
-          radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
-          radial-gradient(circle at 85% 20%, rgba(20, 184, 166, 0.10) 0%, transparent 45%),
-          radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 45%),
+          radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.18) 0%, transparent 50%),
+          radial-gradient(circle at 90% 10%, rgba(20, 184, 166, 0.16) 0%, transparent 45%),
+          radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
           radial-gradient(circle at 25% 75%, rgba(236, 72, 153, 0.06) 0%, transparent 45%);
         background-attachment: fixed;
         color: #1E293B; /* Slate-800 default text */
@@ -77,58 +77,55 @@
       }
       /* Premium Apple light frosted glassmorphism utility classes */
       .glass-panel {
-        background-color: rgba(255, 255, 255, 0.65) !important;
-        background: rgba(255, 255, 255, 0.65) !important; /* Semi-transparent light glass */
+        background-color: rgba(255, 255, 255, 0.50) !important;
+        background: rgba(255, 255, 255, 0.50) !important; /* Semi-transparent light glass */
         backdrop-filter: blur(30px) saturate(180%) !important;
         -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
         box-shadow: 
-          inset 1px 1px 0px 0px rgba(255, 255, 255, 0.8), 
-          6px 6px 20px rgba(165, 180, 203, 0.35), 
-          -6px -6px 20px rgba(255, 255, 255, 0.8) !important;
+          inset 0 1px 0px 0px rgba(255, 255, 255, 0.6), 
+          0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
       }
       .glass-card {
-        background-color: rgba(255, 255, 255, 0.45) !important;
-        background: rgba(255, 255, 255, 0.45) !important; /* Card Light Glass */
-        backdrop-filter: blur(24px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        background-color: rgba(255, 255, 255, 0.35) !important;
+        background: rgba(255, 255, 255, 0.35) !important; /* Card Light Glass */
+        backdrop-filter: blur(20px) saturate(185%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(185%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
         border-radius: 1.25rem !important;
         box-shadow: 
-          inset 1px 1px 0px 0px rgba(255, 255, 255, 0.8),
-          8px 8px 24px rgba(165, 180, 203, 0.30), 
-          -8px -8px 24px rgba(255, 255, 255, 0.8) !important;
+          inset 0 1px 0px 0px rgba(255, 255, 255, 0.5),
+          0 8px 32px 0 rgba(31, 38, 135, 0.04) !important;
         color: #1E293B !important;
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
       .glass-card:hover {
-        background: rgba(255, 255, 255, 0.55) !important;
-        border-color: rgba(255, 255, 255, 0.8) !important;
+        background: rgba(255, 255, 255, 0.45) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
         box-shadow: 
-          inset 1px 1px 0px 0px rgba(255, 255, 255, 0.9),
-          12px 12px 28px rgba(165, 180, 203, 0.40), 
-          -12px -12px 28px rgba(255, 255, 255, 0.9),
-          0 0 15px rgba(59, 130, 246, 0.1) !important;
-        transform: translateY(-2px);
+          inset 0 1px 0px 0px rgba(255, 255, 255, 0.7),
+          0 12px 40px 0 rgba(31, 38, 135, 0.08), 
+          0 0 15px rgba(37, 99, 235, 0.1) !important;
+        transform: translateY(-3px);
       }
       .glass-input {
-        background: rgba(255, 255, 255, 0.50) !important; /* light inset well */
-        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        background: rgba(255, 255, 255, 0.40) !important; /* light inset well */
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
         color: #1E293B !important;
         backdrop-filter: blur(10px) !important;
-        box-shadow: inset 2px 2px 5px rgba(165, 180, 203, 0.2) !important;
+        box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.02) !important;
       }
       .glass-input:focus {
-        border-color: rgba(37, 99, 235, 0.5) !important;
-        background: rgba(255, 255, 255, 0.85) !important;
+        border-color: rgba(37, 99, 235, 0.4) !important;
+        background: rgba(255, 255, 255, 0.75) !important;
         outline: none;
-        box-shadow: inset 1px 1px 3px rgba(165, 180, 203, 0.2), 0 0 12px rgba(37, 99, 235, 0.15) !important;
+        box-shadow: 0 8px 16px 0 rgba(37, 99, 235, 0.08) !important;
       }
       .purple-glow {
-        box-shadow: 0 0 30px rgba(37, 99, 235, 0.15);
+        box-shadow: 0 8px 24px 0 rgba(37, 99, 235, 0.12);
       }
       .purple-gradient {
-        background: linear-gradient(135deg, #2563EB 0%, #00F5D4 100%);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.8) 0%, rgba(20, 184, 166, 0.8) 100%);
       }
       /* Custom scrollbar for light modern SaaS */
       ::-webkit-scrollbar {
@@ -147,16 +144,15 @@
       }
       /* Global Dark Mode -> Light Mode SaaS overrides */
       .bg-white {
-        background-color: rgba(255, 255, 255, 0.45) !important; /* Card Light Glass */
-        background: rgba(255, 255, 255, 0.45) !important;
-        backdrop-filter: blur(24px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        background-color: rgba(255, 255, 255, 0.35) !important; /* Card Light Glass */
+        background: rgba(255, 255, 255, 0.35) !important;
+        backdrop-filter: blur(20px) saturate(185%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(185%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
         border-radius: 1.25rem !important;
         box-shadow: 
-          inset 1px 1px 0px 0px rgba(255, 255, 255, 0.8),
-          8px 8px 24px rgba(165, 180, 203, 0.30), 
-          -8px -8px 24px rgba(255, 255, 255, 0.8) !important;
+          inset 0 1px 0px 0px rgba(255, 255, 255, 0.5),
+          0 8px 32px 0 rgba(31, 38, 135, 0.04) !important;
         color: #1E293B !important;
       }
       .text-gray-900 {
@@ -185,18 +181,18 @@
         background: rgba(0, 0, 0, 0.02) !important;
       }
       input[type="text"], input[type="password"], input[type="number"], input[type="date"], select, textarea {
-        background: rgba(255, 255, 255, 0.50) !important;
-        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        background: rgba(255, 255, 255, 0.40) !important;
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
         color: #1E293B !important;
         border-radius: 0.75rem !important;
         backdrop-filter: blur(10px) !important;
-        box-shadow: inset 2px 2px 5px rgba(165, 180, 203, 0.2) !important;
+        box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.02) !important;
         transition: all 0.3s ease;
       }
       input:focus, select:focus, textarea:focus {
-        border-color: rgba(37, 99, 235, 0.5) !important;
-        background: rgba(255, 255, 255, 0.85) !important;
-        box-shadow: inset 1px 1px 3px rgba(165, 180, 203, 0.2), 0 0 12px rgba(37, 99, 235, 0.15) !important;
+        border-color: rgba(37, 99, 235, 0.4) !important;
+        background: rgba(255, 255, 255, 0.75) !important;
+        box-shadow: 0 8px 16px 0 rgba(37, 99, 235, 0.08) !important;
       }
       [class*="text-[#15385E]"], 
       [class*="text-[#17AE9F]"] {
@@ -205,23 +201,21 @@
       }
       [class*="bg-[#15385E]"], 
       [class*="bg-[#17AE9F]"] {
-        background: linear-gradient(135deg, #2563EB 0%, #00F5D4 100%) !important;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.8) 0%, rgba(20, 184, 166, 0.8) 100%) !important;
         color: #ffffff !important;
         font-weight: 800 !important;
         border: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 
-          4px 4px 12px rgba(37, 99, 235, 0.2), 
-          -4px -4px 12px rgba(255, 255, 255, 0.8),
-          inset 1px 1px 0px rgba(255, 255, 255, 0.3) !important;
+          0 8px 24px 0 rgba(37, 99, 235, 0.15), 
+          inset 0 1px 0px rgba(255, 255, 255, 0.3) !important;
         transition: all 0.3s ease !important;
       }
       [class*="bg-[#15385E]"]:hover, 
       [class*="bg-[#17AE9F]"]:hover {
-        background: linear-gradient(135deg, #00F5D4 0%, #2563EB 100%) !important;
+        background: linear-gradient(135deg, rgba(20, 184, 166, 0.8) 0%, rgba(37, 99, 235, 0.8) 100%) !important;
         box-shadow: 
-          6px 6px 16px rgba(37, 99, 235, 0.25), 
-          -6px -6px 16px rgba(255, 255, 255, 0.9),
-          inset 1px 1px 0px rgba(255, 255, 255, 0.40) !important;
+          0 12px 28px 0 rgba(37, 99, 235, 0.2), 
+          inset 0 1px 0px rgba(255, 255, 255, 0.4) !important;
         transform: translateY(-1px);
       }
       [class*="border-[#17AE9F]"],

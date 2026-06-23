@@ -213,11 +213,11 @@ function App() {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
                     activeTab === item.id 
-                    ? 'bg-gradient-to-r from-[#2563EB]/10 to-[#00F5D4]/5 text-white border-white/10 shadow-[inset_1px_1px_0px_rgba(255,255,255,0.05),4px_4px_10px_rgba(0,0,0,0.3)]' 
-                    : 'text-gray-400 border-transparent hover:text-gray-100 hover:bg-white/5'
+                    ? 'bg-gradient-to-r from-[#2563EB]/10 to-[#00F5D4]/5 text-[#2563EB] border-[#2563EB]/20 shadow-[0_4px_15px_rgba(37,99,235,0.06),inset_0_1px_0px_rgba(255,255,255,0.4)]' 
+                    : 'text-slate-500 border-transparent hover:text-[#2563EB] hover:bg-black/5'
                   }`}
                 >
-                  <item.icon size={18} className={activeTab === item.id ? 'text-[#00F5D4] drop-shadow-[0_0_8px_rgba(0,245,212,0.5)]' : ''} />
+                  <item.icon size={18} className={activeTab === item.id ? 'text-[#2563EB] drop-shadow-[0_0_8px_rgba(37,99,235,0.2)]' : ''} />
                   <span>{item.label}</span>
                 </button>
               ))}

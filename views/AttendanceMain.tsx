@@ -945,7 +945,7 @@ export const AttendanceMainView = ({ isDarkMode, lang }: { isDarkMode: boolean, 
               </svg>
               {/* Blur overlay on refresh */}
               {qrRefreshesIn === 30 && (
-                <div className="absolute inset-0 bg-[#0F172A]/85 backdrop-blur-sm flex items-center justify-center text-xs font-black text-white">
+                <div className="absolute inset-0 bg-[#050B1F]/85 backdrop-blur-sm flex items-center justify-center text-xs font-black text-white">
                   {lang === 'ar' ? 'جاري تحديث الرمز...' : 'Updating Code...'}
                 </div>
               )}

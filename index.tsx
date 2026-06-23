@@ -95,11 +95,11 @@ function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-6 font-sans relative overflow-hidden" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="min-h-screen bg-[#050B1F] flex items-center justify-center p-6 font-sans relative overflow-hidden" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         {/* Colorful background blobs for login screen */}
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] rounded-full bg-violet-600/15 blur-[120px]"></div>
-          <div className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] rounded-full bg-[#06B6D4]/15 blur-[100px]"></div>
+          <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] rounded-full bg-indigo-600/10 blur-[120px]"></div>
+          <div className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] rounded-full bg-[#06B6D4]/10 blur-[100px]"></div>
         </div>
 
         <div className="w-full max-w-md glass-panel rounded-3xl p-10 text-center space-y-6 border border-white/5 shadow-2xl animate-in fade-in duration-500 relative z-10">

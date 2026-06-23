@@ -40,6 +40,7 @@ import { PackagesView } from './views/Packages';
 import { ReportsView } from './views/Reports';
 import { EmployeesView } from './views/Employees';
 import { PayrollView } from './views/Payroll';
+import { LeavesView } from './views/Leaves';
 import { translations } from './i18n';
 import { API_BASE_URL } from './constants';
 
@@ -170,6 +171,7 @@ function App() {
     { section: t.overview.toUpperCase(), items: [
       { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
       { id: 'payroll', label: t.payroll, icon: CreditCard },
+      { id: 'leaves', label: lang === 'ar' ? 'الإجازات' : 'Leaves', icon: CalendarDays },
       { id: 'employees', label: t.employees, icon: Users },
       { id: 'attendance', label: t.attendance, icon: History },
     ]},
@@ -282,6 +284,7 @@ function App() {
           {activeTab === 'reports' && <ReportsView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'employees' && <EmployeesView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'payroll' && <PayrollView isDarkMode={isDarkMode} lang={lang} />}
+          {activeTab === 'leaves' && <LeavesView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'locations' && <AttendanceLocationView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'settings' && <SettingsView isDarkMode={isDarkMode} lang={lang} />}
         </div>

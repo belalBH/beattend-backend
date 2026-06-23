@@ -349,11 +349,11 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
                       <Calendar size={16} className={`absolute ${lang === 'ar' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-gray-400`} />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2 lg:col-span-2">
                     <label className="text-[11px] font-bold text-gray-500 uppercase">{t.email}</label>
                     <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@company.com" className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 ring-[#15385E]/10 outline-none" />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2 lg:col-span-2">
                     <label className="text-[11px] font-bold text-gray-500 uppercase">{t.phone}</label>
                     <div className="flex gap-2" dir="ltr">
                       <div className="w-20 px-3 py-3.5 bg-white border border-gray-100 rounded-xl text-sm flex items-center justify-between">+966 <ChevronDown size={14} /></div>

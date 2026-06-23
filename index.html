@@ -61,13 +61,13 @@
         font-family: 'Tajawal', sans-serif;
         margin: 0;
         padding: 0;
-        background-color: #080C14; /* Futuristic Abyssal Midnight */
-        /* Dynamic organic color blobs to shine through the glass blur */
+        background-color: #05070C; /* Premium Obsidian Slate */
+        /* Dynamic liquid glass backdrop gradient blobs */
         background-image: 
-          radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.14) 0%, transparent 45%),
-          radial-gradient(circle at 90% 10%, rgba(23, 174, 159, 0.16) 0%, transparent 45%),
-          radial-gradient(circle at 80% 80%, rgba(244, 63, 94, 0.08) 0%, transparent 45%),
-          radial-gradient(circle at 30% 80%, rgba(0, 245, 212, 0.07) 0%, transparent 40%);
+          radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.15) 0%, transparent 45%),
+          radial-gradient(circle at 85% 20%, rgba(0, 245, 212, 0.12) 0%, transparent 45%),
+          radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.10) 0%, transparent 45%),
+          radial-gradient(circle at 25% 75%, rgba(16, 185, 129, 0.08) 0%, transparent 45%);
         background-attachment: fixed;
         color: #f3f4f6;
         overflow: hidden;
@@ -77,51 +77,51 @@
       }
       /* Premium Apple dark frosted glassmorphism utility classes */
       .glass-panel {
-        background-color: #0B0F19 !important; /* Abyssal Navy fallback */
-        background: rgba(11, 15, 25, 0.7) !important; /* Abyssal Navy Glass */
-        backdrop-filter: blur(40px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        background-color: #0A0D14 !important; /* Abyssal Slate fallback */
+        background: rgba(10, 13, 20, 0.75) !important; /* Metallic Slate Glass */
+        backdrop-filter: blur(45px) saturate(220%) !important;
+        -webkit-backdrop-filter: blur(45px) saturate(220%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.07) !important;
         box-shadow: 
-          inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 
-          0 10px 40px -10px rgba(0, 0, 0, 0.5) !important;
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 
+          0 12px 40px -10px rgba(0, 0, 0, 0.6) !important;
       }
       .glass-card {
-        background-color: #121824 !important; /* Card Abyssal fallback */
-        background: rgba(18, 24, 36, 0.60) !important; /* Card Abyssal Glass */
-        backdrop-filter: blur(25px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.04) !important;
+        background-color: #111622 !important; /* Card fallback */
+        background: rgba(17, 22, 34, 0.60) !important; /* Card Glass */
+        backdrop-filter: blur(30px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
         box-shadow: 
-          inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 
-          0 15px 35px -5px rgba(0, 0, 0, 0.3) !important;
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 
+          0 15px 35px -5px rgba(0, 0, 0, 0.4) !important;
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
       .glass-card:hover {
-        background: rgba(18, 24, 36, 0.75) !important;
-        border-color: rgba(23, 174, 159, 0.35) !important;
+        background: rgba(17, 22, 34, 0.75) !important;
+        border-color: rgba(0, 229, 255, 0.35) !important;
         box-shadow: 
-          inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 
-          0 20px 40px -5px rgba(23, 174, 159, 0.15) !important;
-        transform: translateY(-2px);
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 
+          0 20px 45px -5px rgba(0, 229, 255, 0.12) !important;
+        transform: translateY(-3px);
       }
       .glass-input {
-        background: rgba(8, 12, 20, 0.65) !important; /* input background based on #080C14 */
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        background: rgba(5, 7, 12, 0.70) !important;
+        border: 1px solid rgba(255, 255, 255, 0.09) !important;
         color: #fff !important;
         backdrop-filter: blur(10px) !important;
       }
       .glass-input:focus {
-        border-color: #00F5D4 !important;
-        background: rgba(8, 12, 20, 0.8) !important;
+        border-color: #2563EB !important;
+        background: rgba(5, 7, 12, 0.85) !important;
         outline: none;
-        box-shadow: 0 0 15px rgba(0, 245, 212, 0.25) !important;
+        box-shadow: 0 0 15px rgba(37, 99, 235, 0.25) !important;
       }
       .purple-glow {
-        box-shadow: 0 0 30px rgba(0, 245, 212, 0.25);
+        box-shadow: 0 0 30px rgba(37, 99, 235, 0.25);
       }
       .purple-gradient {
-        background: linear-gradient(135deg, #17AE9F 0%, #15385E 100%);
+        background: linear-gradient(135deg, #2563EB 0%, #00F5D4 100%);
       }
       /* Custom scrollbar for dark modern SaaS */
       ::-webkit-scrollbar {
@@ -136,18 +136,18 @@
         border-radius: 999px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: rgba(23, 174, 159, 0.4);
+        background: rgba(37, 99, 235, 0.4);
       }
       /* Global Dark Mode SaaS overrides */
       .bg-white {
-        background-color: #121824 !important; /* Card Abyssal fallback: #121824 */
-        background: rgba(18, 24, 36, 0.60) !important; /* Card Abyssal Glass: rgba(18, 24, 36, 0.60) */
-        backdrop-filter: blur(25px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.04) !important;
+        background-color: #111622 !important; /* Card fallback */
+        background: rgba(17, 22, 34, 0.60) !important; /* Card Glass */
+        backdrop-filter: blur(30px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
         box-shadow: 
-          inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 
-          0 15px 35px -5px rgba(0, 0, 0, 0.3) !important;
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 
+          0 15px 35px -5px rgba(0, 0, 0, 0.4) !important;
         color: #f3f4f6 !important;
       }
       .text-gray-900 {
@@ -176,17 +176,17 @@
         background: rgba(255, 255, 255, 0.03) !important;
       }
       input[type="text"], input[type="password"], input[type="number"], input[type="date"], select, textarea {
-        background: rgba(8, 12, 20, 0.65) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        background: rgba(5, 7, 12, 0.70) !important;
+        border: 1px solid rgba(255, 255, 255, 0.09) !important;
         color: #fff !important;
         border-radius: 0.75rem !important;
         backdrop-filter: blur(10px) !important;
         transition: all 0.3s ease;
       }
       input:focus, select:focus, textarea:focus {
-        border-color: #00F5D4 !important;
-        background: rgba(8, 12, 20, 0.8) !important;
-        box-shadow: 0 0 15px rgba(0, 245, 212, 0.25) !important;
+        border-color: #2563EB !important;
+        background: rgba(5, 7, 12, 0.85) !important;
+        box-shadow: 0 0 15px rgba(37, 99, 235, 0.25) !important;
       }
       [class*="text-[#15385E]"], 
       [class*="text-[#17AE9F]"] {
@@ -195,34 +195,34 @@
       }
       [class*="bg-[#15385E]"], 
       [class*="bg-[#17AE9F]"] {
-        background: linear-gradient(135deg, #17AE9F 0%, #15385E 100%) !important;
+        background: linear-gradient(135deg, #2563EB 0%, #00F5D4 100%) !important;
         color: #ffffff !important;
         font-weight: 800 !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-shadow: 0 4px 20px rgba(23, 174, 159, 0.25) !important;
+        box-shadow: 0 4px 20px rgba(37, 99, 235, 0.25) !important;
         transition: all 0.3s ease !important;
       }
       [class*="bg-[#15385E]"]:hover, 
       [class*="bg-[#17AE9F]"]:hover {
-        background: linear-gradient(135deg, #00F5D4 0%, #17AE9F 100%) !important;
+        background: linear-gradient(135deg, #00F5D4 0%, #2563EB 100%) !important;
         box-shadow: 0 4px 25px rgba(0, 245, 212, 0.4) !important;
         transform: translateY(-1px);
       }
       [class*="border-[#17AE9F]"],
       [class*="border-[#15385E]"] {
-        border-color: rgba(23, 174, 159, 0.3) !important;
+        border-color: rgba(37, 99, 235, 0.3) !important;
       }
       [class*="bg-[#E8F7F5]"], 
       [class*="bg-[#EBF2FA]"], 
       [class*="bg-[#E6F6F4]"] {
-        background-color: rgba(23, 174, 159, 0.12) !important;
+        background-color: rgba(37, 99, 235, 0.12) !important;
         color: #00F5D4 !important;
       }
       [class*="ring-[#15385E]"] {
-        --tw-ring-color: rgba(23, 174, 159, 0.3) !important;
+        --tw-ring-color: rgba(37, 99, 235, 0.3) !important;
       }
       [class*="shadow-[#15385E]"] {
-        box-shadow: 0 10px 25px -5px rgba(23, 174, 159, 0.2) !important;
+        box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2) !important;
       }
       /* Ensure Google Maps buttons look good in RTL */
       .gm-style {

@@ -153,7 +153,7 @@ function App() {
               <button 
                 type="submit" 
                 disabled={loginLoading}
-                className="w-full py-3.5 mt-2 bg-gradient-to-r from-[#17AE9F] to-[#15385E] text-white hover:brightness-110 shadow-lg shadow-[#17AE9F]/20 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 mt-2 bg-gradient-to-r from-[#2563EB] to-[#00F5D4] text-white hover:brightness-110 shadow-lg shadow-[#2563EB]/20 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loginLoading ? (lang === 'ar' ? 'جاري التحقق...' : 'Verifying...') : (lang === 'ar' ? 'دخول النظام' : 'Enter System')}
                 {!loginLoading && <ArrowRight size={16} className={lang === 'ar' ? '' : 'rotate-180'} />}
@@ -193,7 +193,7 @@ function App() {
   ];
 
   return (
-    <div className={`flex h-screen bg-[#080C14] text-gray-100 font-sans overflow-hidden`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <div className={`flex h-screen bg-[#05070C] text-gray-100 font-sans overflow-hidden`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Sidebar */}
       <aside className={`w-64 glass-panel ${lang === 'ar' ? 'border-l' : 'border-r'} border-white/5 flex flex-col p-6 transition-all duration-300 relative z-20`}>
         <div className="flex items-center gap-3 mb-10 px-2">
@@ -213,11 +213,11 @@ function App() {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
                     activeTab === item.id 
-                    ? 'bg-gradient-to-r from-[#17AE9F]/15 to-[#15385E]/5 text-white border-[#17AE9F]/30 shadow-sm' 
+                    ? 'bg-gradient-to-r from-[#2563EB]/15 to-[#00F5D4]/5 text-white border-[#2563EB]/30 shadow-sm' 
                     : 'text-gray-400 border-transparent hover:text-gray-100 hover:bg-white/5'
                   }`}
                 >
-                  <item.icon size={18} className={activeTab === item.id ? 'text-[#00F5D4] drop-shadow-[0_0_6px_rgba(0,245,212,0.4)]' : ''} />
+                  <item.icon size={18} className={activeTab === item.id ? 'text-[#00F5D4] drop-shadow-[0_0_8px_rgba(0,245,212,0.5)]' : ''} />
                   <span>{item.label}</span>
                 </button>
               ))}
@@ -244,7 +244,7 @@ function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden bg-transparent">
         {/* Top Navigation Bar */}
-        <header className="h-20 bg-[#0B0F19]/70 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between px-8 shrink-0 relative z-10">
+        <header className="h-20 bg-[#0A0D14]/75 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between px-8 shrink-0 relative z-10">
           <div className="flex items-center gap-4 w-96">
             <div className="relative w-full">
               <Search className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-2.5 text-gray-400`} size={16} />
@@ -310,7 +310,7 @@ function App() {
             className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#17AE9F]/10 text-[#00F5D4] flex items-center justify-center group-hover:bg-[#17AE9F]/20 transition-all shadow-[0_0_8px_rgba(23,174,159,0.1)]">
+              <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#00F5D4] flex items-center justify-center group-hover:bg-[#2563EB]/20 transition-all shadow-[0_0_8px_rgba(37,99,235,0.15)]">
                 <UserPlus size={16} />
               </div>
               <span className="text-xs font-bold">{lang === 'ar' ? 'إضافة موظف جديد' : 'Add Employee'}</span>
@@ -323,7 +323,7 @@ function App() {
             className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#17AE9F]/10 text-[#00F5D4] flex items-center justify-center group-hover:bg-[#17AE9F]/20 transition-all shadow-[0_0_8px_rgba(23,174,159,0.1)]">
+              <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#00F5D4] flex items-center justify-center group-hover:bg-[#2563EB]/20 transition-all shadow-[0_0_8px_rgba(37,99,235,0.15)]">
                 <Globe size={16} />
               </div>
               <span className="text-xs font-bold">{lang === 'ar' ? 'تسجيل شركة جديدة' : 'Add Company'}</span>
@@ -336,7 +336,7 @@ function App() {
             className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#17AE9F]/10 text-[#00F5D4] flex items-center justify-center group-hover:bg-[#17AE9F]/20 transition-all shadow-[0_0_8px_rgba(23,174,159,0.1)]">
+              <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#00F5D4] flex items-center justify-center group-hover:bg-[#2563EB]/20 transition-all shadow-[0_0_8px_rgba(37,99,235,0.15)]">
                 <MapPinned size={16} />
               </div>
               <span className="text-xs font-bold">{lang === 'ar' ? 'ضبط موقع الفرع' : 'Set Branch Location'}</span>

@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { 
   Users, 
   LayoutDashboard, 
+  Menu,
   Settings,
   LogOut,
   ShieldCheck,
@@ -59,6 +60,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
 
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -200,13 +203,45 @@ function App() {
 
   return (
     <div className="flex h-screen bg-transparent text-gray-100 font-sans overflow-hidden" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Sidebar Backdrop Overlay */}
+      {isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-all duration-300"
+        />
+      )}
+
+      {/* Quick Actions Backdrop Overlay */}
+      {isQuickActionsOpen && (
+        <div 
+          onClick={() => setIsQuickActionsOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 xl:hidden transition-all duration-300"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`w-64 glass-panel my-6 ${lang === 'ar' ? 'mr-6 border-l' : 'ml-6 border-r'} border-white/5 flex flex-col p-6 transition-all duration-300 relative z-20 rounded-3xl shadow-2xl`}>
-        <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center shadow-[inset_1px_1px_0px_rgba(255,255,255,0.05),4px_4px_10px_rgba(0,0,0,0.3)]">
-            <img src="/logo.jpg" className="w-full h-full object-cover opacity-85" />
+      <aside className={`
+        fixed inset-y-0 z-50 flex flex-col p-6 w-72 bg-[#0B1633]/95 backdrop-blur-xl transition-transform duration-300 ease-in-out border-white/5 shadow-2xl h-full
+        lg:static lg:h-auto lg:my-6 lg:w-64 lg:bg-transparent lg:border-white/5 lg:translate-x-0 lg:rounded-3xl lg:shadow-2xl
+        ${lang === 'ar' ? 'right-0 border-l lg:mr-6 lg:border-l' : 'left-0 border-r lg:ml-6 lg:border-r'}
+        ${isSidebarOpen ? 'translate-x-0' : (lang === 'ar' ? 'translate-x-full lg:translate-x-0' : '-translate-x-full lg:translate-x-0')}
+      `}>
+        <div className="flex items-center justify-between mb-10 px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center shadow-[inset_1px_1px_0px_rgba(255,255,255,0.05),4px_4px_10px_rgba(0,0,0,0.3)]">
+              <img src="/logo.jpg" className="w-full h-full object-cover opacity-85" />
+            </div>
+            <span className="text-xl font-extrabold tracking-tight text-white">be <span className="text-[#06B6D4] drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]">attend</span></span>
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-white">be <span className="text-[#06B6D4] drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]">attend</span></span>
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white"
+          >
+            <span className="sr-only">Close sidebar</span>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         <nav className="flex-1 space-y-8 overflow-y-auto no-scrollbar">
@@ -216,7 +251,10 @@ function App() {
               {section.items.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsSidebarOpen(false);
+                  }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
                     activeTab === item.id 
                     ? 'bg-gradient-to-r from-[#7C3AED]/20 to-[#06B6D4]/10 text-white border-[#7C3AED]/35 shadow-[0_4px_15px_rgba(124,58,237,0.15),inset_0_1px_0px_rgba(255,255,255,0.15)]' 
@@ -232,7 +270,7 @@ function App() {
         </nav>
 
         <div className="pt-6 mt-6 border-t border-white/5 space-y-4">
-          <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-300 font-semibold hover:text-white hover:bg-white/5 rounded-xl border border-transparent transition-all">
+          <button onClick={() => { setLang(lang === 'ar' ? 'en' : 'ar'); setIsSidebarOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-300 font-semibold hover:text-white hover:bg-white/5 rounded-xl border border-transparent transition-all">
             <Languages size={18} />
             <span>{lang === 'ar' ? 'English' : 'العربية'}</span>
           </button>
@@ -250,32 +288,48 @@ function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden bg-transparent">
         {/* Top Navigation Bar */}
-        <header className="h-20 glass-panel mt-6 mx-6 flex items-center justify-between px-8 shrink-0 relative z-10 rounded-3xl shadow-2xl">
-          <div className="flex items-center gap-4 w-96">
+        <header className="h-20 glass-panel mt-4 mx-4 lg:mt-6 lg:mx-6 flex items-center justify-between px-4 lg:px-8 shrink-0 relative z-10 rounded-3xl shadow-2xl">
+          <div className="flex items-center gap-3 flex-1 max-w-[200px] sm:max-w-xs md:max-w-md lg:w-96">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-350 hover:text-white hover:bg-white/10 transition-all shadow-md shrink-0"
+              title={lang === 'ar' ? 'القائمة' : 'Menu'}
+            >
+              <Menu size={18} />
+            </button>
             <div className="relative w-full">
               <Search className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-2.5 text-slate-400`} size={16} />
               <input 
                 type="text" 
-                placeholder={lang === 'ar' ? 'البحث الذكي عن الشركات والموظفين...' : 'Smart search companies, employees...'}
+                placeholder={lang === 'ar' ? 'البحث الذكي...' : 'Smart search...'}
                 className={`w-full py-2 text-xs font-bold rounded-xl glass-input transition-all ${lang === 'ar' ? 'pl-4 pr-10 text-right' : 'pr-4 pl-10 text-left'}`}
               />
             </div>
           </div>
           
-          <div className="flex items-center gap-6">
-            <button className="relative p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all shadow-lg">
+          <div className="flex items-center gap-3 sm:gap-6">
+            {/* Quick Actions toggle button for screens < xl */}
+            <button 
+              onClick={() => setIsQuickActionsOpen(true)}
+              className="xl:hidden p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-350 hover:text-white hover:bg-white/10 transition-all shadow-lg shrink-0"
+              title={lang === 'ar' ? 'الإجراءات السريعة' : 'Quick Actions'}
+            >
+              <Zap size={18} className="text-[#06B6D4]" />
+            </button>
+
+            <button className="relative p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-350 hover:text-white hover:bg-white/10 transition-all shadow-lg">
               <Bell size={18} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
             </button>
             
-            <div className="h-8 w-px bg-white/10"></div>
+            <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
             
             <div className="flex items-center gap-3.5">
-               <div className={lang === 'ar' ? 'text-right' : 'text-left'}>
+               <div className={`hidden sm:block ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
                   <p className="text-xs font-bold text-white">Scarlette !</p>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{lang === 'ar' ? 'مدير النظام' : 'SYSTEM ADMIN'}</p>
                </div>
-               <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#7C3AED]/40 shadow-[0_0_10px_rgba(124,58,237,0.3)]">
+               <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#7C3AED]/40 shadow-[0_0_10px_rgba(124,58,237,0.3)] shrink-0">
                  <img src="https://ui-avatars.com/api/?name=Scarlette&background=7C3AED&color=fff" className="w-full h-full object-cover" />
                </div>
             </div>
@@ -283,7 +337,7 @@ function App() {
         </header>
 
         {/* Inner Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 bg-transparent">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 bg-transparent">
           {activeTab === 'dashboard' && <DashboardView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'companies' && <CompaniesView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'subscriptions' && <SubscriptionsView isDarkMode={isDarkMode} lang={lang} />}
@@ -299,17 +353,32 @@ function App() {
       </main>
 
       {/* Right-Side Quick Actions Panel */}
-      <aside className={`w-80 glass-panel my-6 ${lang === 'ar' ? 'ml-6' : 'mr-6'} p-6 flex flex-col gap-6 overflow-y-auto relative z-10 shrink-0 rounded-3xl shadow-2xl`}>
+      <aside className={`
+        fixed inset-y-0 z-50 flex flex-col gap-6 p-6 w-80 bg-[#0B1633]/95 backdrop-blur-xl transition-transform duration-300 ease-in-out border-white/5 shadow-2xl h-full overflow-y-auto
+        xl:static xl:h-auto xl:w-80 xl:bg-transparent xl:border-white/5 xl:translate-x-0 xl:rounded-3xl xl:shadow-2xl
+        ${lang === 'ar' ? 'left-0 border-r xl:ml-6 lg:border-r' : 'right-0 border-l xl:mr-6 lg:border-l'}
+        ${isQuickActionsOpen ? 'translate-x-0' : (lang === 'ar' ? '-translate-x-full xl:translate-x-0' : 'translate-x-full xl:translate-x-0')}
+      `}>
         {activeTab === 'payroll' ? (
           <>
             {/* 1. Quick Actions */}
-            <div>
-              <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">
-                {lang === 'ar' ? 'إجراءات سريعة' : 'Quick Actions'}
-              </h3>
-              <p className="text-[10px] text-slate-400">
-                {lang === 'ar' ? 'التحكم السريع في مسيرات الرواتب' : 'Manage payroll runs'}
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">
+                  {lang === 'ar' ? 'إجراءات سريعة' : 'Quick Actions'}
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  {lang === 'ar' ? 'التحكم السريع في مسيرات الرواتب' : 'Manage payroll runs'}
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsQuickActionsOpen(false)}
+                className="xl:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white shrink-0"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -317,6 +386,7 @@ function App() {
                 onClick={() => {
                   const event = new CustomEvent('payroll-action', { detail: 'calculate' });
                   window.dispatchEvent(event);
+                  setIsQuickActionsOpen(false);
                 }}
                 className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
               >
@@ -330,6 +400,7 @@ function App() {
                 onClick={() => {
                   const event = new CustomEvent('payroll-action', { detail: 'create' });
                   window.dispatchEvent(event);
+                  setIsQuickActionsOpen(false);
                 }}
                 className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
               >
@@ -343,6 +414,7 @@ function App() {
                 onClick={() => {
                   const event = new CustomEvent('payroll-action', { detail: 'export-bank' });
                   window.dispatchEvent(event);
+                  setIsQuickActionsOpen(false);
                 }}
                 className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
               >
@@ -356,6 +428,7 @@ function App() {
                 onClick={() => {
                   const event = new CustomEvent('payroll-action', { detail: 'import-attendance' });
                   window.dispatchEvent(event);
+                  setIsQuickActionsOpen(false);
                 }}
                 className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
               >
@@ -369,6 +442,7 @@ function App() {
                 onClick={() => {
                   const event = new CustomEvent('payroll-action', { detail: 'settings' });
                   window.dispatchEvent(event);
+                  setIsQuickActionsOpen(false);
                 }}
                 className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
               >
@@ -382,6 +456,7 @@ function App() {
                 onClick={() => {
                   const event = new CustomEvent('payroll-action', { detail: 'report' });
                   window.dispatchEvent(event);
+                  setIsQuickActionsOpen(false);
                 }}
                 className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all text-center space-y-2 group shadow-md"
               >
@@ -483,19 +558,32 @@ function App() {
           </>
         ) : (
           <>
-            <div>
-              <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">
-                {lang === 'ar' ? 'الإجراءات السريعة' : 'Quick Actions'}
-              </h3>
-              <p className="text-[10px] text-slate-400">
-                {lang === 'ar' ? 'التحكم السريع في لوحة النظام' : 'Manage system operations'}
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">
+                  {lang === 'ar' ? 'الإجراءات السريعة' : 'Quick Actions'}
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  {lang === 'ar' ? 'التحكم السريع في لوحة النظام' : 'Manage system operations'}
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsQuickActionsOpen(false)}
+                className="xl:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white shrink-0"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
 
             {/* Action Buttons */}
             <div className="grid grid-cols-1 gap-2.5">
               <button 
-                onClick={() => setActiveTab('employees')} 
+                onClick={() => {
+                  setActiveTab('employees');
+                  setIsQuickActionsOpen(false);
+                }} 
                 className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#7C3AED]/30 transition-all group shadow-md"
               >
                 <div className="flex items-center gap-3">
@@ -508,7 +596,10 @@ function App() {
               </button>
 
               <button 
-                onClick={() => setActiveTab('companies')} 
+                onClick={() => {
+                  setActiveTab('companies');
+                  setIsQuickActionsOpen(false);
+                }} 
                 className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#06B6D4]/30 transition-all group shadow-md"
               >
                 <div className="flex items-center gap-3">
@@ -521,7 +612,10 @@ function App() {
               </button>
 
               <button 
-                onClick={() => setActiveTab('locations')} 
+                onClick={() => {
+                  setActiveTab('locations');
+                  setIsQuickActionsOpen(false);
+                }} 
                 className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-[#7C3AED]/30 transition-all group shadow-md"
               >
                 <div className="flex items-center gap-3">

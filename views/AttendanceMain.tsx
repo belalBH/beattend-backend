@@ -90,9 +90,24 @@ export const AttendanceMainView = ({ isDarkMode, lang }: { isDarkMode: boolean, 
         attData = json.data || [];
       }
 
+      const formatTime = (isoString) => {
+        if (!isoString) return '';
+        if (isoString.includes(':') && !isoString.includes('T')) return isoString;
+        try {
+          const date = new Date(isoString);
+          if (isNaN(date.getTime())) return isoString;
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          return `${hours}:${minutes}`;
+        } catch (_) {
+          return isoString;
+        }
+      };
+
       // Map raw API records to detailed UI objects or fall back to mock data
       const mapped = attData.map((r: any) => {
         const emp = empData.find(e => e.id === r.employee_id);
+        const checkInFormatted = formatTime(r.clock_in || r.clock_in_time);
         return {
           id: r.id || String(Math.random()),
           employee_id: r.employee_id,
@@ -100,12 +115,12 @@ export const AttendanceMainView = ({ isDarkMode, lang }: { isDarkMode: boolean, 
           empTitle: emp ? emp.title : '',
           empAvatar: emp ? emp.avatar : 'https://ui-avatars.com/api/?name=User',
           date: r.date,
-          clock_in_time: r.clock_in || r.clock_in_time || '08:00',
-          clock_out_time: r.clock_out || r.clock_out_time || '',
-          working_hours: r.working_hours || 0,
-          status: (r.clock_in_time && r.clock_in_time > '08:15') ? 'late' : 'regular',
+          clock_in_time: checkInFormatted || '08:00',
+          clock_out_time: formatTime(r.clock_out || r.clock_out_time) || '',
+          working_hours: r.working_hours ? parseFloat(r.working_hours.toFixed(1)) : 0,
+          status: (checkInFormatted && checkInFormatted > '08:15') ? 'late' : 'regular',
           method: r.method || 'biometric',
-          latenessMinutes: r.latenessMinutes || ((r.clock_in_time && r.clock_in_time > '08:15') ? 25 : 0),
+          latenessMinutes: r.latenessMinutes || ((checkInFormatted && checkInFormatted > '08:15') ? 25 : 0),
           overtimeHours: r.overtimeHours || 0
         };
       });

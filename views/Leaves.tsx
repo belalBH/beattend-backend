@@ -76,72 +76,10 @@ export const LeavesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang: 'a
   const [reason, setReason] = useState<string>('');
 
   // Master leaves state
-  const [requests, setRequests] = useState<LeaveRequest[]>([
-    {
-      id: 1,
-      empId: 1,
-      empName: 'أحمد العتيبي',
-      empTitle: 'مطور برمجيات أول',
-      empAvatar: 'https://ui-avatars.com/api/?name=%D8%A3%D8%AD%D9%85%D8%AF+%D8%A7%D9%84%D8%B9%D8%AA%D9%8A%D8%A8%D9%8A&background=7C3AED&color=fff',
-      type: 'annual',
-      startDate: '2026-07-01',
-      endDate: '2026-07-15',
-      duration: 14,
-      reason: 'الإجازة السنوية المعتادة لقضاء وقت مع العائلة',
-      status: 'approved',
-      requestDate: '2026-06-20'
-    },
-    {
-      id: 2,
-      empId: 2,
-      empName: 'سارة الغامدي',
-      empTitle: 'مصممة واجهات أولى',
-      empAvatar: 'https://ui-avatars.com/api/?name=%D8%B3%D8%A7%D8%B1%D8%A9+%D8%A7%D9%84%D8%BA%D8%A7%D9%85%D8%AF%D9%8A&background=10B981&color=fff',
-      type: 'sick',
-      startDate: '2026-06-10',
-      endDate: '2026-06-12',
-      duration: 2,
-      reason: 'موعد طبي طارئ مع راحة طبية موثقة',
-      status: 'approved',
-      requestDate: '2026-06-09'
-    },
-    {
-      id: 3,
-      empId: 3,
-      empName: 'خالد الدوسري',
-      empTitle: 'مهندس جودة برمجيات',
-      empAvatar: 'https://ui-avatars.com/api/?name=%D8%AE%D8%A7%D9%84%D8%AF+%D8%A7%D9%84%D8%AF%D9%88%D8%B3%D8%B1%D9%8A&background=3B82F6&color=fff',
-      type: 'annual',
-      startDate: '2026-08-01',
-      endDate: '2026-08-10',
-      duration: 9,
-      reason: 'السفر لقضاء العطلة الصيفية',
-      status: 'pending',
-      requestDate: '2026-06-22'
-    },
-    {
-      id: 4,
-      empId: 4,
-      empName: 'أسماء الشمري',
-      empTitle: 'مديرة الموارد البشرية',
-      empAvatar: 'https://ui-avatars.com/api/?name=%D8%A3%D8%B3%D9%85%D8%A7%D8%A1+%D8%A7%D9%84%D8%B4%D9%85%D8%B1%D9%8A&background=F59E0B&color=fff',
-      type: 'emergency',
-      startDate: '2026-06-25',
-      endDate: '2026-06-26',
-      duration: 1,
-      reason: 'ظروف عائلية طارئة ومستعجلة',
-      status: 'pending',
-      requestDate: '2026-06-23'
-    }
-  ]);
+  const [requests, setRequests] = useState<LeaveRequest[]>([]);
 
   // Master leaves balance
-  const [balances, setBalances] = useState<LeaveBalance[]>([
-    { empId: 1, empNo: 'EMP-1001', empName: 'أحمد العتيبي', empTitle: 'مطور برمجيات أول', empAvatar: 'https://ui-avatars.com/api/?name=%D8%A3%D8%AD%D9%85%D8%AF+%D8%A7%D9%84%D8%B9%D8%AA%D9%8A%D8%A8%D9%8A&background=7C3AED&color=fff', annualTotal: 30, annualUsed: 14, sickUsed: 0, emergencyUsed: 0 },
-    { empId: 2, empNo: 'EMP-1002', empName: 'سارة الغامدي', empTitle: 'مصممة واجهات أولى', empAvatar: 'https://ui-avatars.com/api/?name=%D8%B3%D8%A7%D8%B1%D8%A9+%D8%A7%D9%84%D8%BA%D8%A7%D9%85%D8%AF%D9%8A&background=10B981&color=fff', annualTotal: 30, annualUsed: 0, sickUsed: 2, emergencyUsed: 0 },
-    { empId: 3, empNo: 'EMP-1003', empName: 'خالد الدوسري', empTitle: 'مهندس جودة برمجيات', empAvatar: 'https://ui-avatars.com/api/?name=%D8%AE%D8%A7%D9%84%D8%AF+%D8%A7%D9%84%D8%AF%D9%88%D8%B3%D8%B1%D9%8A&background=3B82F6&color=fff', annualTotal: 30, annualUsed: 0, sickUsed: 0, emergencyUsed: 0 },
-    { empId: 4, empNo: 'EMP-1004', empName: 'أسماء الشمري', empTitle: 'مديرة الموارد البشرية', empAvatar: 'https://ui-avatars.com/api/?name=%D8%A3%D8%B3%D9%85%D8%A7%D8%A1+%D8%A7%D9%84%D8%B4%D9%85%D8%B1%D9%8A&background=F59E0B&color=fff', annualTotal: 30, annualUsed: 0, sickUsed: 0, emergencyUsed: 1 }
-  ]);
+  const [balances, setBalances] = useState<LeaveBalance[]>([]);
 
   // Master leaves types
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([
@@ -157,6 +95,46 @@ export const LeavesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang: 'a
   const [newTypeDays, setNewTypeDays] = useState('30');
   const [newTypePaid, setNewTypePaid] = useState(true);
 
+  const fetchLeavesData = async (currentEmployees = employees) => {
+    try {
+      const resRequests = await fetch(`${API_BASE_URL}/api/leave`);
+      if (resRequests.ok) {
+        const data = await resRequests.json();
+        if (data.success) {
+          setRequests(data.data);
+        }
+      }
+
+      const resBalances = await fetch(`${API_BASE_URL}/api/leave/balance`);
+      if (resBalances.ok) {
+        const data = await resBalances.json();
+        if (data.success) {
+          const apiBalances: LeaveBalance[] = data.data;
+          // Merge with any missing employees
+          const merged = [...apiBalances];
+          currentEmployees.forEach((e: Employee) => {
+            if (!merged.find(b => b.empId === e.id)) {
+              merged.push({
+                empId: e.id,
+                empNo: e.empNo || `EMP-${1000 + e.id}`,
+                empName: e.name,
+                empTitle: e.title,
+                empAvatar: e.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(e.name)}&background=7C3AED&color=fff`,
+                annualTotal: 30,
+                annualUsed: 0,
+                sickUsed: 0,
+                emergencyUsed: 0
+              });
+            }
+          });
+          setBalances(merged);
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching leaves data:", e);
+    }
+  };
+
   const fetchEmployees = async () => {
     setLoading(true);
     try {
@@ -164,24 +142,7 @@ export const LeavesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang: 'a
       if (res.ok) {
         const data = await res.json();
         setEmployees(data);
-        // Map any missing balances dynamically if they aren't seeded
-        const updatedBalances = [...balances];
-        data.forEach((e: Employee) => {
-          if (!updatedBalances.find(b => b.empId === e.id)) {
-            updatedBalances.push({
-              empId: e.id,
-              empNo: e.empNo || `EMP-${1000 + e.id}`,
-              empName: e.name,
-              empTitle: e.title,
-              empAvatar: e.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(e.name)}&background=7C3AED&color=fff`,
-              annualTotal: 30,
-              annualUsed: 0,
-              sickUsed: 0,
-              emergencyUsed: 0
-            });
-          }
-        });
-        setBalances(updatedBalances);
+        await fetchLeavesData(data);
       }
     } catch (e) {
       console.error("Error fetching employees for leaves:", e);
@@ -200,7 +161,7 @@ export const LeavesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang: 'a
   };
 
   // Submit new leave request
-  const handleSubmitRequest = (e: React.FormEvent) => {
+  const handleSubmitRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEmpId || !startDate || !endDate) return;
 
@@ -217,62 +178,73 @@ export const LeavesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang: 'a
       return;
     }
 
-    const newRequest: LeaveRequest = {
-      id: requests.length + 1,
-      empId: emp.id,
-      empName: emp.name,
-      empTitle: emp.title,
-      empAvatar: emp.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=7C3AED&color=fff`,
-      type: leaveType,
-      startDate,
-      endDate,
-      duration: daysDiff,
-      reason,
-      status: 'pending',
-      requestDate: new Date().toISOString().split('T')[0]
-    };
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/leave/request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          employee_id: emp.id,
+          type: leaveType,
+          startDate,
+          endDate,
+          reason,
+        }),
+      });
 
-    setRequests([newRequest, ...requests]);
-    setSelectedEmpId('');
-    setStartDate('');
-    setEndDate('');
-    setReason('');
-    triggerAlert(lang === 'ar' ? 'تم تقديم طلب الإجازة بنجاح وهو تحت المراجعة' : 'Leave request submitted successfully and is under review');
+      if (response.ok) {
+        setSelectedEmpId('');
+        setStartDate('');
+        setEndDate('');
+        setReason('');
+        await fetchLeavesData();
+        triggerAlert(lang === 'ar' ? 'تم تقديم طلب الإجازة بنجاح وهو تحت المراجعة' : 'Leave request submitted successfully and is under review');
+      } else {
+        const err = await response.json();
+        alert(err.message || 'Error submitting request');
+      }
+    } catch (e) {
+      console.error('Error submitting leave request:', e);
+    }
   };
 
   // Approve leave request
-  const handleApprove = (id: number) => {
-    setRequests(prev => prev.map(req => {
-      if (req.id === id) {
-        // Update balance
-        setBalances(bPrev => bPrev.map(b => {
-          if (b.empId === req.empId) {
-            if (req.type === 'annual') {
-              return { ...b, annualUsed: b.annualUsed + req.duration };
-            } else if (req.type === 'sick') {
-              return { ...b, sickUsed: b.sickUsed + req.duration };
-            } else if (req.type === 'emergency') {
-              return { ...b, emergencyUsed: b.emergencyUsed + req.duration };
-            }
-          }
-          return b;
-        }));
-        return { ...req, status: 'approved' };
+  const handleApprove = async (id: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/leave/${id}/approve`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        await fetchLeavesData();
+        triggerAlert(lang === 'ar' ? 'تم اعتماد طلب الإجازة بنجاح خصمه من الرصيد' : 'Leave request approved successfully and deducted from balance');
+      } else {
+        const err = await response.json();
+        alert(err.message || 'Error approving request');
       }
-      return req;
-    }));
-    triggerAlert(lang === 'ar' ? 'تم اعتماد طلب الإجازة بنجاح خصمه من الرصيد' : 'Leave request approved successfully and deducted from balance');
+    } catch (e) {
+      console.error('Error approving leave request:', e);
+    }
   };
 
   // Reject leave request
-  const handleReject = (id: number) => {
-    setRequests(prev => prev.map(req => {
-      if (req.id === id) {
-        return { ...req, status: 'rejected' };
+  const handleReject = async (id: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/leave/${id}/reject`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        await fetchLeavesData();
+        triggerAlert(lang === 'ar' ? 'تم رفض طلب الإجازة بنجاح' : 'Leave request rejected successfully');
+      } else {
+        const err = await response.json();
+        alert(err.message || 'Error rejecting request');
       }
-      return req;
-    }));
-    triggerAlert(lang === 'ar' ? 'تم رفض طلب الإجازة بنجاح' : 'Leave request rejected successfully');
+    } catch (e) {
+      console.error('Error rejecting leave request:', e);
+    }
   };
 
   // Add new leave type

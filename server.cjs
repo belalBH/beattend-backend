@@ -235,6 +235,60 @@ async function seedDatabaseIfEmpty() {
       console.log('[Firebase] 👍 Firestore already populated.');
     }
 
+    // Seed leave requests if empty
+    const leaveRequests = await getCollection('leave_requests');
+    if (leaveRequests.length === 0) {
+      console.log('[Firebase] 🍂 Seeding initial leave requests...');
+      const seedLeaves = [
+        {
+          id: 1,
+          empId: 1,
+          empName: 'أحمد العتيبي',
+          empTitle: 'مطور برمجيات أول',
+          empAvatar: 'https://ui-avatars.com/api/?name=%D8%A3%D8%AD%D9%85%D8%AF+%D8%A7%D9%84%D8%B9%D8%AA%D9%8A%D8%A8%D9%8A&background=7C3AED&color=fff',
+          type: 'annual',
+          startDate: '2026-07-01',
+          endDate: '2026-07-15',
+          duration: 15,
+          reason: 'الإجازة السنوية المعتادة لقضاء وقت مع العائلة',
+          status: 'approved',
+          requestDate: '2026-06-20'
+        },
+        {
+          id: 2,
+          empId: 2,
+          empName: 'سارة القحطاني',
+          empTitle: 'أخصائية موارد بشرية',
+          empAvatar: 'https://ui-avatars.com/api/?name=%D8%B3%D8%A7%D8%B1%D8%A9+%D9%84%D9%82%D8%AD%D8%B7%D8%A7%D9%86%D9%8A&background=10B981&color=fff',
+          type: 'sick',
+          startDate: '2026-06-10',
+          endDate: '2026-06-12',
+          duration: 3,
+          reason: 'موعد طبي طارئ مع راحة طبية موثقة',
+          status: 'approved',
+          requestDate: '2026-06-09'
+        },
+        {
+          id: 3,
+          empId: 1,
+          empName: 'أحمد العتيبي',
+          empTitle: 'مطور برمجيات أول',
+          empAvatar: 'https://ui-avatars.com/api/?name=%D8%A3%D8%AD%D9%85%D8%AF+%D8%A7%D9%84%D8%B9%D8%AA%D9%8A%D8%A8%D9%8A&background=7C3AED&color=fff',
+          type: 'annual',
+          startDate: '2026-08-01',
+          endDate: '2026-08-10',
+          duration: 10,
+          reason: 'السفر لقضاء العطلة الصيفية',
+          status: 'pending',
+          requestDate: '2026-06-22'
+        }
+      ];
+      for (const leave of seedLeaves) {
+        await saveDocument('leave_requests', leave.id.toString(), leave);
+      }
+      console.log('[Firebase] 🍂 Leave requests seeded.');
+    }
+
     // Seed admin credentials if missing
     const adminSettings = await getCollection('admin_settings');
     const hasAdmin = adminSettings.find(a => a.id === 'credentials');
@@ -351,6 +405,7 @@ app.post('/api/login', async (req, res) => {
         department: employee.department || 'عام',
         position: employee.title || 'موظف',
         companyId: employee.companyId,
+        allowedLocations: employee.allowedLocations || [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -768,8 +823,214 @@ app.delete('/api/packages/:id', async (req, res) => {
 });
 
 
+// Leave Requests Endpoints
+app.get('/api/leave', async (req, res) => {
+  const { employee_id, empId } = req.query;
+  try {
+    const leaves = await getCollection('leave_requests');
+    let filtered = leaves;
+    const targetId = employee_id || empId;
+    if (targetId) {
+      filtered = filtered.filter(l => l.empId === parseInt(targetId));
+    }
+    // Sort so most recent requests are first
+    filtered.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+    res.json({ success: true, data: filtered });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
+// Alias for GET /api/leave/requests
+app.get('/api/leave/requests', async (req, res) => {
+  const { employee_id, empId } = req.query;
+  try {
+    const leaves = await getCollection('leave_requests');
+    let filtered = leaves;
+    const targetId = employee_id || empId;
+    if (targetId) {
+      filtered = filtered.filter(l => l.empId === parseInt(targetId));
+    }
+    filtered.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+    res.json({ success: true, data: filtered });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
-app.listen(PORT, () => {
-  console.log(`🚀 Shared Backend API Server running at http://localhost:${PORT}`);
+// POST /api/leave/request or /api/leave
+app.post(['/api/leave/request', '/api/leave'], async (req, res) => {
+  const { employee_id, empId, type, startDate, endDate, reason, delegate } = req.body;
+  const targetEmpId = parseInt(employee_id || empId);
+
+  if (!targetEmpId || !type || !startDate || !endDate) {
+    return res.status(400).json({ success: false, message: 'معرف الموظف، نوع الإجازة وتاريخ البداية والنهاية مطلوبة' });
+  }
+
+  try {
+    // Resolve employee details
+    const employees = await getCollection('employees');
+    const employee = employees.find(e => parseInt(e.id) === targetEmpId);
+    if (!employee) {
+      return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24)) + 1;
+
+    if (duration <= 0) {
+      return res.status(400).json({ success: false, message: 'تاريخ النهاية يجب أن يكون بعد تاريخ البداية' });
+    }
+
+    const leaves = await getCollection('leave_requests');
+    const newId = leaves.length > 0 ? Math.max(...leaves.map(l => parseInt(l.id) || 0)) + 1 : 1;
+
+    const newLeave = {
+      id: newId,
+      empId: targetEmpId,
+      empName: employee.name || 'موظف',
+      empTitle: employee.title || 'موظف',
+      empAvatar: employee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name || 'E')}&background=7C3AED&color=fff`,
+      type,
+      startDate,
+      endDate,
+      duration,
+      reason: reason || '',
+      delegate: delegate || '',
+      status: 'pending',
+      requestDate: new Date().toISOString().split('T')[0]
+    };
+
+    await saveDocument('leave_requests', newId.toString(), newLeave);
+
+    res.json({
+      success: true,
+      message: 'تم تقديم طلب الإجازة بنجاح',
+      data: newLeave
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/leave/:id/approve
+app.post('/api/leave/:id/approve', async (req, res) => {
+  const idStr = req.params.id;
+  try {
+    const leaves = await getCollection('leave_requests');
+    const match = leaves.find(l => l.id.toString() === idStr);
+    if (!match) {
+      return res.status(404).json({ success: false, message: 'طلب الإجازة غير موجود' });
+    }
+
+    match.status = 'approved';
+    await saveDocument('leave_requests', idStr, match);
+
+    res.json({
+      success: true,
+      message: 'تم اعتماد طلب الإجازة بنجاح',
+      data: match
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/leave/:id/reject
+app.post('/api/leave/:id/reject', async (req, res) => {
+  const idStr = req.params.id;
+  try {
+    const leaves = await getCollection('leave_requests');
+    const match = leaves.find(l => l.id.toString() === idStr);
+    if (!match) {
+      return res.status(404).json({ success: false, message: 'طلب الإجازة غير موجود' });
+    }
+
+    match.status = 'rejected';
+    await saveDocument('leave_requests', idStr, match);
+
+    res.json({
+      success: true,
+      message: 'تم رفض طلب الإجازة بنجاح',
+      data: match
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// PUT /api/leave/:id
+app.put('/api/leave/:id', async (req, res) => {
+  const idStr = req.params.id;
+  try {
+    const leaves = await getCollection('leave_requests');
+    const match = leaves.find(l => l.id.toString() === idStr);
+    if (!match) {
+      return res.status(404).json({ success: false, message: 'طلب الإجازة غير موجود' });
+    }
+
+    const updated = { ...match, ...req.body };
+    await saveDocument('leave_requests', idStr, updated);
+
+    res.json({
+      success: true,
+      message: 'تم تحديث طلب الإجازة بنجاح',
+      data: updated
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// GET /api/leave/balance
+app.get('/api/leave/balance', async (req, res) => {
+  try {
+    const employees = await getCollection('employees');
+    const leaves = await getCollection('leave_requests');
+
+    const balances = employees.map(emp => {
+      const empId = parseInt(emp.id);
+      const empLeaves = leaves.filter(l => l.empId === empId && l.status === 'approved');
+      
+      const annualUsed = empLeaves.filter(l => l.type === 'annual').reduce((sum, l) => sum + (parseInt(l.duration) || 0), 0);
+      const sickUsed = empLeaves.filter(l => l.type === 'sick').reduce((sum, l) => sum + (parseInt(l.duration) || 0), 0);
+      const emergencyUsed = empLeaves.filter(l => l.type === 'emergency').reduce((sum, l) => sum + (parseInt(l.duration) || 0), 0);
+
+      return {
+        empId,
+        empNo: emp.empNo || `EMP-${empId}`,
+        empName: emp.name,
+        empTitle: emp.title || 'موظف',
+        empAvatar: emp.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=7C3AED&color=fff`,
+        annualTotal: 30,
+        annualUsed,
+        sickUsed,
+        emergencyUsed
+      };
+    });
+
+    res.json({ success: true, data: balances });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// GET /api/employees/:id
+app.get('/api/employees/:id', async (req, res) => {
+  const idStr = req.params.id;
+  try {
+    const employees = await getCollection('employees');
+    const employee = employees.find(e => e.id.toString() === idStr);
+    if (!employee) {
+      return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+    }
+    res.json({ success: true, data: employee });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Shared Backend API Server running at http://0.0.0.0:${PORT}`);
 });

@@ -94,6 +94,9 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('1');
 
+  const [locations, setLocations] = useState<any[]>([]);
+  const [allowedLocations, setAllowedLocations] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
@@ -111,6 +114,21 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
     };
     fetchCompanies();
   }, [employee]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/office-locations`);
+        if (res.ok) {
+          const data = await res.json();
+          setLocations(data);
+        }
+      } catch (e) {
+        console.error("Error loading locations in employee form:", e);
+      }
+    };
+    fetchLocations();
+  }, []);
 
   // Load existing employee data if editing
   useEffect(() => {
@@ -182,6 +200,14 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
       setNotifyDelay(employee.notifyDelay !== false);
       setNotifyAbsence(employee.notifyAbsence !== false);
       setNotifyDocExpiry(employee.notifyDocExpiry !== false);
+
+      if (employee.allowedLocations) {
+        setAllowedLocations(employee.allowedLocations);
+      } else if (employee.allowed_locations) {
+        setAllowedLocations(employee.allowed_locations);
+      } else {
+        setAllowedLocations([]);
+      }
     }
   }, [employee, lang]);
 
@@ -260,7 +286,8 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
         allowMobileClockIn,
         notifyDelay,
         notifyAbsence,
-        notifyDocExpiry
+        notifyDocExpiry,
+        allowedLocations
       };
 
       const url = employee 
@@ -1014,6 +1041,57 @@ export const EmployeeDetailView = ({ employee, onBack, lang }: { employee?: any,
                           <p className="text-[10px] text-gray-400 font-medium leading-relaxed">{lang === 'ar' ? 'تخويل الموظف من تسجيل الدخول/الخروج من تطبيق الخدمة الذاتية للجوال' : 'Authorize employee to submit clock-in records from mobile application.'}</p>
                         </label>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* 3. المواقع الجغرافية المسموح بالبصم منها */}
+                  <div className="space-y-4 pt-6 border-t border-gray-100">
+                    <h3 className="text-xs font-bold text-[#15385E] uppercase border-b border-gray-100 pb-2 flex items-center gap-2">
+                      <MapPin size={14} className="text-[#17AE9F]" /> {lang === 'ar' ? 'الفروع والمواقع الجغرافية المسموح بالبصمة منها' : 'Permitted Office / Geofence Locations'}
+                    </h3>
+                    <p className="text-[10px] text-gray-400 font-medium leading-relaxed">
+                      {lang === 'ar' 
+                        ? 'حدد الفروع والمواقع الجغرافية التي يمكن لهذا الموظف تسجيل حضوره وانصرافه منها. في حال عدم تحديد أي موقع، سيتمكن الموظف من البصم من كافة المواقع الجغرافية المسجلة.' 
+                        : 'Select the branches/locations from which this employee is allowed to clock in/out. If no locations are selected, they can clock in from any registered office location.'}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      {locations.length === 0 ? (
+                        <div className="col-span-full py-4 text-center text-xs text-gray-400">
+                          {lang === 'ar' ? 'لا توجد مواقع مسجلة حالياً. يرجى إضافة مواقع في تبويب الحضور أولاً.' : 'No locations available. Please define locations in the Attendance tab first.'}
+                        </div>
+                      ) : (
+                        locations.map((loc) => {
+                          const isChecked = allowedLocations.includes(loc.id);
+                          return (
+                            <div 
+                              key={loc.id} 
+                              onClick={() => {
+                                if (isChecked) {
+                                  setAllowedLocations(allowedLocations.filter(id => id !== loc.id));
+                                } else {
+                                  setAllowedLocations([...allowedLocations, loc.id]);
+                                }
+                              }}
+                              className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer select-none transition-all ${
+                                isChecked ? 'border-[#17AE9F] bg-[#E8F7F5]/30' : 'border-gray-100 hover:border-gray-200 bg-white'
+                              }`}
+                            >
+                              <input 
+                                type="checkbox" 
+                                checked={isChecked}
+                                onChange={() => {}} // handled by div onClick
+                                className="w-4 h-4 accent-[#17AE9F] rounded border-gray-200 shrink-0" 
+                              />
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-bold text-gray-900 truncate">{loc.name}</span>
+                                <span className="text-[9px] text-gray-400 font-medium">
+                                  {loc.radius || loc.radius_meters || 100} {lang === 'ar' ? 'متر' : 'meters'}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
 

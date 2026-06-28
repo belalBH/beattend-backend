@@ -60,11 +60,15 @@ interface LeaveType {
   paid: boolean;
 }
 
-export const LeavesView = ({ isDarkMode, lang }: { isDarkMode: boolean, lang: 'ar' | 'en' }) => {
+export const LeavesView = ({ isDarkMode, lang, initialSubTab = 'request' }: { isDarkMode: boolean, lang: 'ar' | 'en', initialSubTab?: 'request' | 'approve' | 'balance' | 'types' }) => {
   const t = translations[lang];
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeSubTab, setActiveSubTab] = useState<'request' | 'approve' | 'balance' | 'types'>('request');
+  const [activeSubTab, setActiveSubTab] = useState<'request' | 'approve' | 'balance' | 'types'>(initialSubTab);
+
+  useEffect(() => {
+    setActiveSubTab(initialSubTab);
+  }, [initialSubTab]);
   const [searchTerm, setSearchTerm] = useState('');
   const [successAlert, setSuccessAlert] = useState('');
 

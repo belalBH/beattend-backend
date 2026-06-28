@@ -62,6 +62,30 @@ function App() {
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [leavesSubTab, setLeavesSubTab] = useState<'request' | 'approve' | 'balance' | 'types'>('request');
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchPendingLeaves = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/leave`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data) {
+            const pending = data.data.filter((r: any) => r.status === 'pending');
+            setNotifications(pending);
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching pending leaves for notifications:", e);
+      }
+    };
+    fetchPendingLeaves();
+    const interval = setInterval(fetchPendingLeaves, 10000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -253,6 +277,9 @@ function App() {
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id);
+                    if (item.id === 'leaves') {
+                      setLeavesSubTab('request');
+                    }
                     setIsSidebarOpen(false);
                   }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
@@ -317,10 +344,65 @@ function App() {
               <Zap size={18} className="text-[#06B6D4]" />
             </button>
 
-            <button className="relative p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-350 hover:text-white hover:bg-white/10 transition-all shadow-lg">
-              <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="relative p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-350 hover:text-white hover:bg-white/10 transition-all shadow-lg"
+              >
+                <Bell size={18} />
+                {notifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-[#06B6D4] text-[9px] font-black text-white flex items-center justify-center animate-bounce shadow-md">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+
+              {isNotificationsOpen && (
+                <div className={`absolute top-12 ${lang === 'ar' ? 'left-0' : 'right-0'} w-80 glass-panel rounded-2xl border border-white/10 shadow-2xl p-4 space-y-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200`}>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black text-white">
+                      {lang === 'ar' ? 'الإشعارات الجديدة' : 'New Notifications'}
+                    </h4>
+                    <span className="text-[9px] font-black text-[#06B6D4] bg-[#06B6D4]/10 px-2 py-0.5 rounded-full">
+                      {notifications.length} {lang === 'ar' ? 'معلق' : 'pending'}
+                    </span>
+                  </div>
+                  
+                  <div className="h-px bg-white/10"></div>
+                  
+                  <div className="max-h-60 overflow-y-auto space-y-2 no-scrollbar">
+                    {notifications.length === 0 ? (
+                      <div className="py-6 text-center text-[10px] text-slate-450 font-bold">
+                        {lang === 'ar' ? 'لا توجد إشعارات جديدة 👍' : 'No new notifications 👍'}
+                      </div>
+                    ) : (
+                      notifications.map((notif) => (
+                        <div 
+                          key={notif.id}
+                          onClick={() => {
+                            setLeavesSubTab('approve');
+                            setActiveTab('leaves');
+                            setIsNotificationsOpen(false);
+                          }}
+                          className={`flex items-start gap-2.5 p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-[#06B6D4]/30 cursor-pointer transition-all ${lang === 'ar' ? 'text-right' : 'text-left'}`}
+                        >
+                          <img src={notif.empAvatar} className="w-8 h-8 rounded-lg object-cover border border-white/10 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black text-white">{notif.empName}</p>
+                            <p className="text-[9px] font-bold text-[#06B6D4] mt-0.5">
+                              {lang === 'ar' 
+                                ? `طلب إجازة ${notif.type === 'annual' ? 'سنوية' : notif.type === 'sick' ? 'مرضية' : notif.type === 'emergency' ? 'اضطرارية' : 'خاصة'} (${notif.duration} أيام)` 
+                                : `Requested ${notif.type} leave (${notif.duration} days)`}
+                            </p>
+                            <p className="text-[8px] text-slate-400 mt-0.5 truncate">{notif.reason}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             
             <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
             
@@ -345,7 +427,7 @@ function App() {
           {activeTab === 'reports' && <ReportsView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'employees' && <EmployeesView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'payroll' && <PayrollView isDarkMode={isDarkMode} lang={lang} />}
-          {activeTab === 'leaves' && <LeavesView isDarkMode={isDarkMode} lang={lang} />}
+          {activeTab === 'leaves' && <LeavesView isDarkMode={isDarkMode} lang={lang} initialSubTab={leavesSubTab} />}
           {activeTab === 'attendance' && <AttendanceMainView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'locations' && <AttendanceLocationView isDarkMode={isDarkMode} lang={lang} />}
           {activeTab === 'settings' && <SettingsView isDarkMode={isDarkMode} lang={lang} />}

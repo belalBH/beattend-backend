@@ -137,6 +137,15 @@ function fromFirestore(fields) {
       obj[key] = parseFloat(valObj.doubleValue);
     } else if ('booleanValue' in valObj) {
       obj[key] = valObj.booleanValue;
+    } else if ('arrayValue' in valObj) {
+      const vals = valObj.arrayValue.values || [];
+      obj[key] = vals.map(item => {
+        if ('stringValue' in item) return item.stringValue;
+        if ('integerValue' in item) return parseInt(item.integerValue);
+        if ('doubleValue' in item) return parseFloat(item.doubleValue);
+        if ('booleanValue' in item) return item.booleanValue;
+        return null;
+      }).filter(x => x !== null);
     }
   }
   return obj;
@@ -157,6 +166,25 @@ function toFirestore(obj) {
       }
     } else if (typeof val === 'boolean') {
       fields[key] = { booleanValue: val };
+    } else if (Array.isArray(val)) {
+      fields[key] = {
+        arrayValue: {
+          values: val.map(item => {
+            if (typeof item === 'string') {
+              return { stringValue: item };
+            } else if (typeof item === 'number') {
+              if (Number.isInteger(item)) {
+                return { integerValue: item.toString() };
+              } else {
+                return { doubleValue: item };
+              }
+            } else if (typeof item === 'boolean') {
+              return { booleanValue: item };
+            }
+            return { stringValue: String(item) };
+          })
+        }
+      };
     }
   }
   return { fields };

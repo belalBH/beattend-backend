@@ -1,0 +1,536 @@
+// UI Helper Functions
+function showLoading(elementId) {
+    const el = document.getElementById(elementId);
+    if (el) el.innerHTML = '<tr><td colspan="10" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+}
+
+function showError(elementId, message) {
+    const el = document.getElementById(elementId);
+    if (el) el.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">${message}</td></tr>`;
+}
+
+function showAlert(message, type = 'info') {
+    alert(message);
+}
+
+// Initialize app when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Load dashboard by default
+    loadDashboard();
+    
+    // Setup API settings form
+    const form = document.getElementById('apiSettingsForm');
+    if (form) form.addEventListener('submit', saveApiSettings);
+});
+
+// Page Navigation
+function showPage(pageName) {
+    // Hide all pages
+    document.querySelectorAll('.page-content').forEach(page => {
+        page.style.display = 'none';
+    });
+    
+    // Remove active class from all nav links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    // Show selected page
+    const pageElement = document.getElementById(pageName + 'Page');
+    if (pageElement) {
+        pageElement.style.display = 'block';
+    }
+    
+    // Add active class to current nav link
+    event.target.closest('.nav-link')?.classList.add('active');
+    
+    // Load page content
+    switch(pageName) {
+        case 'dashboard':
+            loadDashboard();
+            break;
+        case 'employees':
+            loadEmployees();
+            break;
+        case 'attendance':
+            loadAttendance();
+            break;
+        case 'leaves':
+            loadLeaves();
+            break;
+        case 'locations':
+            loadLocations();
+            break;
+        case 'reports':
+            // Reports page is static, no loading needed
+            break;
+        case 'settings':
+            // Settings page is static
+            break;
+    }
+}
+
+// Dashboard Functions
+async function loadDashboard() {
+    try {
+        // Load stats (using mock data for now since API endpoints might not exist yet)
+        loadDashboardStats();
+        
+        // Load recent attendance
+        await loadRecentAttendance();
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+async function loadDashboardStats() {
+    // Mock data for now - replace with real API call when ready
+    document.getElementById('todayPresent').textContent = '45';
+    document.getElementById('todayAbsent').textContent = '5';
+    document.getElementById('todayLate').textContent = '3';
+    document.getElementById('totalEmployees').textContent = '50';
+}
+
+async function loadRecentAttendance() {
+    showLoading('recentAttendance');
+    
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const result = await api.getAttendanceRecords(null, today, today);
+        
+        if (result.data && result.data.length > 0) {
+            let html = '';
+            result.data.slice(0, 10).forEach(record => {
+                html += `
+                    <tr>
+                        <td>${record.employee_name || 'غير محدد'}</td>
+                        <td>${formatTime(record.clock_in_time)}</td>
+                        <td>${formatTime(record.clock_out_time)}</td>
+                        <td>${record.location_name || '-'}</td>
+                        <td>${formatDuration(record.working_hours)}</td>
+                        <td>${getStatusBadge(record.status)}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('recentAttendance').innerHTML = html;
+        } else {
+            document.getElementById('recentAttendance').innerHTML = `
+                <tr><td colspan="6" class="text-center">لا توجد سجلات اليوم</td></tr>
+            `;
+        }
+    } catch (error) {
+        showError('recentAttendance', 'فشل في تحميل السجلات');
+    }
+}
+
+// Companies Functions
+async function loadCompanies() {
+    try {
+        const res = await api.getCompanies();
+        const companies = res.data || [];
+        const select = document.getElementById('empCompanySelect');
+        if (select && companies.length > 0) {
+            select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name} (${c.domain || c.tenant_id})</option>`).join('');
+        }
+    } catch (e) {
+        console.warn('Failed to load companies:', e);
+    }
+}
+
+// Employees Functions
+async function loadEmployees() {
+    showLoading('employeesTable');
+    await loadCompanies();
+    
+    try {
+        const res = await api.getEmployees();
+        const employees = res.data || [];
+        
+        let html = '';
+        if (employees.length === 0) {
+            html = '<tr><td colspan="7" class="text-center">لا يوجد موظفون في هذا النظام حالياً.</td></tr>';
+        } else {
+            employees.forEach(emp => {
+                const statusBadge = emp.employment_status === 'active' 
+                    ? '<span class="badge-official badge-active"><i class="bi bi-check-circle-fill"></i> نشط</span>' 
+                    : '<span class="badge-official badge-inactive"><i class="bi bi-x-circle-fill"></i> غير نشط</span>';
+                
+                const appAccessBadge = emp.account_enabled 
+                    ? '<span class="badge-official badge-location"><i class="bi bi-phone-fill"></i> الجوال مفعل</span>' 
+                    : '<span class="badge-official badge-inactive"><i class="bi bi-phone-mute"></i> معطل</span>';
+
+                html += `
+                    <tr>
+                        <td><code class="fw-bold text-primary">${emp.employee_number}</code></td>
+                        <td><strong class="text-dark">${emp.first_name} ${emp.last_name}</strong></td>
+                        <td><span class="text-secondary small">${emp.email}</span></td>
+                        <td><span class="badge-official badge-company"><i class="bi bi-building"></i> ${emp.company_name || 'Solutions Co'}</span></td>
+                        <td><span class="text-dark font-weight-600">${emp.department_name || ''}</span> <small class="text-muted">(${emp.work_location_name || '-'})</small></td>
+                        <td><div class="d-flex gap-1">${statusBadge} ${appAccessBadge}</div></td>
+                        <td>
+                            <button class="btn btn-sm btn-executive-secondary py-1 px-3" onclick="editEmployee(${emp.id})">
+                                <i class="bi bi-pencil-square me-1 text-primary"></i> تعديل
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        document.getElementById('employeesTable').innerHTML = html;
+        document.getElementById('totalEmployees').textContent = employees.length;
+    } catch (error) {
+        showError('employeesTable', 'فشل في تحميل الموظفين: ' + error.message);
+    }
+}
+
+async function populateCompanyDropdown(selectedCompanyId = null) {
+    try {
+        const select = document.getElementById('empCompanySelect');
+        if (!select) return;
+        const res = await api.getCompanies();
+        const companies = res.data || [];
+        
+        let html = '<option value="">اختر الشركة...</option>';
+        companies.forEach(comp => {
+            const isSelected = selectedCompanyId && (comp.id == selectedCompanyId) ? 'selected' : '';
+            html += `<option value="${comp.id}" ${isSelected}>${comp.name} (${comp.company_domain || comp.tenant_slug || ''})</option>`;
+        });
+        select.innerHTML = html;
+        if (selectedCompanyId) {
+            select.value = selectedCompanyId;
+        }
+    } catch (e) {
+        console.error('فشل جلب قائمة الشركات:', e);
+    }
+}
+
+async function showAddEmployeeModal() {
+    const form = document.getElementById('addEmployeeForm');
+    form.reset();
+    document.getElementById('empFormId').value = '';
+    document.getElementById('employeeModalTitle').textContent = 'إضافة موظف جديد';
+    document.getElementById('passwordGroup').style.display = 'block';
+    
+    await populateCompanyDropdown();
+    
+    const modal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
+    modal.show();
+}
+
+async function editEmployee(id) {
+    try {
+        const res = await api.getEmployee(id);
+        const emp = res.data;
+        if (!emp) throw new Error('بيانات الموظف غير متوفرة');
+
+        const form = document.getElementById('addEmployeeForm');
+        form.reset();
+        document.getElementById('empFormId').value = emp.id;
+        document.getElementById('employeeModalTitle').textContent = `تعديل موظف: ${emp.first_name} ${emp.last_name}`;
+        
+        await populateCompanyDropdown(emp.company_id || 1);
+
+        document.getElementById('empNumberInput').value = emp.employee_number || '';
+        document.getElementById('empFirstNameInput').value = emp.first_name || '';
+        document.getElementById('empLastNameInput').value = emp.last_name || '';
+        document.getElementById('empEmailInput').value = emp.email || '';
+        document.getElementById('empPhoneInput').value = emp.phone || '';
+        document.getElementById('empLocationSelect').value = emp.assigned_location_id || 1;
+        document.getElementById('empDepartmentSelect').value = emp.department_id || 1;
+        document.getElementById('empStatusSelect').value = emp.employment_status || 'active';
+        document.getElementById('empAccountEnabled').checked = emp.account_enabled != 0;
+
+        // Hide password input on edit (Correction 7: normal edit must not overwrite password)
+        document.getElementById('passwordGroup').style.display = 'none';
+
+        const modal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
+        modal.show();
+    } catch (e) {
+        showAlert('فشل جلب بيانات الموظف: ' + e.message, 'danger');
+    }
+}
+
+async function saveEmployee() {
+    const form = document.getElementById('addEmployeeForm');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    data.account_enabled = document.getElementById('empAccountEnabled').checked ? 1 : 0;
+    
+    const empId = data.id;
+
+    try {
+        if (empId) {
+            const updated = await api.updateEmployee(empId, data);
+            const compName = updated.data?.company_name || '';
+            showAlert(`تم تحديث بيانات الموظف بنجاح (الشركة المنتسب لها: ${compName || 'مفعلة'})`, 'success');
+        } else {
+            if (!data.password) {
+                showAlert('كلمة المرور مطلوبة لإنشاء الموظف والحساب الجديد', 'warning');
+                return;
+            }
+            const created = await api.addEmployee(data);
+            const compName = created.data?.company_name || '';
+            showAlert(`تم إضافة الموظف وإنشاء حسابه بنجاح (الشركة: ${compName || 'مفعلة'})`, 'success');
+        }
+
+        const modalEl = document.getElementById('addEmployeeModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        form.reset();
+        await loadEmployees();
+    } catch (error) {
+        showAlert('فشل في حفظ الموظف: ' + error.message, 'danger');
+    }
+}
+
+// Attendance Functions
+async function loadAttendance() {
+    // Set default dates
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    document.getElementById('attendanceStartDate').value = firstDay.toISOString().split('T')[0];
+    document.getElementById('attendanceEndDate').value = today.toISOString().split('T')[0];
+    
+    // Load records
+    await filterAttendance();
+}
+
+async function filterAttendance() {
+    showLoading('attendanceRecords');
+    
+    const startDate = document.getElementById('attendanceStartDate').value;
+    const endDate = document.getElementById('attendanceEndDate').value;
+    const employeeId = document.getElementById('attendanceEmployee').value;
+    
+    try {
+        const result = await api.getAttendanceRecords(employeeId || null, startDate, endDate);
+        
+        if (result.data && result.data.length > 0) {
+            let html = '';
+            result.data.forEach(record => {
+                const device = record.platform ? `${record.platform} (${record.device_name || 'iPhone'})` : '-';
+                const distance = record.distanceFromLocation ? `${Math.round(record.distanceFromLocation)}m` : 'داخل النطاق';
+                html += `
+                    <tr>
+                        <td>${record.shiftInstanceDate || record.attendance_date}</td>
+                        <td>${record.employee_name || 'بدر البنا'}</td>
+                        <td>${formatTime(record.actualCheckIn || record.clock_in_time)}</td>
+                        <td>${formatTime(record.actualCheckOut || record.clock_out_time)}</td>
+                        <td>${record.workedMinutes || 0} دقيقة</td>
+                        <td>${record.breakMinutes || 0} دقيقة</td>
+                        <td>${device}</td>
+                        <td>${distance}</td>
+                        <td>${getStatusBadge(record.status)}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('attendanceRecords').innerHTML = html;
+        } else {
+            document.getElementById('attendanceRecords').innerHTML = `
+                <tr><td colspan="9" class="text-center">لا توجد سجلات حضور للموظف</td></tr>
+            `;
+        }
+    } catch (error) {
+        showError('attendanceRecords', 'فشل في تحميل السجلات');
+    }
+}
+
+// Leaves Functions
+async function loadLeaves() {
+    showLoading('leaveRequests');
+    
+    try {
+        const result = await api.getLeaveRequests(null, 'pending');
+        
+        if (result.data && result.data.length > 0) {
+            let html = '';
+            result.data.forEach(leave => {
+                const currentBalance = leave.current_balance || 25.0;
+                const workingDays = leave.workingDays || leave.total_days || 5;
+                const projectedBalance = currentBalance - workingDays;
+                html += `
+                    <tr>
+                        <td>${leave.employee_name || 'بدر البنا'}</td>
+                        <td>${leave.leave_type_name_ar || leave.leave_type_name || 'إجازة سنوية'}</td>
+                        <td>${formatDate(leave.start_date || leave.startDate)}</td>
+                        <td>${formatDate(leave.end_date || leave.endDate)}</td>
+                        <td>${workingDays} أيام</td>
+                        <td>${currentBalance} يوم</td>
+                        <td>${projectedBalance} يوم</td>
+                        <td>${getStatusBadge(leave.status)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="approveLeave(${leave.requestId || leave.id})">
+                                <i class="bi bi-check"></i> موافقة
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectLeave(${leave.requestId || leave.id})">
+                                <i class="bi bi-x"></i> رفض
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('leaveRequests').innerHTML = html;
+        } else {
+            document.getElementById('leaveRequests').innerHTML = `
+                <tr><td colspan="9" class="text-center">لا توجد طلبات معلقة بانتظار موافقتك حالياً</td></tr>
+            `;
+        }
+    } catch (error) {
+        showError('leaveRequests', 'فشل في تحميل الطلبات');
+    }
+}
+
+async function approveLeave(leaveId) {
+    if (confirm('هل أنت متأكد من الموافقة على هذا الطلب؟')) {
+        try {
+            await api.approveLeaveRequest(leaveId);
+            showAlert('تم الموافقة على الطلب', 'success');
+            loadLeaves();
+        } catch (error) {
+            showAlert('فشل في الموافقة: ' + error.message, 'danger');
+        }
+    }
+}
+
+async function rejectLeave(leaveId) {
+    const reason = prompt('الرجاء إدخال سبب الرفض:');
+    if (reason) {
+        try {
+            await api.rejectLeaveRequest(leaveId, reason);
+            showAlert('تم رفض الطلب', 'success');
+            loadLeaves();
+        } catch (error) {
+            showAlert('فشل في رفض الطلب: ' + error.message, 'danger');
+        }
+    }
+}
+
+// Locations Functions
+async function loadLocations() {
+    const locationsList = document.getElementById('locationsList');
+    locationsList.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary"></div></div>';
+    
+    try {
+        // Mock data for now
+        const locations = [
+            { id: 1, name: 'Main Office', name_ar: 'المكتب الرئيسي', latitude: 24.7136, longitude: 46.6753, radius_meters: 100, is_active: true },
+            { id: 2, name: 'Branch Office', name_ar: 'الفرع', latitude: 21.4858, longitude: 39.1925, radius_meters: 100, is_active: true }
+        ];
+        
+        let html = '';
+        locations.forEach(loc => {
+            html += `
+                <div class="col-md-6 mb-3">
+                    <div class="card location-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-geo-alt-fill text-primary"></i>
+                                ${loc.name_ar || loc.name}
+                            </h5>
+                            <p class="card-text">
+                                <strong>الإحداثيات:</strong> ${loc.latitude}, ${loc.longitude}<br>
+                                <strong>النطاق:</strong> ${loc.radius_meters} متر<br>
+                                <strong>الحالة:</strong> ${loc.is_active ? '<span class="badge bg-success">نشط</span>' : '<span class="badge bg-secondary">غير نشط</span>'}
+                            </p>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-warning" onclick="editLocation(${loc.id})">
+                                    <i class="bi bi-pencil"></i> تعديل
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteLocation(${loc.id})">
+                                    <i class="bi bi-trash"></i> حذف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        locationsList.innerHTML = html;
+    } catch (error) {
+        locationsList.innerHTML = '<div class="col-12 text-center text-danger">فشل في تحميل المواقع</div>';
+    }
+}
+
+function showAddLocationModal() {
+    showAlert('سيتم إضافة نموذج إضافة موقع قريباً', 'info');
+}
+
+// Reports Functions
+function downloadMonthlyReport() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    
+    showAlert('جاري تحميل التقرير...', 'info');
+    
+    // In a real app, this would download a file
+    setTimeout(() => {
+        showAlert('تقرير الحضور الشهري جاهز', 'success');
+    }, 2000);
+}
+
+function downloadLeavesReport() {
+    showAlert('جاري تحميل تقرير الإجازات...', 'info');
+    
+    setTimeout(() => {
+        showAlert('تقرير الإجازات جاهز', 'success');
+    }, 2000);
+}
+
+function downloadLateReport() {
+    showAlert('جاري تحميل تقرير التأخير...', 'info');
+    
+    setTimeout(() => {
+        showAlert('تقرير التأخير جاهز', 'success');
+    }, 2000);
+}
+
+// Settings Functions
+function saveApiSettings(e) {
+    e.preventDefault();
+    const apiUrl = document.getElementById('apiUrl').value;
+    localStorage.setItem('apiUrl', apiUrl);
+    showAlert('تم حفظ الإعدادات بنجاح', 'success');
+}
+
+async function testApiConnection() {
+    const apiUrl = document.getElementById('apiUrl').value;
+    showAlert('جاري اختبار الاتصال...', 'info');
+    
+    try {
+        const response = await fetch(apiUrl + '/employee/1');
+        if (response.ok) {
+            showAlert('الاتصال بالـ API ناجح!', 'success');
+        } else {
+            showAlert('فشل الاتصال بالـ API', 'danger');
+        }
+    } catch (error) {
+        showAlert('خطأ في الاتصال: ' + error.message, 'danger');
+    }
+}
+
+// Logout
+function logout() {
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        window.location.href = 'login.html';
+    }
+}
+
+// Executive Status Badge Helper
+function getStatusBadge(status) {
+    switch (status) {
+        case 'present':
+        case 'approved':
+        case 'active':
+            return '<span class="badge-official badge-active"><i class="bi bi-check-circle-fill"></i> مكتمل / نشط</span>';
+        case 'absent':
+        case 'rejected':
+            return '<span class="badge-official badge-inactive"><i class="bi bi-x-circle-fill"></i> غائب / مرفوض</span>';
+        case 'late':
+        case 'pending':
+            return '<span class="badge-official badge-company" style="background:#fffbeb; color:#b45309; border-color:#fde68a;"><i class="bi bi-clock-history"></i> متأخر / معلق</span>';
+        default:
+            return `<span class="badge-official badge-company">${status || '-'}</span>`;
+    }
+}

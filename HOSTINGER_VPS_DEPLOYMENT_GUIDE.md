@@ -8,6 +8,7 @@ This document outlines the step-by-step production deployment process for launch
 
 | Component / Asset | Description | File Path |
 | :--- | :--- | :--- |
+| **Hostinger VPS** | Hostname: `srv1834150.hstgr.cloud` \| IP: `76.13.253.114` | Server Host |
 | **Nginx Config** | SSL, Reverse Proxy, Gzip, Rate Limiting, Security Headers | `deploy/nginx.conf` |
 | **Env Production** | Production Environment Template | `deploy/env.production.example` |
 | **PM2 Process Config** | Node.js Cluster Process Management & Logs | `deploy/ecosystem.config.js` |
@@ -20,9 +21,11 @@ This document outlines the step-by-step production deployment process for launch
 ## 🛠️ Step-by-Step Installation Instructions on Hostinger VPS
 
 ### Step 1: Initial VPS Environment Setup
-Connect to your Hostinger VPS via SSH:
+Connect to your Hostinger VPS via SSH using your server IP (`76.13.253.114`) or hostname (`srv1834150.hstgr.cloud`):
 ```bash
-ssh root@YOUR_HOSTINGER_VPS_IP
+ssh root@76.13.253.114
+# OR
+ssh root@srv1834150.hstgr.cloud
 ```
 
 Update system packages and install required runtimes:

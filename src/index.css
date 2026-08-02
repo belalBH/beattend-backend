@@ -5,12 +5,13 @@
   --font-sans: "Cairo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
-  --color-brand-primary: #2563eb;
-  --color-brand-secondary: #0284c7;
-  --color-brand-background: #f0f3f6;
+  --color-brand-olive: #1b3325;
+  --color-brand-olive-light: #234735;
+  --color-brand-gold: #d4af37;
+  --color-brand-gold-hover: #c59b27;
+  --color-brand-background: #f4f5f1;
   --color-brand-surface: #ffffff;
-  --color-brand-sidebar: #1e262c;
-  --color-brand-error: #dc2626;
+  --color-brand-border: #c8d3c6;
 }
 
 :root {
@@ -21,8 +22,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f0f3f6;
-  color: #1e293b;
+  background-color: #f4f5f1;
+  color: #13241b;
   direction: rtl;
   text-align: right;
   -webkit-font-smoothing: antialiased;
@@ -33,12 +34,12 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #e8eee9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d4af37;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #c59b27;
 }

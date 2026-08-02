@@ -69,6 +69,17 @@ export default function App() {
     }
   ];
 
+  const attendanceData = [
+    { id: 1, name: "بلال البنا", timeIn: "08:00 AM", timeOut: "04:30 PM", location: "Fayha Branch", workHours: "8.5 س", status: "حاضر في الموعد" },
+    { id: 2, name: "سعد العتيبي", timeIn: "08:15 AM", timeOut: "04:30 PM", location: "Al Naseem - HQ", workHours: "8.25 س", status: "متأخر 15 دقيقة" },
+    { id: 3, name: "خالد الشهري", timeIn: "-", timeOut: "-", location: "Al Naseem - HQ", workHours: "0 س", status: "غائب" }
+  ];
+
+  const leavesData = [
+    { id: 1, name: "بلال البنا", type: "إجازة سنوية", startDate: "2026-08-05", endDate: "2026-08-10", days: 5, balance: "18 يوم", status: "بانتظار موافقة المدير" },
+    { id: 2, name: "سعد العتيبي", type: "إجازة مرضية", startDate: "2026-07-20", endDate: "2026-07-21", days: 2, balance: "12 يوم", status: "مقبولة" }
+  ];
+
   const filteredEmployees = employeesData.filter(emp =>
     emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.empNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -297,93 +308,248 @@ export default function App() {
           </div>
         </div>
 
-        {/* 3. LARGE WHITE DATA TABLE CONTAINER CARD */}
-        <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-          
-          {/* Header & Search Bar */}
-          <div className="flex items-center justify-between mb-5 flex-wrap gap-4">
-            <h2 className="text-xl font-extrabold text-slate-900 m-0 flex items-center gap-2">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              سجل إدارة الموظفين والحسابات المعتمدة
-            </h2>
-
-            <div className="flex items-center gap-3">
-              <div className="relative w-64">
-                <svg className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        {/* 3. DYNAMIC CONTAINER CARDS SWITCHED BY ACTIVE TAB */}
+        
+        {/* VIEW 1: EMPLOYEES DIRECTORY (activeTab === 'employees') */}
+        {activeTab === "employees" && (
+          <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+            <div className="flex items-center justify-between mb-5 flex-wrap gap-4">
+              <h2 className="text-xl font-extrabold text-slate-900 m-0 flex items-center gap-2">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
-                <input
-                  type="text"
-                  placeholder="بحث باسم الموظف أو البريد..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pr-9 pl-3 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:border-blue-500"
-                />
+                سجل إدارة الموظفين والحسابات المعتمدة
+              </h2>
+
+              <div className="flex items-center gap-3">
+                <div className="relative w-64">
+                  <input
+                    type="text"
+                    placeholder="بحث باسم الموظف أو البريد..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pr-9 pl-3 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <button className="bg-[#1e262c] text-white px-4 py-2 rounded text-sm font-bold hover:bg-[#29333b] transition-all shadow-sm">
+                  + إضافة موظف جديد
+                </button>
               </div>
-
-              <button className="bg-[#1e262c] text-white px-4 py-2 rounded text-sm font-bold hover:bg-[#29333b] transition-all shadow-sm">
-                + إضافة موظف جديد
-              </button>
             </div>
-          </div>
 
-          {/* Data Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-right border-collapse">
-              <thead>
-                <tr className="bg-[#eef2f5] text-slate-700 text-xs font-bold uppercase tracking-wider border-y border-slate-200">
-                  <th className="py-3.5 px-4">رقم الموظف</th>
-                  <th className="py-3.5 px-4">الاسم الكامل</th>
-                  <th className="py-3.5 px-4">البريد الإلكتروني</th>
-                  <th className="py-3.5 px-4">الشركة المنتسب لها</th>
-                  <th className="py-3.5 px-4">القسم وموقع العمل</th>
-                  <th className="py-3.5 px-4">الحالة</th>
-                  <th className="py-3.5 px-4">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                {filteredEmployees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-4 px-4 font-mono font-bold text-blue-600">{emp.empNo}</td>
-                    <td className="py-4 px-4 font-bold text-slate-900">{emp.name}</td>
-                    <td className="py-4 px-4 text-slate-500">{emp.email}</td>
-                    <td className="py-4 px-4">
-                      <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded text-xs font-bold">
-                        {emp.company}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="font-semibold text-slate-800">{emp.dept}</span>{" "}
-                      <span className="text-slate-400 text-xs">({emp.location})</span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1">
-                        ✓ نشط (الجوال مفعل)
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <button className="bg-white border border-slate-300 text-slate-700 px-3 py-1 rounded text-xs font-bold hover:bg-slate-50 transition-colors">
-                        تعديل
-                      </button>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-right border-collapse">
+                <thead>
+                  <tr className="bg-[#eef2f5] text-slate-700 text-xs font-bold uppercase tracking-wider border-y border-slate-200">
+                    <th className="py-3.5 px-4">رقم الموظف</th>
+                    <th className="py-3.5 px-4">الاسم الكامل</th>
+                    <th className="py-3.5 px-4">البريد الإلكتروني</th>
+                    <th className="py-3.5 px-4">الشركة المنتسب لها</th>
+                    <th className="py-3.5 px-4">القسم وموقع العمل</th>
+                    <th className="py-3.5 px-4">الحالة</th>
+                    <th className="py-3.5 px-4">الإجراءات</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Table Footer Bar */}
-          <div className="flex items-center justify-between pt-5 mt-2 text-xs text-slate-500">
-            <div>عرض {filteredEmployees.length} من إجمالي {employeesData.length} موظفاً</div>
-            <div className="flex items-center gap-3 font-semibold text-slate-700">
-              <button className="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50">السابق</button>
-              <button className="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50">التالي</button>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                  {filteredEmployees.map((emp) => (
+                    <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-4 font-mono font-bold text-blue-600">{emp.empNo}</td>
+                      <td className="py-4 px-4 font-bold text-slate-900">{emp.name}</td>
+                      <td className="py-4 px-4 text-slate-500">{emp.email}</td>
+                      <td className="py-4 px-4">
+                        <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded text-xs font-bold">
+                          {emp.company}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="font-semibold text-slate-800">{emp.dept}</span>{" "}
+                        <span className="text-slate-400 text-xs">({emp.location})</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded text-xs font-bold inline-flex items-center gap-1">
+                          ✓ نشط (الجوال مفعل)
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <button className="bg-white border border-slate-300 text-slate-700 px-3 py-1 rounded text-xs font-bold hover:bg-slate-50 transition-colors">
+                          تعديل
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+        )}
 
-        </div>
+        {/* VIEW 2: ATTENDANCE LOGS (activeTab === 'attendance' or 'dashboard') */}
+        {(activeTab === "attendance" || activeTab === "dashboard") && (
+          <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm mb-6">
+            <div className="flex items-center justify-between mb-5 flex-wrap gap-4">
+              <h2 className="text-xl font-extrabold text-slate-900 m-0 flex items-center gap-2">
+                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                سجل الحضور المباشر والتأخير التفصيلي
+              </h2>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-right border-collapse">
+                <thead>
+                  <tr className="bg-[#eef2f5] text-slate-700 text-xs font-bold uppercase tracking-wider border-y border-slate-200">
+                    <th className="py-3.5 px-4">الموظف</th>
+                    <th className="py-3.5 px-4">وقت الحضور</th>
+                    <th className="py-3.5 px-4">وقت الانصراف</th>
+                    <th className="py-3.5 px-4">الموقع الجغرافي</th>
+                    <th className="py-3.5 px-4">ساعات العمل</th>
+                    <th className="py-3.5 px-4">الحالة الرسمية</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                  {attendanceData.map((att) => (
+                    <tr key={att.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-4 font-bold text-slate-900">{att.name}</td>
+                      <td className="py-4 px-4 text-emerald-700 font-mono font-bold">{att.timeIn}</td>
+                      <td className="py-4 px-4 text-slate-600 font-mono">{att.timeOut}</td>
+                      <td className="py-4 px-4 text-slate-700">{att.location}</td>
+                      <td className="py-4 px-4 font-bold">{att.workHours}</td>
+                      <td className="py-4 px-4">
+                        <span className={`px-2.5 py-1 rounded text-xs font-bold ${
+                          att.status.includes('حاضر') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                          att.status.includes('متأخر') ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                          'bg-rose-50 text-rose-700 border border-rose-200'
+                        }`}>
+                          {att.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 3: LEAVE REQUESTS (activeTab === 'leaves') */}
+        {activeTab === "leaves" && (
+          <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-extrabold text-slate-900 m-0 flex items-center gap-2">
+                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                طلبات ورصيد الإجازات المعلقة
+              </h2>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-right border-collapse">
+                <thead>
+                  <tr className="bg-[#eef2f5] text-slate-700 text-xs font-bold uppercase tracking-wider border-y border-slate-200">
+                    <th className="py-3.5 px-4">الموظف</th>
+                    <th className="py-3.5 px-4">نوع الإجازة</th>
+                    <th className="py-3.5 px-4">من تاريخ</th>
+                    <th className="py-3.5 px-4">إلى تاريخ</th>
+                    <th className="py-3.5 px-4">الأيام</th>
+                    <th className="py-3.5 px-4">الرصيد المتبقي</th>
+                    <th className="py-3.5 px-4">الحالة</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                  {leavesData.map((leave) => (
+                    <tr key={leave.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-4 font-bold text-slate-900">{leave.name}</td>
+                      <td className="py-4 px-4 text-blue-700 font-semibold">{leave.type}</td>
+                      <td className="py-4 px-4 text-slate-600">{leave.startDate}</td>
+                      <td className="py-4 px-4 text-slate-600">{leave.endDate}</td>
+                      <td className="py-4 px-4 font-bold">{leave.days} أيام</td>
+                      <td className="py-4 px-4 text-emerald-700 font-bold">{leave.balance}</td>
+                      <td className="py-4 px-4">
+                        <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded text-xs font-bold">
+                          {leave.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 4: LOCATIONS (activeTab === 'locations') */}
+        {activeTab === "locations" && (
+          <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+              <svg className="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              المواقع الجغرافية ونطاق الحضور الجغرافي (Geofence Zones)
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                <h3 className="font-bold text-slate-900 text-lg">Al Naseem - HQ</h3>
+                <p className="text-xs text-slate-500 mt-1">الإحداثيات: 24.7136° N, 46.6753° E</p>
+                <p className="text-xs text-emerald-700 font-bold mt-2">نطاق البصمة المسموح: 200 متر</p>
+              </div>
+              <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                <h3 className="font-bold text-slate-900 text-lg">Fayha Branch - فرع الفيحاء</h3>
+                <p className="text-xs text-slate-500 mt-1">الإحداثيات: 24.6892° N, 46.7321° E</p>
+                <p className="text-xs text-emerald-700 font-bold mt-2">نطاق البصمة المسموح: 150 متر</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 5: REPORTS (activeTab === 'reports') */}
+        {activeTab === "reports" && (
+          <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              مركز التقارير المعتمدة وتصدير مسيرات الرواتب
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-5 border border-slate-200 rounded-lg text-center bg-slate-50">
+                <div className="text-emerald-600 font-black text-2xl mb-1">EXCEL</div>
+                <h3 className="font-bold text-slate-900">تقرير الحضور الشهري</h3>
+                <button className="mt-3 bg-[#1e262c] text-white text-xs px-4 py-2 rounded font-bold">تصدير التقرير</button>
+              </div>
+              <div className="p-5 border border-slate-200 rounded-lg text-center bg-slate-50">
+                <div className="text-rose-600 font-black text-2xl mb-1">PDF</div>
+                <h3 className="font-bold text-slate-900">تقرير الإجازات والأرصدة</h3>
+                <button className="mt-3 bg-[#1e262c] text-white text-xs px-4 py-2 rounded font-bold">تصدير التقرير</button>
+              </div>
+              <div className="p-5 border border-slate-200 rounded-lg text-center bg-slate-50">
+                <div className="text-blue-600 font-black text-2xl mb-1">CSV</div>
+                <h3 className="font-bold text-slate-900">تقرير التأخير والخروج المبكر</h3>
+                <button className="mt-3 bg-[#1e262c] text-white text-xs px-4 py-2 rounded font-bold">تصدير التقرير</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 6: SETTINGS (activeTab === 'settings') */}
+        {activeTab === "settings" && (
+          <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+              <svg className="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              إعدادات النظام والـ API
+            </h2>
+            <div className="p-4 border border-slate-200 rounded bg-slate-50">
+              <label className="block text-xs font-bold text-slate-700 mb-2">رابط خادم الربط (API Base URL)</label>
+              <input type="text" readOnly value="https://beattend.com/api" className="w-full p-2 border rounded bg-white text-sm text-slate-800 font-mono" />
+            </div>
+          </div>
+        )}
 
       </main>
 

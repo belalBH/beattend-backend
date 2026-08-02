@@ -43,6 +43,15 @@ class ApiResponse {
     }
 }
 
+function validateTenant() {
+    $headers = [];
+    if (function_exists('getallheaders')) {
+        $headers = getallheaders();
+    }
+    $tenantId = $headers['X-Tenant-ID'] ?? $headers['x-tenant-id'] ?? $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
+    return $tenantId;
+}
+
 function getAuthenticatedEmployeeId() {
     $authHeader = '';
     if (function_exists('apache_request_headers')) {

@@ -1,8 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const getInitialTab = () => {
+    const hash = window.location.hash.replace('#', '').trim();
+    const validTabs = ['dashboard', 'employees', 'attendance', 'leaves', 'locations', 'reports', 'settings'];
+    return validTabs.includes(hash) ? hash : 'dashboard';
+  };
+
+  const [activeTab, setActiveTabState] = useState<string>(getInitialTab);
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    window.location.hash = tab;
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '').trim();
+      const validTabs = ['dashboard', 'employees', 'attendance', 'leaves', 'locations', 'reports', 'settings'];
+      if (validTabs.includes(hash)) {
+        setActiveTabState(hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const employeesData = [
     {

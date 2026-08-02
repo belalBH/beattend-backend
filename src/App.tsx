@@ -2,11 +2,17 @@ import React, { useState, useEffect } from "react";
 
 export default function App() {
   const getInitialTab = () => {
-    const hash = window.location.hash.replace('#', '').trim();
-    const savedPage = localStorage.getItem('beattend_active_page') || '';
     const validTabs = ['dashboard', 'employees', 'attendance', 'leaves', 'locations', 'reports', 'settings'];
-    if (validTabs.includes(hash)) return hash;
-    if (validTabs.includes(savedPage)) return savedPage;
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryTab = urlParams.get('page') || '';
+    const hashTab = window.location.hash.replace('#', '').trim();
+    const sessionTab = sessionStorage.getItem('beattend_active_page') || '';
+    const localTab = localStorage.getItem('beattend_active_page') || '';
+
+    if (validTabs.includes(queryTab)) return queryTab;
+    if (validTabs.includes(hashTab)) return hashTab;
+    if (validTabs.includes(sessionTab)) return sessionTab;
+    if (validTabs.includes(localTab)) return localTab;
     return 'dashboard';
   };
 
@@ -15,22 +21,35 @@ export default function App() {
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
-    window.location.hash = tab;
-    localStorage.setItem('beattend_active_page', tab);
+    window.history.replaceState({ page: tab }, '', `${window.location.pathname}?page=${tab}#${tab}`);
+    try {
+      localStorage.setItem('beattend_active_page', tab);
+      sessionStorage.setItem('beattend_active_page', tab);
+    } catch (e) {
+      console.warn('Storage unavailable:', e);
+    }
   };
 
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '').trim();
+    const handleUrlChange = () => {
       const validTabs = ['dashboard', 'employees', 'attendance', 'leaves', 'locations', 'reports', 'settings'];
-      if (validTabs.includes(hash)) {
-        setActiveTabState(hash);
-        localStorage.setItem('beattend_active_page', hash);
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryTab = urlParams.get('page') || '';
+      const hashTab = window.location.hash.replace('#', '').trim();
+
+      if (validTabs.includes(queryTab)) {
+        setActiveTabState(queryTab);
+      } else if (validTabs.includes(hashTab)) {
+        setActiveTabState(hashTab);
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    window.addEventListener('popstate', handleUrlChange);
+    return () => {
+      window.removeEventListener('hashchange', handleUrlChange);
+      window.removeEventListener('popstate', handleUrlChange);
+    };
   }, []);
 
   const employeesData = [

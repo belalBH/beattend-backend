@@ -4,12 +4,23 @@ import { createServer as createViteServer } from "vite";
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = parseInt(process.env.PORT || "3000", 10);
+  const HOST = process.env.HOST || "127.0.0.1";
 
   // JSON parsing middleware
   app.use(express.json());
 
-  // API routes FIRST
+  // Health Check Endpoint
+  app.get("/api/version", (req, res) => {
+    res.json({
+      app: "BeatAttend HR Enterprise Gateway",
+      version: "1.0.0",
+      environment: process.env.NODE_ENV || "development",
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // Sentiment Analysis API endpoint
   app.post("/api/sentiment-analysis", async (req: any, res: any) => {
     try {
       const { name, officeStatus, checkedIn, weeklyHours, targetHours, officePresence, engagements, currentStats } = req.body;
@@ -19,7 +30,6 @@ async function startServer() {
         return res.status(500).json({ error: "GEMINI_API_KEY environment variable is not configured." });
       }
 
-      // Initialize GoogleGenAI SDK correctly
       const { GoogleGenAI } = await import("@google/genai");
       const ai = new GoogleGenAI({
         apiKey,
@@ -30,7 +40,7 @@ async function startServer() {
         }
       });
 
-      const prompt = `You are a high-end corporate fintech HR coach and sentiment analysis system for CrystalHR.
+      const prompt = `You are a high-end corporate fintech HR coach and sentiment analysis system for BeatAttend HR Enterprise.
 Analyze the following employee activity and metrics, and provide a premium executive sentiment report.
 
 Employee: ${name}
@@ -43,12 +53,7 @@ ${JSON.stringify(engagements, null, 2)}
 Additional Current Statistics:
 ${JSON.stringify(currentStats, null, 2)}
 
-Please write a highly polished, analytical, and professional analysis in markdown.
-Focus on:
-1. Productivity & Time Management: Evaluate their weekly hours (${weeklyHours}/${targetHours} hrs) and office presence (${officePresence}%).
-2. Cognitive Load & Engagement: Review their upcoming meetings/engagements and suggest focus structures.
-3. Sentiment & Well-being: Suggest a sophisticated, executive well-being score or dynamic advisory note (e.g. "Optimal Equilibrium", "High Velocity Focus").
-Keep the response structured, clear, and elegant. Write 2-3 short, highly impactful paragraphs or a structured executive memo. Do not use top-level markdown headers like # or ##. Do not use bullet points unless necessary. No greeting or signoff. Start directly.`;
+Please write a highly polished, analytical, and professional analysis in markdown.`;
 
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
@@ -62,7 +67,7 @@ Keep the response structured, clear, and elegant. Write 2-3 short, highly impact
     }
   });
 
-  // Vite middleware for development
+  // Vite middleware for development vs static frontend-dist for production
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -70,15 +75,15 @@ Keep the response structured, clear, and elegant. Write 2-3 short, highly impact
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    const frontendDistPath = path.join(process.cwd(), 'frontend-dist');
+    app.use(express.static(frontendDistPath));
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      res.sendFile(path.join(frontendDistPath, 'index.html'));
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`BeatAttend API Gateway running on http://${HOST}:${PORT}`);
   });
 }
 

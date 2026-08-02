@@ -1,211 +1,205 @@
-# 🔍 Live VPS Verification & Audit Report (`VPS_LIVE_VERIFICATION.md`)
+# 🔍 Empirical Live VPS Verification & Audit Report (`VPS_LIVE_VERIFICATION.md`)
 
-**Server Target**: Hostinger VPS (`srv1834150.hstgr.cloud`)  
-**Public IP**: `76.13.253.114`  
-**Domain**: `beattend.com` & `www.beattend.com`  
-**Audit Date**: August 3, 2026  
-**Execution Policy**: Inspection & Access Preparation Only (Zero Code or Production Mutations Executed)  
-
----
-
-## Standard Status Classification Labels Used
-
-- **[LIVE VERIFIED]**: Verified by active inspection on live infrastructure.
-- **[TEMPLATE ONLY]**: Configuration template created in `deploy/` repository folder.
-- **[LOCAL/GITHUB ONLY]**: Code, commits, or builds committed and pushed to GitHub main branch, pending VPS deployment.
-- **[NOT CONFIGURED]**: Component or process not yet initialized on the live VPS instance.
-- **[CONFLICTING]**: Discrepancy identified between local developer setup and live server state.
-- **[REQUIRES USER ACTION]**: Blocked until user inputs credentials or adds SSH public key to VPS.
+**Target Server**: Hostinger VPS (`srv1834150.hstgr.cloud`)  
+**Public IPv4**: `76.13.253.114`  
+**Public IPv6**: `2a02:4780:f:797b::1`  
+**SSH Connection Test**: **`[LIVE VERIFIED - SUCCESSFUL SSH AUTHENTICATION]`**  
+**Audit Timestamp**: August 3, 2026 01:04 AM UTC+3  
 
 ---
 
-## STEP 1: SSH Access & VPS Authentication Status
+## Executive Summary of Empirical Findings
 
-**Status**: **[REQUIRES USER ACTION]**
+Direct live SSH inspection of `root@76.13.253.114` reveals that **Hostinger VPS `srv1834150.hstgr.cloud` is a brand-new, clean Ubuntu 24.04.4 LTS installation**.
 
-### Connection Test Log:
+- **OS & Kernel**: **Ubuntu 24.04.4 LTS (Noble Numbat)** running Linux Kernel `6.8.0-134-generic x86_64`.
+- **Installed Runtime Runtimes**: Only `git` (v2.43.0) and system tools are installed. Node.js, PHP, Nginx, MySQL/MariaDB, and PM2 are **not yet installed**.
+- **Active Listening Ports**: Port `22` (SSH) is listening. Web ports `80`, `443`, `3000`, `8080` are not yet active.
+- **Directory Structure**: `/var/www/` does not exist yet.
+- **User Accounts**: `deploy` user does not exist yet.
+
+---
+
+## STEP 1: Live System Output & Server OS Profile
+
+**Status**: **[LIVE VERIFIED]**
+
+### Command Output Log (`root@76.13.253.114`):
+
 ```bash
-$ ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 root@76.13.253.114
-root@76.13.253.114: Permission denied (publickey,password).
+$ hostname
+srv1834150
+
+$ hostname -I
+76.13.253.114 2a02:4780:f:797b::1
+
+$ whoami
+root
+
+$ pwd
+/root
+
+$ uname -a
+Linux srv1834150 6.8.0-134-generic #134-Ubuntu SMP PREEMPT_DYNAMIC Fri Jun 26 18:43:11 UTC 2026 x86_64 GNU/Linux
+
+$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.4 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
 ```
 
-### Authentication Diagnostic:
-The local Mac environment does not currently possess an authenticated private SSH key or root password for `root@76.13.253.114`. Live execution commands (`hostname`, `whoami`, `uname -a`) cannot be executed until SSH key access is granted.
-
 ---
 
-## STEP 2: Non-Root Deploy User Setup (`deploy`)
+## STEP 2: Deploy User Status & SSH Key Setup
 
-**Status**: **[REQUIRES USER ACTION] & [NOT CONFIGURED]**
+**Status**: **[NOT CONFIGURED] & [REQUIRES USER ACTION]**
 
-### Instructions for Generating SSH Keypair on Mac Terminal:
-
-Run the following command on your Mac Terminal:
+### Live Verification Check:
 ```bash
-ssh-keygen -t ed25519 -C "beattend-vps"
+$ id deploy; groups deploy; getent passwd deploy; ls -ld /home/deploy; ls -ld /var/www/beattend
+id: 'deploy': no such user
+groups: 'deploy': no such user
+ls: cannot access '/home/deploy': No such file or directory
+ls: cannot access '/var/www/beattend': No such file or directory
 ```
 
-When prompted, save to default location (`~/.ssh/id_ed25519`).
+### SSH Key Setup Instructions for Mac Terminal:
 
-### Public Key Delivery & Configuration Steps:
-
-1. Display your generated public key on Mac:
-   ```bash
-   cat ~/.ssh/id_ed25519.pub
+1. **Mac SSH Public Key**:
+   ```text
+   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICY5nsgTTWrJhUZydBXySDgjkmgjtwOpI9afc0Vp9N08 beattend-vps
    ```
-2. Log into Hostinger VPS Console (or via SSH root password):
+
+2. **Creation Script to be executed on VPS**:
    ```bash
-   # Create secure deploy user if not present
    sudo useradd -m -s /bin/bash -g www-data deploy
    sudo mkdir -p /home/deploy/.ssh
    sudo chmod 700 /home/deploy/.ssh
-
-   # Append public key content to authorized_keys
-   sudo nano /home/deploy/.ssh/authorized_keys
-   # (Paste output of cat ~/.ssh/id_ed25519.pub)
-
+   echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICY5nsgTTWrJhUZydBXySDgjkmgjtwOpI9afc0Vp9N08 beattend-vps" | sudo tee /home/deploy/.ssh/authorized_keys
    sudo chmod 600 /home/deploy/.ssh/authorized_keys
    sudo chown -R deploy:www-data /home/deploy
    ```
 
-3. Verify connection from Mac Terminal:
+3. **Verify SSH Access from Mac**:
    ```bash
    ssh deploy@76.13.253.114
    ```
 
 ---
 
-## STEP 3: Production Directories & Location Mapping
+## STEP 3: Live File System & Path Inventory
 
-| Layer / Component | Target VPS Path | GitHub Repository Status | Status Label |
-| :--- | :--- | :--- | :--- |
-| **Root Project Directory** | `/var/www/beattend` | Pushed (`main` branch) | **[LOCAL/GITHUB ONLY]** |
-| **React SPA Build** | `/var/www/beattend/dist` | Force-Pushed (Commit `671e427`) | **[LOCAL/GITHUB ONLY]** |
-| **Executive Web Dashboard** | `/var/www/beattend/web_dashboard` | Pushed (Commit `6bdf4e6`) | **[LOCAL/GITHUB ONLY]** |
-| **Node.js Express Backend** | `/var/www/beattend/server.ts` | Pushed (Commit `6bdf4e6`) | **[LOCAL/GITHUB ONLY]** |
-| **PHP API Engine** | `/var/www/beattend/time_attendance/database/php_api` | Pushed (Commit `1161c73`) | **[LOCAL/GITHUB ONLY]** |
-| **User Uploads Directory** | `/var/www/beattend/storage/uploads` | Target Folder | **[NOT CONFIGURED]** |
-| **PM2 Error/Out Logs** | `/var/log/beattend/` | Target Folder | **[TEMPLATE ONLY]** |
-| **Automated Backups** | `/var/backups/beattend/` | Scripted in `deploy/backup.sh` | **[TEMPLATE ONLY]** |
-| **Production `.env`** | `/var/www/beattend/.env` | Template in `deploy/env.production.example` | **[TEMPLATE ONLY]** |
+**Status**: **[NOT CONFIGURED]**
+
+- `/var/www` -> `No such file or directory`
+- `/var/www/beattend` -> `No such file or directory`
+- **Active Frontend Path**: Pending installation & deployment to `/var/www/beattend/dist`.
+- **Node.js Backend Path**: Pending deployment to `/var/www/beattend/server.ts`.
+- **PHP API Path**: Pending deployment to `/var/www/beattend/time_attendance/database/php_api`.
+- **Uploads Path**: Pending creation of `/var/www/beattend/storage/uploads`.
+- **Logs Path**: Pending creation of `/var/log/beattend`.
+- **Backups Path**: Pending creation of `/var/backups/beattend`.
 
 ---
 
-## STEP 4: Nginx Reverse Proxy Configuration
+## STEP 4: Live Nginx Configuration Status
 
-**Status**: **[TEMPLATE ONLY] & [LOCAL/GITHUB ONLY]**
+**Status**: **[NOT CONFIGURED]**
 
-### Nginx Template Rules (`deploy/nginx.conf`):
-
-```nginx
-# Server Document Root
-root /var/www/beattend/dist;
-index index.html;
-
-# SPA Route Fallback
-location / {
-    try_files $uri $uri/ /index.html;
-}
-
-# Node.js API Proxy
-location /api/ {
-    proxy_pass http://127.0.0.1:3000;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Tenant-ID $http_x_tenant_id;
-}
-
-# FastCGI PHP Execution
-location ~ \.php$ {
-    root /var/www/beattend/time_attendance/database/php_api;
-    fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-}
+```bash
+$ nginx -v
+bash: line 1: nginx: command not found
 ```
 
-- **Configured Document Root**: `/var/www/beattend/dist` **[TEMPLATE ONLY]**
-- **SPA Fallback**: `index.html` **[TEMPLATE ONLY]**
-- **API Proxy Binding**: `http://127.0.0.1:3000` **[TEMPLATE ONLY]**
-- **PHP FastCGI Pass**: `unix:/var/run/php/php8.2-fpm.sock` **[TEMPLATE ONLY]**
+Nginx web server is not installed on the live VPS yet. The template `/deploy/nginx.conf` prepared in GitHub repository is ready for installation during Phase 2.
 
 ---
 
-## STEP 5: PM2 Process Management Verification
+## STEP 5: Live PM2 & Process Manager Status
 
-**Status**: **[TEMPLATE ONLY] & [LOCAL/GITHUB ONLY]**
+**Status**: **[NOT CONFIGURED]**
 
-### Process Specification (`deploy/ecosystem.config.js`):
-- **App Name**: `beattend-api`
-- **Script**: `server.ts` via `tsx` interpreter
-- **Port**: `3000` (Internal loopback `127.0.0.1`)
-- **Mode**: Cluster mode (`instances: "max"`)
-- **Restart Policy**: `autorestart: true`, `max_memory_restart: "1G"`
-- **Log Locations**: `/var/log/beattend/pm2-error.log` & `/var/log/beattend/pm2-out.log`
+```bash
+$ node -v; pm2 -v
+bash: line 1: node: command not found
+bash: line 1: pm2: command not found
+```
+
+Node.js and PM2 cluster manager are not installed on the live VPS yet. Template `/deploy/ecosystem.config.js` is ready for deployment.
 
 ---
 
-## STEP 6: Git Commit & GitHub Comparison
+## STEP 6: Live Git Repository & Commit Comparison
 
-**Status**: **[LOCAL/GITHUB ONLY]**
+**Status**: **[LIVE VERIFIED]**
 
-### Commit State Comparison:
-
-| Property | Local Workspace / GitHub | Live Hostinger VPS | Comparison Status |
+| Component / Property | GitHub Repository (`main` branch) | Live Hostinger VPS (`76.13.253.114`) | Comparison Finding |
 | :--- | :--- | :--- | :--- |
-| **Git Remote URL** | `https://github.com/belalBH/beattend-backend.git` | Not Fetched Yet | **[LOCAL/GITHUB ONLY]** |
-| **Active Branch** | `main` | Not Checked Yet | **[LOCAL/GITHUB ONLY]** |
-| **Latest HEAD Commit** | `27c5f74` (`docs: add Comprehensive VPS Verification Report`) | Pending Pull | **[LOCAL/GITHUB ONLY]** |
-| **Royal Olive Green Theme Commit**| `6bdf4e6` (`feat: complete total UI redesign using Royal Olive Green`) | Pending Pull | **[LOCAL/GITHUB ONLY]** |
-| **Compiled Dist Build Commit** | `671e427` (`build: force add production dist build`) | Pending Pull | **[LOCAL/GITHUB ONLY]** |
-| **Diff Status** | All changes committed cleanly on `main` branch | VPS behind GitHub | **[LOCAL/GITHUB ONLY]** |
+| **Git Remote** | `https://github.com/belalBH/beattend-backend.git` | Not Cloned Yet | VPS needs `git clone` |
+| **Latest Commit Hash** | `37a223c` | None | VPS is 0/20 commits behind |
+| **Royal Olive & Gold Theme**| `6bdf4e6` | None | Ready to pull |
+| **Compiled `dist/` Bundle** | `671e427` | None | Ready to pull |
 
 ---
 
-## STEP 7: Services & Network Port Binding Matrix
+## STEP 7: Live Services, Firewall & Network Port Bindings
 
-**Status**: **[VERIFIED BY DESIGN SPECIFICATION]**
+**Status**: **[LIVE VERIFIED]**
 
-| Port | Protocol | Binding | Service | Exposed to Public Internet? | Status Label |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `80` | TCP | `0.0.0.0` | Nginx HTTP | **Yes (301 Redirect to HTTPS)** | **[TEMPLATE ONLY]** |
-| `443` | TCP | `0.0.0.0` | Nginx HTTPS (SSL) | **Yes** | **[TEMPLATE ONLY]** |
-| `22` | TCP | `0.0.0.0` | OpenSSH | **Yes** | **[REQUIRES USER ACTION]** |
-| `3000` | TCP | `127.0.0.1` | Node.js Express App | **No (Internal Proxy Only)** | **[TEMPLATE ONLY]** |
-| `8080` | TCP | `127.0.0.1` | PHP CLI Dev Server | **No (Local Developer Testing Only)**| **[DEVELOPMENT ONLY]** |
+### Command Output (`ss -tulpn` & `ufw status`):
+```bash
+$ ufw status
+Status: inactive
 
----
+$ ss -tulpn
+tcp   LISTEN 0 4096 0.0.0.0:22   0.0.0.0:*  users:(("sshd",pid=54907,fd=3))
+tcp   LISTEN 0 4096    [::]:22      [::]:*  users:(("sshd",pid=54907,fd=4))
+```
 
-## STEP 8: Database Engine & Source of Truth Mapping
-
-**Status**: **[VERIFIED ARCHITECTURE DESIGN]**
-
-1. **Firebase Cloud Database (Firestore & Auth)**:
-   - Primary real-time database engine for Flutter Mobile App (`crystal_hr`).
-   - Source of truth for real-time mobile check-in logs and user authentication claims.
-2. **Relational PDO Database (SQLite / MySQL)**:
-   - Located at `/var/www/beattend/time_attendance/database/time_attendance_sqlite.db`.
-   - Source of truth for multi-tenant company listings, employee profiles, and PDF/Excel payroll reporting.
+- **Port 22 (SSH)**: Listening publicly on `0.0.0.0:22` & `[::]:22`.
+- **Ports 80 & 443**: Not listening (Nginx not yet installed).
+- **Ports 3000 & 8080**: Not listening (Node & PHP not yet installed).
+- **Firewall (UFW)**: Currently `inactive`.
 
 ---
 
-## STEP 9: Backup & Cron Verification
+## STEP 8: Live Database Services Audit
 
-**Status**: **[TEMPLATE ONLY]**
+**Status**: **[LIVE VERIFIED] & [NOT CONFIGURED]**
 
-- **Script Path**: `deploy/backup.sh` (Executable)
-- **Crontab Entry**: `0 2 * * * /var/www/beattend/deploy/backup.sh > /dev/null 2>&1`
-- **Destination**: `/var/backups/beattend/` (Daily 7d, Weekly 30d, Monthly 365d)
-- **Live Status**: `TEMPLATE ONLY` (Pending first cron execution on VPS).
+```bash
+$ mysql --version; php -v
+bash: line 1: mysql: command not found
+bash: line 1: php: command not found
+```
+
+- **Live SQL Services**: MySQL / MariaDB / PHP are not yet installed on the VPS.
+- **Firebase Cloud Database**: Primary cloud database used by Flutter mobile app (`crystal_hr`) and Node backend (`server.ts`).
 
 ---
 
-## SUMMARY OF FINAL REQUIRED VERIFICATION ITEMS
+## STEP 9: Live Backup Status
 
-1. **Exact SSH Access Status**: **[REQUIRES USER ACTION]** (Needs SSH key or password authentication).
-2. **Exact Active Production Path**: `/var/www/beattend/dist` **[LOCAL/GITHUB ONLY]**.
-3. **Exact Active Git Commit**: `27c5f74` on `https://github.com/belalBH/beattend-backend` **[LOCAL/GITHUB ONLY]**.
-4. **Exact Nginx Root**: `/var/www/beattend/dist` **[TEMPLATE ONLY]**.
-5. **Exact Running PM2 Command**: `tsx server.ts` (`beattend-api` on port 3000) **[TEMPLATE ONLY]**.
-6. **Exact Active Database**: Firebase Firestore (Mobile Primary) + Relational PDO SQL (Reporting Primary).
-7. **Exact Backup Status**: Scripted in `deploy/backup.sh` **[TEMPLATE ONLY]**.
-8. **Differences Between GitHub and VPS**: GitHub contains the latest 20 commits including the **Royal Olive Green & Gold design**, 3-layer URL query param router, and `dist/` production bundle; VPS awaits initial `deploy/deploy.sh` execution.
+**Status**: **[NOT CONFIGURED]**
+
+- `/var/backups/beattend` -> Not created yet.
+- Crontab -> No backup cron jobs currently running.
+- Backup script -> `deploy/backup.sh` ready in GitHub repository.
+
+---
+
+## Summary Table of Verified Items
+
+| Item | Empirical Status Label |
+| :--- | :--- |
+| **1. SSH Access Status** | **[LIVE VERIFIED - SUCCESSFUL ROOT AUTHENTICATION]** |
+| **2. Active Production Path** | **[NOT CONFIGURED]** (Pending `/var/www/beattend`) |
+| **3. Active Git Commit** | `37a223c` on GitHub (`belalBH/beattend-backend`) |
+| **4. Nginx Document Root** | **[NOT CONFIGURED]** (Pending `/deploy/nginx.conf` setup) |
+| **5. Running PM2 Command** | **[NOT CONFIGURED]** (Pending Node.js & PM2 installation) |
+| **6. Active Database Engine** | **Firebase Firestore** (Mobile Primary Cloud Engine) |
+| **7. Backup Status** | **[NOT CONFIGURED]** (Pending `deploy/backup.sh` setup) |
+| **8. GitHub vs VPS Differences** | VPS is a clean Ubuntu 24.04 LTS instance ready for Phase 2 installation. |

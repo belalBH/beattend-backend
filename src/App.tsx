@@ -3,8 +3,11 @@ import React, { useState, useEffect } from "react";
 export default function App() {
   const getInitialTab = () => {
     const hash = window.location.hash.replace('#', '').trim();
+    const savedPage = localStorage.getItem('beattend_active_page') || '';
     const validTabs = ['dashboard', 'employees', 'attendance', 'leaves', 'locations', 'reports', 'settings'];
-    return validTabs.includes(hash) ? hash : 'dashboard';
+    if (validTabs.includes(hash)) return hash;
+    if (validTabs.includes(savedPage)) return savedPage;
+    return 'dashboard';
   };
 
   const [activeTab, setActiveTabState] = useState<string>(getInitialTab);
@@ -13,6 +16,7 @@ export default function App() {
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
     window.location.hash = tab;
+    localStorage.setItem('beattend_active_page', tab);
   };
 
   useEffect(() => {
@@ -21,6 +25,7 @@ export default function App() {
       const validTabs = ['dashboard', 'employees', 'attendance', 'leaves', 'locations', 'reports', 'settings'];
       if (validTabs.includes(hash)) {
         setActiveTabState(hash);
+        localStorage.setItem('beattend_active_page', hash);
       }
     };
 

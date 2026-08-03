@@ -40,6 +40,7 @@ require_once __DIR__ . '/controllers/platform_settings_controller.php';
 require_once __DIR__ . '/controllers/tenant_rbac_controller.php';
 require_once __DIR__ . '/controllers/universal_approval_controller.php';
 require_once __DIR__ . '/controllers/tenant_settings_controller.php';
+require_once __DIR__ . '/controllers/payroll_controller.php';
 
 function validateTenant() {
     $tenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
@@ -313,7 +314,7 @@ try {
                 $controller->updateEmployee($targetId, $input, $tenantId);
             } elseif ($method === 'DELETE') {
                 $targetId = $id ?: ($input['id'] ?? null);
-                $controller->deleteEmployee($targetId, $tenantId);
+                $controller->deleteEmployee($tenantId, $tenantId);
             } else {
                 if ($id) {
                     $controller->getEmployeeById($id, $tenantId);
@@ -385,7 +386,16 @@ try {
 
         case 'payroll':
             enforceTenantFeature($tenantId, 'payroll');
-            ApiResponse::success([], 'وحدة الرواتب مفعلة ومتاحة مع حماية الصلاحيات');
+            $controller = new PayrollController();
+            if ($action === 'detail') {
+                $runId = $_GET['run_id'] ?? 101;
+                $controller->getPayrollRunDetail($tenantId, $runId);
+            } elseif ($action === 'mudad') {
+                $runId = $_GET['run_id'] ?? 101;
+                $controller->generateMudadFile($tenantId, $runId);
+            } else {
+                $controller->getPayrollRuns($tenantId);
+            }
             break;
 
         default:

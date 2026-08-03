@@ -12,6 +12,7 @@ import { PlatformLoginPage } from "./features/platform/PlatformLoginPage";
 import { PlatformConsoleLayout } from "./features/platform/PlatformConsoleLayout";
 import { UsersAndPermissionsView } from "./features/settings/UsersAndPermissionsView";
 import { TenantSettingsView } from "./features/settings/TenantSettingsView";
+import { PayrollView } from "./features/payroll/PayrollView";
 import { UnderIntegration } from "./components/UnderIntegration";
 
 export default function App() {
@@ -82,7 +83,7 @@ export default function App() {
     { id: 'locations', label: 'النطاق الجغرافي', icon: '📍', isLive: true },
     { id: 'roles', label: 'المستخدمون والصلاحيات', icon: '🔐', isLive: true },
     { id: 'shifts', label: 'مناوبات العمل', icon: '🔄', isLive: false },
-    { id: 'payroll', label: 'مسيرات الرواتب', icon: '💰', isLive: true },
+    { id: 'payroll', label: 'مسيرات الرواتب (WPS)', icon: '💰', isLive: true },
     { id: 'documents', label: 'المستندات والملفات', icon: '📁', isLive: false },
     { id: 'reports', label: 'التقارير والإحصائيات', icon: '📈', isLive: false },
     { id: 'settings', label: 'إعدادات المنشأة', icon: '⚙️', isLive: true },
@@ -225,8 +226,9 @@ export default function App() {
           {activeTab === 'locations' && <GeofencesView />}
           {activeTab === 'roles' && <UsersAndPermissionsView />}
           {activeTab === 'settings' && <TenantSettingsView />}
+          {activeTab === 'payroll' && <PayrollView />}
 
-          {['shifts', 'payroll', 'documents', 'reports'].includes(activeTab) && (
+          {['shifts', 'documents', 'reports'].includes(activeTab) && (
             <UnderIntegration moduleName={allNavItems.find(n => n.id === activeTab)?.label || ''} />
           )}
         </div>

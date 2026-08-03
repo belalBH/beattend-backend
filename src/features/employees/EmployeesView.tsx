@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api.service';
 import { Employee, Company } from '../../types';
 import { EmployeeEditModal } from './EmployeeEditModal';
+import { EmployeeProfilePage } from './pages/EmployeeProfilePage';
 
 export const EmployeesView: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -12,9 +13,10 @@ export const EmployeesView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
 
-  // Modals state
+  // Modals & Page Navigation State
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [editingEmployeeId, setEditingEmployeeId] = useState<number | null>(null);
+  const [viewingProfileId, setViewingProfileId] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -55,7 +57,7 @@ export const EmployeesView: React.FC = () => {
       last_name: '',
       email: '',
       phone: '',
-      empNo: 'STG-' + Math.floor(100 + Math.random() * 900),
+      empNo: 'EMP-STG-' + Math.floor(100 + Math.random() * 900),
       company_id: companies[0]?.id || 1,
       is_active: true
     });
@@ -63,8 +65,11 @@ export const EmployeesView: React.FC = () => {
   };
 
   const handleOpenEdit = (emp: Employee) => {
-    console.log('[EmployeesView] Opening Multi-Tab Edit Modal for Employee ID:', emp.id);
     setEditingEmployeeId(emp.id);
+  };
+
+  const handleOpenFullProfile = (emp: Employee) => {
+    setViewingProfileId(emp.id);
   };
 
   const handleToggleStatus = async (emp: Employee) => {
@@ -117,6 +122,18 @@ export const EmployeesView: React.FC = () => {
     return matchesSearch && matchesCompany;
   });
 
+  if (viewingProfileId !== null) {
+    return (
+      <EmployeeProfilePage
+        employeeId={viewingProfileId}
+        onBack={() => {
+          setViewingProfileId(null);
+          loadData();
+        }}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="p-8 text-center text-[#d4af37] font-semibold animate-pulse">
@@ -144,8 +161,8 @@ export const EmployeesView: React.FC = () => {
       {/* Page Header & Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#1b3325]/90 p-6 rounded-2xl border border-[#d4af37]/30 backdrop-blur-md relative z-10">
         <div>
-          <h2 className="text-2xl font-bold text-[#d4af37]">دليل الموظفين الرسمي (Interactive Multi-Tab CRUD)</h2>
-          <p className="text-sm text-slate-400 mt-1">إضافة موظف، التعديل الشامل بالأبواب الأربعة، تغيير الحالة، وتصفية البيانات المباشرة</p>
+          <h2 className="text-2xl font-bold text-[#d4af37]">دليل الموظفين الرسمي (Full Interactive Profile Page)</h2>
+          <p className="text-sm text-slate-400 mt-1">اضغط على اسم أي موظف أو زر الملف الكامل لفتح صفحة التعديل الشاملة بالأبواب الـ 12</p>
         </div>
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
           <select
@@ -187,14 +204,22 @@ export const EmployeesView: React.FC = () => {
                 <th className="p-4">الهاتف</th>
                 <th className="p-4">الشركة</th>
                 <th className="p-4">الحالة</th>
-                <th className="p-4 text-center">الإجراءات</th>
+                <th className="p-4 text-center">إجراءات الملف والتعديل</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#d4af37]/10 text-slate-200">
               {filteredEmployees.map((emp) => (
                 <tr key={emp.id} className="hover:bg-[#d4af37]/5 transition">
                   <td className="p-4 font-mono text-[#d4af37] font-semibold">{emp.empNo}</td>
-                  <td className="p-4 font-bold">{emp.first_name} {emp.last_name}</td>
+                  <td className="p-4 font-bold">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenFullProfile(emp)}
+                      className="text-slate-100 hover:text-[#d4af37] hover:underline font-bold text-right cursor-pointer"
+                    >
+                      {emp.first_name} {emp.last_name}
+                    </button>
+                  </td>
                   <td className="p-4 font-mono text-slate-300">{emp.email}</td>
                   <td className="p-4 font-mono text-slate-400">{emp.phone || '-'}</td>
                   <td className="p-4">{emp.company_name || 'Solutions Co'}</td>
@@ -211,10 +236,17 @@ export const EmployeesView: React.FC = () => {
                     <div className="flex justify-center gap-2">
                       <button
                         type="button"
+                        onClick={() => handleOpenFullProfile(emp)}
+                        className="px-3 py-1 bg-gradient-to-r from-[#d4af37] to-[#b38f2a] text-[#0f1e16] font-bold rounded-lg text-xs hover:brightness-110 transition cursor-pointer"
+                      >
+                        👤 صفحة الملف الكاملة
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleOpenEdit(emp)}
                         className="px-3 py-1 bg-[#234735] text-[#d4af37] border border-[#d4af37]/30 rounded-lg text-xs font-semibold hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer"
                       >
-                        ✏️ تعديل متقدم
+                        ✏️ تعديل سريع
                       </button>
                       <button
                         type="button"
@@ -239,7 +271,7 @@ export const EmployeesView: React.FC = () => {
           onClose={() => setEditingEmployeeId(null)}
           onSaved={() => {
             loadData();
-            setSuccessMsg('تم تحديث بيانات الموظف بنجاح في قاعد بيانات الـ Staging');
+            setSuccessMsg('تم تحديث بيانات الموظف بنجاح في قاعدة بيانات الـ Staging');
           }}
         />
       )}

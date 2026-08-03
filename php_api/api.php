@@ -156,7 +156,17 @@ try {
 
         case 'platform_tenants':
             $controller = new PlatformController();
-            if ($method === 'POST') {
+            $targetTenantId = $_GET['tenant_id'] ?? ($input['tenant_id'] ?? null);
+
+            if ($action === 'detail' && $targetTenantId) {
+                $controller->getTenantDetail($targetTenantId);
+            } elseif ($action === 'status' && $targetTenantId) {
+                $controller->updateTenantStatus($targetTenantId, $input['status'] ?? 'active');
+            } elseif ($action === 'renew' && $targetTenantId) {
+                $controller->updateTenantSubscription($targetTenantId, $input);
+            } elseif ($action === 'basic' && $targetTenantId) {
+                $controller->updateTenantBasicInfo($targetTenantId, $input);
+            } elseif ($method === 'POST') {
                 $controller->createTenant($input);
             } else {
                 $controller->getTenants();

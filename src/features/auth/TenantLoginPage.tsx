@@ -14,15 +14,15 @@ export const TenantLoginPage: React.FC<Props> = ({
   const [step, setStep] = useState<1 | 2>(1);
 
   // Step 1: Domain / Company Code
-  const [domainInput, setDomainInput] = useState<string>('HADIYAH');
+  const [domainInput, setDomainInput] = useState<string>('');
   const [resolving, setResolving] = useState<boolean>(false);
   const [resolveError, setResolveError] = useState<string | null>(null);
   const [tenantInfo, setTenantInfo] = useState<any>(null);
 
   // Step 2: Role & Credentials
   const [userRoleTab, setUserRoleTab] = useState<'admin' | 'employee'>('admin');
-  const [email, setEmail] = useState<string>('b.albanna@hadiyah.org.sa');
-  const [password, setPassword] = useState<string>('••••••••');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -187,41 +187,6 @@ export const TenantLoginPage: React.FC<Props> = ({
                   {resolving ? 'جاري التحقق من المنشأة...' : 'متابعة ←'}
                 </button>
               </form>
-
-              {/* Demo Fast Preset Chips */}
-              <div className="pt-4 border-t border-slate-100 space-y-2">
-                <span className="block text-[11px] font-bold text-slate-400">منشآت تجريبية معتمدة لاختبار العزل:</span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { setDomainInput('HADIYAH'); setEmail('b.albanna@hadiyah.org.sa'); handleResolveDomain('HADIYAH'); }}
-                    className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#0e382c] hover:text-white transition cursor-pointer"
-                  >
-                    🏢 HADIYAH
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setDomainInput('TENANTA'); setEmail('admin@tenant-a.com'); handleResolveDomain('TENANTA'); }}
-                    className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#0e382c] hover:text-white transition cursor-pointer"
-                  >
-                    🏢 TENANT A
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setDomainInput('TENANTB'); setEmail('admin@tenant-b.com'); handleResolveDomain('TENANTB'); }}
-                    className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#0e382c] hover:text-white transition cursor-pointer"
-                  >
-                    🏢 TENANT B
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setDomainInput('DEMOCO'); setEmail('admin@democo.com'); handleResolveDomain('DEMOCO'); }}
-                    className="px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl text-xs font-bold text-red-600 hover:bg-red-600 hover:text-white transition cursor-pointer"
-                  >
-                    ⚠️ DEMOCO (موقوف)
-                  </button>
-                </div>
-              </div>
             </div>
           )}
 
@@ -333,14 +298,6 @@ export const TenantLoginPage: React.FC<Props> = ({
                   {submitting ? 'جاري التحقق من العضوية...' : 'دخول ←'}
                 </button>
               </form>
-
-              {/* Fast Test Suggestion for 403 Forbidden Verification */}
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600 space-y-1">
-                <span className="font-bold text-slate-800 block">💡 تجربة اختبار العزل (Cross-Tenant 403):</span>
-                <p className="text-[10px]">
-                  جرب إدخال حساب <span className="font-mono text-blue-700 font-bold">admin@tenant-a.com</span> في شركة <span className="font-bold text-emerald-800">HADIYAH</span> لترى استجابة <span className="font-bold text-red-600">403 Forbidden</span> ومنع الدخول!
-                </p>
-              </div>
             </div>
           )}
         </div>

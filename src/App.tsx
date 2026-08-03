@@ -5,11 +5,12 @@ import { AttendanceView } from "./features/attendance/AttendanceView";
 import { LeavesView } from "./features/leaves/LeavesView";
 import { GeofencesView } from "./features/geofences/GeofencesView";
 import { SuperAdminView } from "./features/superadmin/SuperAdminView";
+import { TenantLoginPage } from "./features/auth/TenantLoginPage";
 import { UnderIntegration } from "./components/UnderIntegration";
 
 export default function App() {
   const getInitialTab = () => {
-    const validTabs = ['dashboard', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
+    const validTabs = ['dashboard', 'login', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
     const urlParams = new URLSearchParams(window.location.search);
     const queryTab = urlParams.get('page') || '';
     const hashTab = window.location.hash.replace('#', '').trim();
@@ -38,7 +39,7 @@ export default function App() {
 
   useEffect(() => {
     const handleUrlChange = () => {
-      const validTabs = ['dashboard', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
+      const validTabs = ['dashboard', 'login', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
       const urlParams = new URLSearchParams(window.location.search);
       const queryTab = urlParams.get('page') || '';
       const hashTab = window.location.hash.replace('#', '').trim();
@@ -60,6 +61,7 @@ export default function App() {
 
   const navItems = [
     { id: 'dashboard', label: 'لوحة التحكم', icon: '📊', isLive: true },
+    { id: 'login', label: 'تسجيل دخول المنشأة', icon: '🔑', isLive: true },
     { id: 'superadmin', label: 'إدارة المنصة (SaaS Admin)', icon: '🛡️', isLive: true },
     { id: 'companies', label: 'الشركات والمنشآت', icon: '🏢', isLive: true },
     { id: 'employees', label: 'دليل الموظفين', icon: '👥', isLive: true },
@@ -73,6 +75,18 @@ export default function App() {
     { id: 'roles', label: 'الأدوار والصلاحيات', icon: '🔐', isLive: false },
     { id: 'settings', label: 'إعدادات النظام', icon: '⚙️', isLive: false },
   ];
+
+  if (activeTab === 'login') {
+    return (
+      <TenantLoginPage
+        onLoginSuccess={(t) => {
+          alert(`مرحباً بك في لوحة تحكم شركة ${t.company_name}`);
+          setActiveTab('dashboard');
+        }}
+        onSwitchToSuperAdmin={() => setActiveTab('superadmin')}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0f1e16] text-slate-100 font-sans flex flex-col md:flex-row dir-rtl" dir="rtl">
@@ -137,10 +151,13 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="px-3 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-full text-xs text-[#d4af37] font-semibold flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              بيئة Staging SaaS متصلة بالـ Tenant Engine
-            </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab('login')}
+              className="px-3.5 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-xs text-[#d4af37] font-semibold hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer"
+            >
+              🔑 شاشة دخول المنشآت
+            </button>
             <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center font-bold text-[#d4af37] text-sm">
               SA
             </div>

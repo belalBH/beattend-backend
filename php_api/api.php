@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/utils/api_response.php';
 require_once __DIR__ . '/controllers/health_controller.php';
 require_once __DIR__ . '/controllers/companies_controller.php';

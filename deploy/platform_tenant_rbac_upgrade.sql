@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS tenant_memberships (
 
 CREATE TABLE IF NOT EXISTS roles (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  tenant_id VARCHAR(64) NULL, -- NULL for Default System Roles
+  tenant_id VARCHAR(64) NULL,
   name_ar VARCHAR(100) NOT NULL,
   name_en VARCHAR(100) NOT NULL,
   description TEXT NULL,
@@ -133,7 +133,11 @@ CREATE TABLE IF NOT EXISTS membership_roles (
 -- PART 3: MODULAR EXTENSIBLE PERMISSION ARCHITECTURE
 -- ---------------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS permission_modules (
+DROP TABLE IF EXISTS role_permissions;
+DROP TABLE IF EXISTS permissions;
+DROP TABLE IF EXISTS permission_modules;
+
+CREATE TABLE permission_modules (
   id INT AUTO_INCREMENT PRIMARY KEY,
   code VARCHAR(64) NOT NULL UNIQUE,
   name_ar VARCHAR(100) NOT NULL,
@@ -142,7 +146,7 @@ CREATE TABLE IF NOT EXISTS permission_modules (
   sort_order INT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS permissions (
+CREATE TABLE permissions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   module_id INT NOT NULL,
   code VARCHAR(128) NOT NULL UNIQUE,
@@ -152,7 +156,7 @@ CREATE TABLE IF NOT EXISTS permissions (
   FOREIGN KEY (module_id) REFERENCES permission_modules(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS role_permissions (
+CREATE TABLE role_permissions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   role_id INT NOT NULL,
   permission_id INT NOT NULL,
@@ -281,8 +285,7 @@ INSERT INTO permission_modules (id, code, name_ar, name_en, icon, sort_order) VA
 (5, 'settings', 'إعدادات النظام والمستخدمين', 'Settings', 'bi-gear', 5),
 (6, 'geofencing', 'النطاق الجغرافي', 'Geofencing', 'bi-geo-alt', 6),
 (7, 'payroll', 'مسيرات الرواتب', 'Payroll', 'bi-cash-stack', 7),
-(8, 'leave_types', 'أنواع وقواعد الإجازات', 'Leave Types', 'bi-card-checklist', 8)
-ON DUPLICATE KEY UPDATE name_ar=VALUES(name_ar);
+(8, 'leave_types', 'أنواع وقواعد الإجازات', 'Leave Types', 'bi-card-checklist', 8);
 
 -- 3. Seed Permissions
 INSERT INTO permissions (id, module_id, code, action_type, name_ar, name_en) VALUES
@@ -326,10 +329,9 @@ INSERT INTO permissions (id, module_id, code, action_type, name_ar, name_en) VAL
 (31, 7, 'payroll.export', 'export', 'تصدير قسائم الرواتب', 'Export Payroll'),
 -- Leave Types
 (32, 8, 'leave_types.view', 'view', 'عرض أنواع الإجازات', 'View Leave Types'),
-(33, 8, 'leave_types.manage', 'manage', 'إدارة أنواع وقواعد الإجازات', 'Manage Leave Types')
-ON DUPLICATE KEY UPDATE name_ar=VALUES(name_ar);
+(33, 8, 'leave_types.manage', 'manage', 'إدارة أنواع وقواعد الإجازات', 'Manage Leave Types');
 
--- 4. Seed Default 10 Roles (tenant_id = NULL for default global template)
+-- 4. Seed Default 10 Roles
 INSERT INTO roles (id, tenant_id, name_ar, name_en, description, is_default, is_active) VALUES
 (1, NULL, 'Company Admin', 'Company Admin', 'مدير الشركة الفائق وله كافة الصلاحيات', 1, 1),
 (2, NULL, 'HR Manager', 'HR Manager', 'مدير الموارد البشرية والشؤون الإدارية', 1, 1),

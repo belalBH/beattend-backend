@@ -11,7 +11,7 @@ require_once __DIR__ . '/../utils/payroll_formula_parser.php';
 class PayrollEngineController {
 
     private function getAuthenticatedTenantId() {
-        $headers = getallheaders();
+        $headers = function_exists('getallheaders') ? getallheaders() : [];
         $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
         $platformToken = $headers['X-Platform-Token'] ?? $headers['x-platform-token'] ?? '';
 
@@ -242,7 +242,6 @@ class PayrollEngineController {
             $contributoryBase = min(max($base + $housing, $gosiConfig['min_contributory_wage']), $gosiConfig['max_contributory_wage']);
             
             $gosiEmp = round($contributoryBase * $gosiConfig['pension_employee_rate'], 2);
-            $empPension = $gosiEmp;
 
             $employerPension = round($contributoryBase * $gosiConfig['pension_employer_rate'], 2);
             $employerHazard = round($contributoryBase * $gosiConfig['occupational_hazard_employer_rate'], 2);

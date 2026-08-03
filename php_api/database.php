@@ -1,7 +1,7 @@
 <?php
 /**
  * Database Connection Class
- * نظام الحضور والانصراف - الاتصال بقاعدة البيانات
+ * نظام الحضور والانصراف - الاتصال بقاعدة البيانات beattend_staging_db
  */
 
 class Database {
@@ -18,9 +18,9 @@ class Database {
      */
     private function __construct() {
         $this->host = getenv('DB_HOST') ?: '127.0.0.1';
-        $this->dbname = getenv('DB_NAME') ?: 'beattend_db';
-        $this->username = getenv('DB_USER') ?: 'beattend_user';
-        $this->password = getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'beattend_pass_2026';
+        $this->dbname = getenv('DB_NAME') ?: 'beattend_staging_db';
+        $this->username = getenv('DB_USER') ?: 'beattend_staging_user';
+        $this->password = getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'StagingPass2026!';
 
         try {
             $dsn = "mysql:host={$this->host};dbname={$this->dbname};charset={$this->charset}";
@@ -32,9 +32,9 @@ class Database {
             
             $this->connection = new PDO($dsn, $this->username, $this->password, $options);
         } catch (PDOException $e) {
-            // Secondary fallback attempt with root account on localhost
+            // Secondary fallback attempt with root account on localhost for beattend_staging_db
             try {
-                $dsn = "mysql:host={$this->host};dbname=beattend_db;charset={$this->charset}";
+                $dsn = "mysql:host={$this->host};dbname=beattend_staging_db;charset={$this->charset}";
                 $this->connection = new PDO($dsn, 'root', '', [
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC

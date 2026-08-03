@@ -106,7 +106,12 @@ CREATE TABLE IF NOT EXISTS tenant_memberships (
   FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS roles (
+DROP TABLE IF EXISTS user_roles;
+DROP TABLE IF EXISTS membership_roles;
+DROP TABLE IF EXISTS role_permissions;
+DROP TABLE IF EXISTS roles;
+
+CREATE TABLE roles (
   id INT AUTO_INCREMENT PRIMARY KEY,
   tenant_id VARCHAR(64) NULL,
   name_ar VARCHAR(100) NOT NULL,
@@ -119,7 +124,7 @@ CREATE TABLE IF NOT EXISTS roles (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Many-to-Many Roles Assignment Table
-CREATE TABLE IF NOT EXISTS membership_roles (
+CREATE TABLE membership_roles (
   id INT AUTO_INCREMENT PRIMARY KEY,
   membership_id INT NOT NULL,
   role_id INT NOT NULL,
@@ -133,7 +138,6 @@ CREATE TABLE IF NOT EXISTS membership_roles (
 -- PART 3: MODULAR EXTENSIBLE PERMISSION ARCHITECTURE
 -- ---------------------------------------------------------
 
-DROP TABLE IF EXISTS role_permissions;
 DROP TABLE IF EXISTS permissions;
 DROP TABLE IF EXISTS permission_modules;
 
@@ -342,8 +346,7 @@ INSERT INTO roles (id, tenant_id, name_ar, name_en, description, is_default, is_
 (7, NULL, 'Geofence Manager', 'Geofence Manager', 'مدير النطاقات والمواقع الجغرافية', 1, 1),
 (8, NULL, 'Department Manager', 'Department Manager', 'مدير القسم المباشر', 1, 1),
 (9, NULL, 'Employee', 'Employee', 'موظف عادي - خدمة ذاتية', 1, 1),
-(10, NULL, 'Read Only', 'Read Only', 'مستعرض فقط لجميع الوحدات بدون تعديل', 1, 1)
-ON DUPLICATE KEY UPDATE name_ar=VALUES(name_ar);
+(10, NULL, 'Read Only', 'Read Only', 'مستعرض فقط لجميع الوحدات بدون تعديل', 1, 1);
 
 -- 5. Seed Permissions to Default Roles
 -- Role 1 (Company Admin) -> ALL Permissions

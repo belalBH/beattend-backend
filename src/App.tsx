@@ -8,7 +8,7 @@ import { SuperAdminView } from "./features/superadmin/SuperAdminView";
 import { TenantLoginPage } from "./features/auth/TenantLoginPage";
 import { AccountActivationPage } from "./features/auth/AccountActivationPage";
 import { PlatformLoginPage } from "./features/platform/PlatformLoginPage";
-import { PlatformConsoleView } from "./features/platform/PlatformConsoleView";
+import { PlatformConsoleLayout } from "./features/platform/PlatformConsoleLayout";
 import { UsersAndPermissionsView } from "./features/settings/UsersAndPermissionsView";
 import { UnderIntegration } from "./components/UnderIntegration";
 
@@ -35,7 +35,7 @@ export default function App() {
     if (tab === 'platform_login') {
       window.history.replaceState({ page: tab }, '', `/platform/login?page=${tab}#${tab}`);
     } else if (tab === 'platform') {
-      window.history.replaceState({ page: tab }, '', `/platform?page=${tab}#${tab}`);
+      window.history.replaceState({ page: tab }, '', `/platform/dashboard`);
     } else {
       window.history.replaceState({ page: tab }, '', `${window.location.pathname}?page=${tab}#${tab}`);
     }
@@ -106,7 +106,7 @@ export default function App() {
   }
 
   if (activeTab === 'platform') {
-    return <PlatformConsoleView />;
+    return <PlatformConsoleLayout />;
   }
 
   if (activeTab === 'login') {

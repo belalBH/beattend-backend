@@ -31,6 +31,7 @@ require_once __DIR__ . '/controllers/auth_controller.php';
 require_once __DIR__ . '/controllers/platform_controller.php';
 require_once __DIR__ . '/controllers/invitation_controller.php';
 require_once __DIR__ . '/controllers/platform_auth_controller.php';
+require_once __DIR__ . '/controllers/platform_analytics_controller.php';
 require_once __DIR__ . '/controllers/tenant_rbac_controller.php';
 require_once __DIR__ . '/controllers/universal_approval_controller.php';
 require_once __DIR__ . '/controllers/tenant_settings_controller.php';
@@ -130,6 +131,11 @@ try {
         case 'platform_auth_me':
             $controller = new PlatformAuthController();
             $controller->me();
+            break;
+
+        case 'platform_analytics':
+            $controller = new PlatformAnalyticsController();
+            $controller->getExecutiveMetrics();
             break;
 
         case 'platform_tenants':

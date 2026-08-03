@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { TenantDashboardView } from "./features/dashboard/TenantDashboardView";
 import { CompaniesView } from "./features/companies/CompaniesView";
 import { EmployeesView } from "./features/employees/EmployeesView";
 import { AttendanceView } from "./features/attendance/AttendanceView";
@@ -73,9 +74,7 @@ export default function App() {
   }, []);
 
   const allNavItems = [
-    { id: 'dashboard', label: 'لوحة التحكم', icon: '📊', isLive: true, tenantOnly: true },
-    { id: 'superadmin', label: 'إدارة المنصة (SaaS Admin)', icon: '🛡️', isLive: true, superAdminOnly: true },
-    { id: 'companies', label: 'الشركات والمنشآت', icon: '🏢', isLive: true, superAdminOnly: true },
+    { id: 'dashboard', label: 'لوحة التحكم الرئيسية', icon: '📊', isLive: true },
     { id: 'employees', label: 'دليل الموظفين', icon: '👥', isLive: true },
     { id: 'attendance', label: 'الحضور والبصمة', icon: '⏱️', isLive: true },
     { id: 'leaves', label: 'الإجازات والطلبات', icon: '📅', isLive: true },
@@ -88,12 +87,7 @@ export default function App() {
     { id: 'settings', label: 'إعدادات النظام', icon: '⚙️', isLive: false },
   ];
 
-  const navItems = allNavItems.filter(item => {
-    if (activeTab === 'superadmin') {
-      return item.id !== 'dashboard';
-    }
-    return !item.superAdminOnly;
-  });
+  const navItems = allNavItems;
 
   if (activeTab === 'platform_login') {
     return (
@@ -145,7 +139,7 @@ export default function App() {
             <div>
               <h1 className="text-xl font-black text-[#d4af37] tracking-wide">BeatAttend</h1>
               <p className="text-xs text-slate-400 font-semibold">
-                {activeTab === 'superadmin' ? 'Super Admin Console' : 'شركة الحلول المتقدمة'}
+                شركة هداية للحلول التقنية (Hadiyah HQ)
               </p>
             </div>
           </div>
@@ -155,7 +149,7 @@ export default function App() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer ${
                   activeTab === item.id
                     ? 'bg-gradient-to-r from-[#d4af37] to-[#b38f2a] text-[#0f1e16] shadow-lg translate-x-1'
                     : 'text-slate-300 hover:bg-[#234735] hover:text-[#d4af37]'
@@ -182,9 +176,7 @@ export default function App() {
           </div>
           <div className="flex justify-between items-center">
             <span>التنظيم:</span>
-            <span className="text-emerald-400 font-mono">
-              {activeTab === 'superadmin' ? 'Super Admin Mode' : 'Tenant Isolated'}
-            </span>
+            <span className="text-emerald-400 font-mono">Tenant Isolated</span>
           </div>
         </div>
       </aside>
@@ -217,15 +209,14 @@ export default function App() {
             </button>
 
             <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center font-bold text-[#d4af37] text-sm">
-              {activeTab === 'superadmin' ? 'SA' : 'AD'}
+              AD
             </div>
           </div>
         </header>
 
         {/* View Component Switcher */}
         <div className="p-8 flex-1 overflow-y-auto">
-          {activeTab === 'dashboard' && <EmployeesView />}
-          {activeTab === 'superadmin' && <SuperAdminView />}
+          {activeTab === 'dashboard' && <TenantDashboardView />}
           {activeTab === 'companies' && <CompaniesView />}
           {activeTab === 'employees' && <EmployeesView />}
           {activeTab === 'attendance' && <AttendanceView />}

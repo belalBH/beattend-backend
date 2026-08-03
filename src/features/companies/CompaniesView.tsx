@@ -25,12 +25,15 @@ export const CompaniesView: React.FC = () => {
   }, []);
 
   const loadCompanies = async () => {
+    console.log('[CompaniesView] Fetching companies from staging API...');
     setLoading(true);
     setError(null);
     try {
       const data = await apiService.getCompanies();
+      console.log('[CompaniesView] Received companies:', data);
       setCompanies(data);
     } catch (err: any) {
+      console.error('[CompaniesView] Fetch error:', err);
       setError(err.message || 'فشل في تحميل بيانات الشركات');
     } finally {
       setLoading(false);
@@ -38,12 +41,14 @@ export const CompaniesView: React.FC = () => {
   };
 
   const handleOpenAdd = () => {
+    console.log('[CompaniesView] Opening Add Company Modal');
     setEditingCompany(null);
     setFormData({ name_ar: '', name: '', cr_number: '', tax_number: '', is_active: true });
     setShowModal(true);
   };
 
   const handleOpenEdit = (comp: Company) => {
+    console.log('[CompaniesView] Opening Edit Company Modal for ID:', comp.id);
     setEditingCompany(comp);
     setFormData({
       name_ar: comp.name_ar,
@@ -56,29 +61,34 @@ export const CompaniesView: React.FC = () => {
   };
 
   const handleToggleStatus = async (comp: Company) => {
+    console.log('[CompaniesView] Toggling status for company ID:', comp.id);
     if (!window.confirm(`هل أنت تأكد من تغيير حالة شركة (${comp.name_ar})؟`)) return;
     try {
       await apiService.updateCompany(comp.id, { is_active: !comp.is_active });
       setSuccessMsg(`تم تغيير حالة شركة (${comp.name_ar}) بنجاح`);
       loadCompanies();
     } catch (err: any) {
+      console.error('[CompaniesView] Toggle status error:', err);
       setError(err.message || 'فشل في تعديل الحالة');
     }
   };
 
   const handleDelete = async (comp: Company) => {
+    console.log('[CompaniesView] Deleting company ID:', comp.id);
     if (!window.confirm(`⚠️ حظر نهائي: هل أنت تأكد من حذف شركة (${comp.name_ar})؟`)) return;
     try {
       await apiService.deleteCompany(comp.id);
       setSuccessMsg(`تم حذف شركة (${comp.name_ar}) بنجاح`);
       loadCompanies();
     } catch (err: any) {
+      console.error('[CompaniesView] Delete error:', err);
       setError(err.message || 'فشل حذف الشركة');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[CompaniesView] Submitting company form:', formData);
     if (!formData.name_ar) {
       setError('اسم الشركة بالعربية حقل إجباري');
       return;
@@ -96,6 +106,7 @@ export const CompaniesView: React.FC = () => {
       setShowModal(false);
       loadCompanies();
     } catch (err: any) {
+      console.error('[CompaniesView] Form submit error:', err);
       setError(err.message || 'فشل في حفظ البيانات');
     } finally {
       setSubmitting(false);
@@ -114,27 +125,28 @@ export const CompaniesView: React.FC = () => {
     <div className="space-y-6">
       {/* Alert Notices */}
       {successMsg && (
-        <div className="p-4 bg-emerald-900/40 border border-emerald-500/40 rounded-xl text-emerald-300 flex justify-between items-center">
+        <div className="p-4 bg-emerald-900/60 border border-emerald-500 rounded-xl text-emerald-200 flex justify-between items-center shadow-lg">
           <span>✅ {successMsg}</span>
-          <button onClick={() => setSuccessMsg(null)} className="text-emerald-400 font-bold">✕</button>
+          <button type="button" onClick={() => setSuccessMsg(null)} className="text-emerald-400 font-bold px-2">✕</button>
         </div>
       )}
       {error && (
-        <div className="p-4 bg-red-900/40 border border-red-500/40 rounded-xl text-red-300 flex justify-between items-center">
+        <div className="p-4 bg-red-900/60 border border-red-500 rounded-xl text-red-200 flex justify-between items-center shadow-lg">
           <span>⚠️ {error}</span>
-          <button onClick={() => setError(null)} className="text-red-400 font-bold">✕</button>
+          <button type="button" onClick={() => setError(null)} className="text-red-400 font-bold px-2">✕</button>
         </div>
       )}
 
       {/* Page Header */}
-      <div className="flex justify-between items-center bg-[#1b3325]/80 p-6 rounded-2xl border border-[#d4af37]/30 backdrop-blur-md">
+      <div className="flex justify-between items-center bg-[#1b3325]/90 p-6 rounded-2xl border border-[#d4af37]/30 backdrop-blur-md relative z-10">
         <div>
           <h2 className="text-2xl font-bold text-[#d4af37]">إدارة الشركات والفروع (Interactive CRUD)</h2>
           <p className="text-sm text-slate-400 mt-1">إضافة، تعديل، تعطيل، وحذف المنشآت المعتمدة حياً في قاعدة بيانات الـ Staging</p>
         </div>
         <button
+          type="button"
           onClick={handleOpenAdd}
-          className="px-5 py-2.5 bg-gradient-to-r from-[#d4af37] to-[#b38f2a] text-[#0f1e16] font-bold rounded-xl shadow-lg hover:brightness-110 transition"
+          className="px-5 py-2.5 bg-gradient-to-r from-[#d4af37] to-[#b38f2a] text-[#0f1e16] font-bold rounded-xl shadow-lg hover:brightness-110 transition cursor-pointer relative z-20"
         >
           + إضافة شركة جديدة
         </button>
@@ -143,7 +155,7 @@ export const CompaniesView: React.FC = () => {
       {/* Companies Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {companies.map((company) => (
-          <div key={company.id} className="bg-[#1b3325]/60 border border-[#d4af37]/20 rounded-2xl p-6 hover:border-[#d4af37]/60 transition shadow-xl backdrop-blur-sm flex flex-col justify-between">
+          <div key={company.id} className="bg-[#1b3325]/70 border border-[#d4af37]/20 rounded-2xl p-6 hover:border-[#d4af37]/60 transition shadow-xl backdrop-blur-sm flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -151,6 +163,7 @@ export const CompaniesView: React.FC = () => {
                   <p className="text-xs text-slate-400 font-mono mt-0.5">{company.name}</p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => handleToggleStatus(company)}
                   className={`px-3 py-1 rounded-full text-xs font-semibold border cursor-pointer ${company.is_active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'}`}
                 >
@@ -171,14 +184,16 @@ export const CompaniesView: React.FC = () => {
 
             <div className="flex gap-2 border-t border-[#d4af37]/10 pt-4 mt-6">
               <button
+                type="button"
                 onClick={() => handleOpenEdit(company)}
-                className="flex-1 py-1.5 bg-[#234735] text-[#d4af37] border border-[#d4af37]/30 rounded-lg font-semibold text-xs hover:bg-[#d4af37] hover:text-[#0f1e16] transition"
+                className="flex-1 py-1.5 bg-[#234735] text-[#d4af37] border border-[#d4af37]/30 rounded-lg font-semibold text-xs hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer"
               >
                 ✏️ تعديل
               </button>
               <button
+                type="button"
                 onClick={() => handleDelete(company)}
-                className="px-3 py-1.5 bg-red-900/30 text-red-300 border border-red-500/30 rounded-lg font-semibold text-xs hover:bg-red-600 hover:text-white transition"
+                className="px-3 py-1.5 bg-red-900/30 text-red-300 border border-red-500/30 rounded-lg font-semibold text-xs hover:bg-red-600 hover:text-white transition cursor-pointer"
               >
                 🗑️ حذف
               </button>
@@ -189,11 +204,14 @@ export const CompaniesView: React.FC = () => {
 
       {/* Add / Edit Company Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[#1b3325] border border-[#d4af37]/40 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
-            <h3 className="text-xl font-bold text-[#d4af37]">
-              {editingCompany ? 'تعديل بيانات الشركة' : 'إضافة شركة جديدة'}
-            </h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-[#1b3325] border border-[#d4af37]/50 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-[#d4af37]/20 pb-3">
+              <h3 className="text-xl font-bold text-[#d4af37]">
+                {editingCompany ? 'تعديل بيانات الشركة' : 'إضافة شركة جديدة'}
+              </h3>
+              <button type="button" onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4 text-right">
               <div>
                 <label className="block text-xs text-slate-300 mb-1">اسم الشركة بالعربية *</label>
@@ -248,14 +266,14 @@ export const CompaniesView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-700"
+                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-700 cursor-pointer"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 bg-gradient-to-r from-[#d4af37] to-[#b38f2a] text-[#0f1e16] font-bold rounded-xl text-sm hover:brightness-110 disabled:opacity-50"
+                  className="px-5 py-2 bg-gradient-to-r from-[#d4af37] to-[#b38f2a] text-[#0f1e16] font-bold rounded-xl text-sm hover:brightness-110 disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? 'جاري الحفظ...' : 'حفظ البيانات'}
                 </button>

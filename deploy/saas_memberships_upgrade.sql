@@ -7,6 +7,10 @@ USE beattend_staging_db;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- Drop obsolete legacy foreign keys referencing old tenants(id)
+ALTER TABLE companies DROP FOREIGN KEY companies_ibfk_1 2>/dev/null || true;
+ALTER TABLE employees DROP FOREIGN KEY employees_ibfk_1 2>/dev/null || true;
+
 -- 1. Master Users Table (Decoupled from single tenant)
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -71,18 +75,24 @@ INSERT INTO users (id, email, password_hash, full_name, is_platform_superadmin, 
 INSERT INTO users (id, email, password_hash, full_name, is_platform_superadmin, global_status) VALUES
 (5, 'admin@tenant-b.com', '$2y$10$e.w2T6G5Nl0x2H1M2uN.u.H7x1v9z9y9z9y9z9y9z9y9z9y9z9y9z', 'Company Admin Tenant B', 0, 'active');
 
--- 6. Ensure Tenant A & Tenant B Exist in Tenants Table
+-- 6. Ensure Tenant Records in Tenants Table with Strict Alignment
 INSERT INTO tenants (tenant_id, company_code, slug, subdomain, status, created_at) VALUES
+('tenant-sol-102', 'HADIYAH', 'hadiyah', 'hadiyah.beattend.com', 'active', NOW()),
+('tenant-alfanar-103', 'ALFANAR', 'alfanar', 'alfanar.beattend.com', 'active', NOW()),
 ('tenant-a-105', 'TENANTA', 'tenant-a', 'tenant-a.beattend.com', 'active', NOW()),
 ('tenant-b-106', 'TENANTB', 'tenant-b', 'tenant-b.beattend.com', 'active', NOW())
 ON DUPLICATE KEY UPDATE status=VALUES(status);
 
 INSERT INTO companies (id, tenant_id, name, name_ar, cr_number, tax_number, is_active) VALUES
+(1, 'tenant-sol-102', 'Hadiyah HQ', 'شركة هداية للحلول التقنية (Hadiyah HQ)', '1010884920', '3109923849', 1),
+(2, 'tenant-alfanar-103', 'Al Fanar Co', 'شركة الفنار للمقاولات', '1010554433', '300554433220003', 1),
 (105, 'tenant-a-105', 'Tenant A Corporation', 'شركة الرواد الأولى (Tenant A)', '1010111111', '300111111100003', 1),
 (106, 'tenant-b-106', 'Tenant B Corporation', 'شركة الأفق الثانية (Tenant B)', '1010222222', '300222222200003', 1)
 ON DUPLICATE KEY UPDATE name=VALUES(name);
 
 INSERT INTO subscriptions (id, tenant_id, plan_id, start_date, end_date, max_admin_users, max_employees, max_branches, status) VALUES
+(1, 'tenant-sol-102', 2, NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 10, 200, 5, 'active'),
+(2, 'tenant-alfanar-103', 1, NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 2, 25, 1, 'active'),
 (105, 'tenant-a-105', 2, NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 5, 50, 3, 'active'),
 (106, 'tenant-b-106', 1, NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 2, 2, 1, 'active')
 ON DUPLICATE KEY UPDATE status=VALUES(status);
@@ -100,8 +110,5 @@ INSERT INTO user_roles (membership_id, role_id) VALUES
 (2, 2),
 (3, 2),
 (4, 2);
-
--- Fix staging company names for strict demo consistency
-UPDATE companies SET name_ar = 'شركة هداية للحلول التقنية (Hadiyah HQ)', name = 'Hadiyah HQ' WHERE tenant_id = 'tenant-sol-102';
 
 SET FOREIGN_KEY_CHECKS = 1;

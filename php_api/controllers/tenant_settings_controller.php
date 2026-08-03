@@ -13,8 +13,7 @@ class TenantSettingsController {
         $pdo = $db->getConnection();
 
         $stmt = $pdo->prepare("
-            SELECT id, name_ar, name_en, days_credit, is_paid, requires_attachment,
-                   min_days, max_days, approval_flow, is_active
+            SELECT id, name_ar, name_ar AS name_en, days_credit, is_paid, requires_attachment, is_active
             FROM leave_types
             WHERE tenant_id = :t_id OR tenant_id IS NULL
             ORDER BY is_active DESC, id ASC
@@ -27,8 +26,9 @@ class TenantSettingsController {
             $lt['days_credit'] = (int)$lt['days_credit'];
             $lt['is_paid'] = (bool)$lt['is_paid'];
             $lt['requires_attachment'] = (bool)$lt['requires_attachment'];
-            $lt['min_days'] = (int)($lt['min_days'] ?? 1);
-            $lt['max_days'] = (int)($lt['max_days'] ?? 30);
+            $lt['min_days'] = 1;
+            $lt['max_days'] = 30;
+            $lt['approval_flow'] = 'standard';
         }
 
         ApiResponse::success($leaveTypes, 'تم استرجاع أنواع وسياسات الإجازات بنجاح');
@@ -47,19 +47,15 @@ class TenantSettingsController {
         $pdo = $db->getConnection();
 
         $stmt = $pdo->prepare("
-            INSERT INTO leave_types (tenant_id, name_ar, name_en, days_credit, is_paid, requires_attachment, min_days, max_days, approval_flow, is_active)
-            VALUES (:t, :nar, :nen, :days, :paid, :att, :min, :max, :flow, 1)
+            INSERT INTO leave_types (tenant_id, name_ar, days_credit, is_paid, requires_attachment, is_active)
+            VALUES (:t, :nar, :days, :paid, :att, 1)
         ");
         $stmt->execute([
             ':t' => $tenantId,
             ':nar' => $nameAr,
-            ':nen' => $input['name_en'] ?? $nameAr,
             ':days' => $daysCredit,
             ':paid' => isset($input['is_paid']) ? ((bool)$input['is_paid'] ? 1 : 0) : 1,
-            ':att' => isset($input['requires_attachment']) ? ((bool)$input['requires_attachment'] ? 1 : 0) : 0,
-            ':min' => (int)($input['min_days'] ?? 1),
-            ':max' => (int)($input['max_days'] ?? 30),
-            ':flow' => $input['approval_flow'] ?? 'standard'
+            ':att' => isset($input['requires_attachment']) ? ((bool)$input['requires_attachment'] ? 1 : 0) : 0
         ]);
 
         $leaveTypeId = $pdo->lastInsertId();
@@ -72,18 +68,15 @@ class TenantSettingsController {
 
         $stmt = $pdo->prepare("
             UPDATE leave_types
-            SET name_ar = :nar, name_en = :nen, days_credit = :days, is_paid = :paid,
-                requires_attachment = :att, min_days = :min, max_days = :max, is_active = :act
+            SET name_ar = :nar, days_credit = :days, is_paid = :paid,
+                requires_attachment = :att, is_active = :act
             WHERE id = :id
         ");
         $stmt->execute([
             ':nar' => trim($input['name_ar'] ?? ''),
-            ':nen' => trim($input['name_en'] ?? ''),
             ':days' => (int)($input['days_credit'] ?? 21),
             ':paid' => ((bool)($input['is_paid'] ?? true)) ? 1 : 0,
             ':att' => ((bool)($input['requires_attachment'] ?? false)) ? 1 : 0,
-            ':min' => (int)($input['min_days'] ?? 1),
-            ':max' => (int)($input['max_days'] ?? 30),
             ':act' => ((bool)($input['is_active'] ?? true)) ? 1 : 0,
             ':id' => $leaveTypeId
         ]);

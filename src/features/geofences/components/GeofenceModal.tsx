@@ -165,32 +165,57 @@ export const GeofenceModal: React.FC<Props> = ({
   };
 
   const handleGetCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert('متصفحك لا يدعم خاصية تحديد الموقع الجغرافي GPS');
-      return;
-    }
-
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = roundToSix(pos.coords.latitude);
-        const lng = roundToSix(pos.coords.longitude);
-        setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
-        if (mapRef.current) {
-          mapRef.current.setView([lat, lng], 18);
-        }
-        setLocating(false);
-      },
-      (err) => {
-        setLocating(false);
-        alert('تعذر جلب موقعك الحالي: يرجى السماح للمتصفح بالوصول لموقعك الجغرافي GPS');
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+
+    const applyCoords = (lat: number, lng: number, zoomLevel = 18) => {
+      const cleanLat = roundToSix(lat);
+      const cleanLng = roundToSix(lng);
+      setFormData(prev => ({ ...prev, latitude: cleanLat, longitude: cleanLng }));
+      if (mapRef.current) {
+        mapRef.current.setView([cleanLat, cleanLng], zoomLevel);
       }
-    );
+      setLocating(false);
+    };
+
+    const fallbackToIpLocation = async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data && data.latitude && data.longitude) {
+          applyCoords(data.latitude, data.longitude, 14);
+          return;
+        }
+      } catch (e) {
+        console.warn('IP Geolocation fallback failed');
+      }
+
+      // Default fallback to Riyadh HQ if all fails
+      applyCoords(24.6877, 46.7219, 15);
+      alert('ملاحظة: المتصفح يحظر الـ GPS المباشر على روابط HTTP بدون شهادة إفصاح SSL. تم تعيين الموقع التقديري على الخريطة تلقائياً ويمكنك سحب الدبوس لأي مكان.');
+    };
+
+    if (navigator.geolocation && window.isSecureContext !== false) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          applyCoords(pos.coords.latitude, pos.coords.longitude, 18);
+        },
+        () => {
+          // Retry without high accuracy or fallback
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              applyCoords(pos.coords.latitude, pos.coords.longitude, 17);
+            },
+            () => {
+              fallbackToIpLocation();
+            },
+            { enableHighAccuracy: false, timeout: 5000 }
+          );
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    } else {
+      fallbackToIpLocation();
+    }
   };
 
   const handleSearchLocation = async (e: React.FormEvent) => {

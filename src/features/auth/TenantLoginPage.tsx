@@ -10,35 +10,47 @@ export const TenantLoginPage: React.FC<Props> = ({
   onLoginSuccess,
   onSwitchToSuperAdmin
 }) => {
-  const [companyCodeInput, setCompanyCodeInput] = useState<string>('HADIYAH');
-  const [tenantInfo, setTenantInfo] = useState<any>(null);
+  // Step 1 vs Step 2 state
+  const [step, setStep] = useState<1 | 2>(1);
+
+  // Step 1: Domain / Company Code
+  const [domainInput, setDomainInput] = useState<string>('HADIYAH');
   const [resolving, setResolving] = useState<boolean>(false);
   const [resolveError, setResolveError] = useState<string | null>(null);
+  const [tenantInfo, setTenantInfo] = useState<any>(null);
 
-  // Form Fields
-  const [email, setEmail] = useState<string>('admin@solutions.sa');
+  // Step 2: Role & Credentials
+  const [userRoleTab, setUserRoleTab] = useState<'admin' | 'employee'>('admin');
+  const [email, setEmail] = useState<string>('b.albanna@hadiyah.org.sa');
   const [password, setPassword] = useState<string>('••••••••');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check URL parameters for tenant e.g. ?tenant=hadiyah or ?company=ALFANAR
+    // Detect domain from URL if available e.g. ?tenant=hadiyah
     const params = new URLSearchParams(window.location.search);
-    const initialTenant = params.get('tenant') || params.get('company') || 'hadiyah';
-    setCompanyCodeInput(initialTenant.toUpperCase());
-    handleResolveTenant(initialTenant);
+    const initialTenant = params.get('tenant') || params.get('company') || '';
+    if (initialTenant) {
+      setDomainInput(initialTenant.toUpperCase());
+      handleResolveDomain(initialTenant, true);
+    }
   }, []);
 
-  const handleResolveTenant = async (identifier: string) => {
-    if (!identifier.trim()) return;
+  const handleResolveDomain = async (identifier: string, autoProceed = false) => {
+    if (!identifier.trim()) {
+      setResolveError('يرجى إدخال رمز الشركة أو الـ Subdomain أولاً');
+      return;
+    }
+
     setResolving(true);
     setResolveError(null);
-    setTenantInfo(null);
     try {
       const res = await superAdminService.resolveTenant(identifier);
       setTenantInfo(res);
+      setStep(2);
     } catch (err: any) {
       setResolveError(err.message || 'تعذر العثور على الشركة بهذه الهوية أو الدومين');
+      setTenantInfo(null);
     } finally {
       setResolving(false);
     }
@@ -46,13 +58,10 @@ export const TenantLoginPage: React.FC<Props> = ({
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantInfo) {
-      setLoginError('يرجى التأكد من اختيار شركة صحيحة أولاً');
-      return;
-    }
+    if (!tenantInfo) return;
 
     if (tenantInfo.status === 'suspended') {
-      setLoginError('⚠️ حساب هذه الشركة موقوف من قبل إدارة المنصة');
+      setLoginError('⚠️ حساب هذه الشركة معطل حالياً من قبل إدارة المنصة');
       return;
     }
 
@@ -64,7 +73,6 @@ export const TenantLoginPage: React.FC<Props> = ({
     setSubmitting(true);
     setLoginError(null);
 
-    // Simulate Auth & Session Storage
     setTimeout(() => {
       setSubmitting(false);
       try {
@@ -75,182 +83,278 @@ export const TenantLoginPage: React.FC<Props> = ({
       }
 
       if (onLoginSuccess) {
-        onLoginSuccess(tenantInfo, { email, role: 'Company Admin' });
+        onLoginSuccess(tenantInfo, { email, role: userRoleTab });
       } else {
-        alert(`تم تسجيل الدخول بنجاح إلى شركة (${tenantInfo.company_name}) [Tenant: ${tenantInfo.tenant_id}]`);
+        alert(`تم تسجيل الدخول بنجاح إلى شركة (${tenantInfo.company_name})`);
         window.location.href = `/?page=dashboard&tenant=${tenantInfo.company_code}#dashboard`;
       }
     }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1e16] text-slate-100 flex flex-col justify-center items-center p-4 dir-rtl relative overflow-hidden" dir="rtl">
-      {/* Background Glow Overlay */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#d4af37]/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div className="max-w-md w-full space-y-6 z-10">
-        {/* Header Platform Logo */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#d4af37] to-[#f3e5ab] text-[#0f1e16] font-black text-3xl shadow-2xl mb-2">
-            B
-          </div>
-          <h1 className="text-3xl font-black text-[#d4af37] tracking-wide">BeatAttend</h1>
-          <p className="text-xs text-slate-400 font-semibold">منصة الموارد البشرية والحضور الذكي متعددة المنشآت (Multi-Tenant SaaS)</p>
-        </div>
-
-        {/* Tenant Card Box */}
-        <div className="bg-[#1b3325] border border-[#d4af37]/40 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md space-y-6">
-          {/* Step 1: Company Resolution Bar */}
-          <div className="bg-[#0f1e16] border border-[#d4af37]/20 rounded-2xl p-4 space-y-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-400 font-semibold">رمز الشركة أو الـ Subdomain:</span>
-              {tenantInfo && (
-                <span className="text-emerald-400 font-bold font-mono">✓ {tenantInfo.subdomain}</span>
-              )}
+    <div className="min-h-screen w-full flex flex-col md:flex-row dir-rtl bg-[#f8fafc] text-slate-800 font-sans" dir="rtl">
+      {/* Right / Main White Login Card Column */}
+      <div className="w-full md:w-[480px] lg:w-[540px] shrink-0 min-h-screen flex flex-col justify-between p-6 sm:p-12 bg-white z-10 shadow-2xl">
+        {/* Top Header Logo */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0e382c] to-[#1a5a47] text-white font-black text-xl flex items-center justify-center shadow-md">
+              B
             </div>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={companyCodeInput}
-                onChange={(e) => setCompanyCodeInput(e.target.value.toUpperCase())}
-                placeholder="مثال: HADIYAH أو ALFANAR"
-                className="flex-1 px-3 py-2 bg-[#1b3325] border border-[#d4af37]/30 rounded-xl text-slate-100 font-mono text-xs font-bold uppercase focus:outline-none focus:border-[#d4af37]"
-              />
-              <button
-                type="button"
-                onClick={() => handleResolveTenant(companyCodeInput)}
-                disabled={resolving}
-                className="px-4 py-2 bg-[#234735] text-[#d4af37] border border-[#d4af37]/30 font-bold rounded-xl text-xs hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer"
-              >
-                {resolving ? 'فحص...' : 'فحص الشركة'}
-              </button>
-            </div>
-
-            {resolveError && (
-              <p className="text-red-400 text-xs font-bold pt-1">⚠️ {resolveError}</p>
-            )}
+            <span className="text-xl font-black text-[#0e382c] tracking-wide">BeatAttend</span>
           </div>
 
-          {/* Resolved Tenant Branding Header */}
-          {tenantInfo && (
-            <div className="p-4 bg-gradient-to-r from-[#234735]/80 to-[#1b3325] border border-[#d4af37]/30 rounded-2xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-800 border border-[#d4af37]/30 flex items-center justify-center text-xl overflow-hidden">
-                  🏢
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-slate-100">{tenantInfo.company_name}</h2>
-                  <p className="text-[10px] text-slate-400 font-mono">
-                    الباقة: <span className="text-[#d4af37]">{tenantInfo.plan_name}</span>
-                  </p>
-                </div>
-              </div>
-
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                tenantInfo.status === 'active'
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                  : 'bg-red-500/20 text-red-300 border-red-500/30'
-              }`}>
-                {tenantInfo.status === 'active' ? '✓ شركة نشطة' : '⚠️ موقوفة'}
-              </span>
-            </div>
-          )}
-
-          {/* Step 2: User Login Form */}
-          <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
-            {loginError && (
-              <div className="p-3 bg-red-900/60 border border-red-500/50 rounded-xl text-red-200 font-bold">
-                {loginError}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-slate-300 font-bold mb-1">البريد الإلكتروني المعتمد بالشركة *</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="b.albanna@hadiyah.org.sa"
-                className="w-full p-3 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-slate-100 focus:outline-none focus:border-[#d4af37]"
-              />
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-slate-300 font-bold">كلمة المرور *</label>
-                <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('يرجى التواصل مع مدير الموارد البشرية بالشركة لإعادة تعيين كلمة المرور'); }} className="text-[#d4af37] text-[11px] hover:underline font-semibold">
-                  نسيت كلمة المرور؟
-                </a>
-              </div>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-slate-100 font-mono focus:outline-none focus:border-[#d4af37]"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={submitting || !tenantInfo || tenantInfo.status === 'suspended'}
-              className="w-full py-3.5 bg-gradient-to-r from-[#d4af37] to-[#b38f2a] text-[#0f1e16] font-bold rounded-xl text-sm shadow-xl hover:brightness-110 transition cursor-pointer disabled:opacity-50"
-            >
-              {submitting ? 'جاري التحقق من الهوية والصلاحيات...' : '🔒 تسجيل الدخول إلى لوحة الشركة'}
-            </button>
-          </form>
-
-          {/* Quick Demo Switcher */}
-          <div className="pt-4 border-t border-[#d4af37]/15 text-[11px] text-slate-400 space-y-2">
-            <span className="block font-semibold text-slate-300">اختبار الدومينات والشركات الجاهزة:</span>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => { setCompanyCodeInput('HADIYAH'); handleResolveTenant('HADIYAH'); }}
-                className="px-2.5 py-1 bg-[#0f1e16] border border-[#d4af37]/20 rounded-lg text-slate-200 hover:border-[#d4af37]"
-              >
-                🏢 HADIYAH
-              </button>
-              <button
-                type="button"
-                onClick={() => { setCompanyCodeInput('ALFANAR'); handleResolveTenant('ALFANAR'); }}
-                className="px-2.5 py-1 bg-[#0f1e16] border border-[#d4af37]/20 rounded-lg text-slate-200 hover:border-[#d4af37]"
-              >
-                🏢 ALFANAR
-              </button>
-              <button
-                type="button"
-                onClick={() => { setCompanyCodeInput('RIYADHNET'); handleResolveTenant('RIYADHNET'); }}
-                className="px-2.5 py-1 bg-[#0f1e16] border border-[#d4af37]/20 rounded-lg text-slate-200 hover:border-[#d4af37]"
-              >
-                🏢 RIYADHNET
-              </button>
-              <button
-                type="button"
-                onClick={() => { setCompanyCodeInput('DEMOCO'); handleResolveTenant('DEMOCO'); }}
-                className="px-2.5 py-1 bg-red-950/40 border border-red-500/30 rounded-lg text-red-300 hover:border-red-500"
-              >
-                ⚠️ DEMOCO (موقوفة)
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Link to Super Admin */}
-        {onSwitchToSuperAdmin && (
-          <div className="text-center pt-2">
+          {onSwitchToSuperAdmin && (
             <button
               type="button"
               onClick={onSwitchToSuperAdmin}
-              className="text-xs text-[#d4af37] underline font-bold hover:text-white transition cursor-pointer"
+              className="text-xs text-[#0e382c] font-bold hover:underline cursor-pointer"
             >
-              🛡️ الدخول إلى لوحة السوبر أدمن العامة (Super Admin Console)
+              🛡️ لوحة السوبر أدمن
             </button>
+          )}
+        </div>
+
+        {/* Center Login Card Form */}
+        <div className="my-auto max-w-sm w-full mx-auto space-y-6">
+          {/* STEP 1: Enter Subdomain / Company Code */}
+          {step === 1 && (
+            <div className="space-y-6">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-extrabold text-[#0e382c]">أهلاً بك مجدداً</h2>
+                <p className="text-xs text-slate-500 font-medium">أدخل رمز الشركة أو الـ Subdomain للمتابعة</p>
+              </div>
+
+              {resolveError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-bold">
+                  ⚠️ {resolveError}
+                </div>
+              )}
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleResolveDomain(domainInput);
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    رمز الشركة أو الـ Subdomain *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={domainInput}
+                      onChange={(e) => setDomainInput(e.target.value.toUpperCase())}
+                      placeholder="hadiyah.beattend.com أو HADIYAH"
+                      className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-xs font-bold font-mono focus:outline-none focus:border-[#0e382c] focus:bg-white transition"
+                    />
+                    <span className="absolute left-3.5 top-3.5 text-slate-400 text-sm">🌐</span>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={resolving}
+                  className="w-full py-3.5 bg-[#0e382c] text-white font-bold rounded-2xl text-xs shadow-lg hover:bg-[#134939] transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {resolving ? 'جاري التحقق من المنشأة...' : 'متابعة ←'}
+                </button>
+              </form>
+
+              {/* Demo Fast Preset Chips */}
+              <div className="pt-4 border-t border-slate-100 space-y-2">
+                <span className="block text-[11px] font-bold text-slate-400">منشآت تجريبية جاهزة للاختبار السريع:</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setDomainInput('HADIYAH'); handleResolveDomain('HADIYAH'); }}
+                    className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#0e382c] hover:text-white transition cursor-pointer"
+                  >
+                    🏢 HADIYAH
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDomainInput('ALFANAR'); handleResolveDomain('ALFANAR'); }}
+                    className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#0e382c] hover:text-white transition cursor-pointer"
+                  >
+                    🏢 ALFANAR
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDomainInput('RIYADHNET'); handleResolveDomain('RIYADHNET'); }}
+                    className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#0e382c] hover:text-white transition cursor-pointer"
+                  >
+                    🏢 RIYADHNET
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDomainInput('DEMOCO'); handleResolveDomain('DEMOCO'); }}
+                    className="px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl text-xs font-bold text-red-600 hover:bg-red-600 hover:text-white transition cursor-pointer"
+                  >
+                    ⚠️ DEMOCO
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Resolved Tenant Username & Password */}
+          {step === 2 && tenantInfo && (
+            <div className="space-y-6">
+              {/* Resolved Company Badge & Change Domain Option */}
+              <div className="p-3 bg-[#0e382c]/5 border border-[#0e382c]/15 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#0e382c] text-white flex items-center justify-center font-bold text-xs">
+                    🏢
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-[#0e382c]">{tenantInfo.company_name}</h3>
+                    <p className="text-[10px] text-slate-400 font-mono">{tenantInfo.subdomain}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="text-[11px] font-bold text-[#0e382c] underline hover:text-emerald-700 cursor-pointer"
+                >
+                  تغيير الدومين
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <h2 className="text-2xl font-extrabold text-[#0e382c]">أهلاً بك مجدداً</h2>
+                <p className="text-xs text-slate-500 font-medium">الرجاء تسجيل الدخول للمتابعة</p>
+              </div>
+
+              {/* Role Toggle Switcher (مسؤول / تاجر / موظف) */}
+              <div className="bg-slate-100 p-1 rounded-xl flex">
+                <button
+                  type="button"
+                  onClick={() => setUserRoleTab('admin')}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
+                    userRoleTab === 'admin'
+                      ? 'bg-white text-[#0e382c] shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  🛡️ مسؤول المنشأة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUserRoleTab('employee')}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
+                    userRoleTab === 'employee'
+                      ? 'bg-white text-[#0e382c] shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  👥 موظف
+                </button>
+              </div>
+
+              {loginError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-bold">
+                  {loginError}
+                </div>
+              )}
+
+              <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">البريد الإلكتروني *</label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="user@company.com"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:border-[#0e382c] focus:bg-white transition"
+                    />
+                    <span className="absolute left-3.5 top-3 text-slate-400 text-sm">✉️</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block font-bold text-slate-700">كلمة المرور *</label>
+                    <a
+                      href="#forgot"
+                      onClick={(e) => { e.preventDefault(); alert('يرجى التواصل مع مسؤول الموارد البشرية بالشركة لإعادة تعيين كلمة المرور'); }}
+                      className="text-[11px] font-bold text-[#0e382c] hover:underline"
+                    >
+                      نسيت كلمة المرور؟
+                    </a>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-mono focus:outline-none focus:border-[#0e382c] focus:bg-white transition"
+                    />
+                    <span className="absolute left-3.5 top-3 text-slate-400 text-sm">🔒</span>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting || tenantInfo.status === 'suspended'}
+                  className="w-full py-3.5 bg-[#0e382c] text-white font-bold rounded-2xl text-xs shadow-lg hover:bg-[#134939] transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {submitting ? 'جاري التحقق...' : 'دخول ←'}
+                </button>
+              </form>
+
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl text-[11px] text-emerald-800 flex justify-between items-center">
+                <span>اختبار تجريبي:</span>
+                <span className="font-mono font-bold">b.albanna@hadiyah.org.sa</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Note */}
+        <div className="text-center text-[11px] text-slate-400 font-medium">
+          .BeatAttend SaaS Engine. All rights reserved 2026 ©
+        </div>
+      </div>
+
+      {/* Left / Hero Dark Forest Green Column (Matching Esal reference screenshot) */}
+      <div className="hidden md:flex flex-1 bg-[#0e382c] text-white p-12 flex-col justify-between relative overflow-hidden">
+        {/* Top Right Brand Logo & Tagline */}
+        <div className="flex justify-between items-center z-10">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl font-black tracking-widest text-[#d4af37]">BeatAttend</span>
           </div>
-        )}
+          <span className="text-xs text-slate-300 font-semibold px-3 py-1 bg-white/10 rounded-full border border-white/20">
+            Enterprise HR Suite
+          </span>
+        </div>
+
+        {/* Hero Middle Typography */}
+        <div className="my-auto max-w-lg space-y-6 z-10 text-left" dir="ltr">
+          <h1 className="text-4xl lg:text-5xl font-black leading-tight tracking-tight text-slate-100">
+            Enterprise HR & Attendance for a smarter <br />
+            <span className="text-[#d4af37]">.future</span>
+          </h1>
+
+          <p className="text-sm text-slate-300 leading-relaxed font-light">
+            Manage your business with BeatAttend&apos;s comprehensive dashboard, real-time analytics, payroll processing, and geospatial tracking.
+          </p>
+        </div>
+
+        {/* Decorative Grid Lines */}
+        <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none"></div>
+
+        {/* Bottom Copyright */}
+        <div className="text-xs text-slate-400 font-mono z-10 text-right dir-rtl">
+          .BeatAttend Inc. All rights reserved 2026 ©
+        </div>
       </div>
     </div>
   );

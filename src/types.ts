@@ -74,10 +74,12 @@ export interface Employee {
   first_name: string;
   last_name: string;
   email: string;
+  phone?: string;
   company_id?: number;
   company_name?: string;
   department_name?: string;
   status: 'active' | 'inactive';
+  is_active?: boolean;
 }
 
 export interface AttendanceRecord {

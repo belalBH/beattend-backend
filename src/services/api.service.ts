@@ -20,54 +20,104 @@ export async function fetchApi<T>(url: string, options: RequestInit = {}): Promi
 }
 
 export const apiService = {
-  // 1. Companies Module
+  // 1. Companies CRUD
   async getCompanies(): Promise<Company[]> {
-    try {
-      return await fetchApi<Company[]>(`${API_CONFIG.PHP_API_URL}?route=companies`);
-    } catch {
-      // Fallback staging data if backend is offline
-      return [
-        { id: 1, tenant_id: 'tenant-sol-102', name: 'Solutions Co', name_ar: 'شركة الحلول المتقدمة', cr_number: '10108849', tax_number: '310992', is_active: true, created_at: '2026-08-01' }
-      ];
-    }
+    return await fetchApi<Company[]>(`${API_CONFIG.PHP_API_URL}?route=companies`);
   },
 
-  // 2. Employees Module
+  async createCompany(companyData: Partial<Company>): Promise<Company> {
+    return await fetchApi<Company>(`${API_CONFIG.PHP_API_URL}?route=companies`, {
+      method: 'POST',
+      body: JSON.stringify(companyData)
+    });
+  },
+
+  async updateCompany(id: number, companyData: Partial<Company>): Promise<Company> {
+    return await fetchApi<Company>(`${API_CONFIG.PHP_API_URL}?route=companies&id=${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(companyData)
+    });
+  },
+
+  async deleteCompany(id: number): Promise<void> {
+    await fetchApi(`${API_CONFIG.PHP_API_URL}?route=companies&id=${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // 2. Employees CRUD
   async getEmployees(companyId?: number): Promise<Employee[]> {
-    try {
-      const url = companyId ? `${API_CONFIG.PHP_API_URL}?route=employees&companyId=${companyId}` : `${API_CONFIG.PHP_API_URL}?route=employees`;
-      return await fetchApi<Employee[]>(url);
-    } catch {
-      return [
-        { id: 1, empNo: 'EMP-001', first_name: 'بلال', last_name: 'البنا', email: 'b.albanna@hadiyah.org.sa', company_name: 'جمعية هدية (Hadiyah Association)', department_name: 'تقنية المعلومات (IT)', status: 'active' },
-        { id: 2, empNo: 'EMP-101', first_name: 'سعد', last_name: 'العتيبي', email: 'saad@solutions.sa', company_name: 'Solutions Co', department_name: 'تقنية المعلومات (IT)', status: 'active' },
-        { id: 3, empNo: 'EMP-102', first_name: 'خالد', last_name: 'الشهري', email: 'k.shehri@solutions.sa', company_name: 'Solutions Co', department_name: 'الموارد البشرية (HR)', status: 'active' }
-      ];
-    }
+    const url = companyId ? `${API_CONFIG.PHP_API_URL}?route=employees&companyId=${companyId}` : `${API_CONFIG.PHP_API_URL}?route=employees`;
+    return await fetchApi<Employee[]>(url);
   },
 
-  // 3. Attendance Module
+  async createEmployee(employeeData: Partial<Employee>): Promise<Employee> {
+    return await fetchApi<Employee>(`${API_CONFIG.PHP_API_URL}?route=employees`, {
+      method: 'POST',
+      body: JSON.stringify(employeeData)
+    });
+  },
+
+  async updateEmployee(id: number, employeeData: Partial<Employee>): Promise<Employee> {
+    return await fetchApi<Employee>(`${API_CONFIG.PHP_API_URL}?route=employees&id=${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(employeeData)
+    });
+  },
+
+  async deleteEmployee(id: number): Promise<void> {
+    await fetchApi(`${API_CONFIG.PHP_API_URL}?route=employees&id=${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // 3. Attendance CRUD & Correction
   async getAttendance(): Promise<AttendanceRecord[]> {
-    try {
-      return await fetchApi<AttendanceRecord[]>(`${API_CONFIG.PHP_API_URL}?route=attendance`);
-    } catch {
-      return [
-        { id: 1, employee_name: 'بلال البنا', check_in: '08:00 AM', check_out: '04:30 PM', location: 'Fayha Branch', work_hours: '8.5 س', status: 'حاضر في الموعد' },
-        { id: 2, employee_name: 'سعد العتيبي', check_in: '08:15 AM', check_out: '04:30 PM', location: 'Al Naseem - HQ', work_hours: '8.25 س', status: 'متأخر 15 دقيقة' },
-        { id: 3, employee_name: 'خالد الشهري', check_in: '-', check_out: '-', location: 'Al Naseem - HQ', work_hours: '0 س', status: 'غائب' }
-      ];
-    }
+    return await fetchApi<AttendanceRecord[]>(`${API_CONFIG.PHP_API_URL}?route=attendance`);
   },
 
-  // 4. Leave Requests Module
+  async checkIn(location?: string): Promise<AttendanceRecord> {
+    return await fetchApi<AttendanceRecord>(`${API_CONFIG.PHP_API_URL}?route=attendance`, {
+      method: 'POST',
+      body: JSON.stringify({ location: location || 'Staging Branch', check_in: new Date().toISOString() })
+    });
+  },
+
+  async correctAttendance(id: number, status: string): Promise<AttendanceRecord> {
+    return await fetchApi<AttendanceRecord>(`${API_CONFIG.PHP_API_URL}?route=attendance&action=correct&id=${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ status })
+    });
+  },
+
+  // 4. Leave Requests Workflow
   async getLeaves(): Promise<LeaveRequest[]> {
-    try {
-      return await fetchApi<LeaveRequest[]>(`${API_CONFIG.PHP_API_URL}?route=leaves`);
-    } catch {
-      return [
-        { id: 1, employee_name: 'بلال البنا', type: 'إجازة سنوية', start_date: '2026-08-05', end_date: '2026-08-10', days_count: 5, status: 'بانتظار موافقة المدير', reason: 'Annual Leave' },
-        { id: 2, employee_name: 'سعد العتيبي', type: 'إجازة مرضية', start_date: '2026-07-20', end_date: '2026-07-21', days_count: 2, status: 'مقبولة', reason: 'Sick Leave' }
-      ];
-    }
+    return await fetchApi<LeaveRequest[]>(`${API_CONFIG.PHP_API_URL}?route=leaves`);
+  },
+
+  async createLeave(leaveData: Partial<LeaveRequest>): Promise<LeaveRequest> {
+    return await fetchApi<LeaveRequest>(`${API_CONFIG.PHP_API_URL}?route=leaves`, {
+      method: 'POST',
+      body: JSON.stringify(leaveData)
+    });
+  },
+
+  async approveLeave(id: number): Promise<LeaveRequest> {
+    return await fetchApi<LeaveRequest>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=approve&id=${id}`, {
+      method: 'POST'
+    });
+  },
+
+  async rejectLeave(id: number, reason: string): Promise<LeaveRequest> {
+    return await fetchApi<LeaveRequest>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=reject&id=${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ reason })
+    });
+  },
+
+  async cancelLeave(id: number): Promise<LeaveRequest> {
+    return await fetchApi<LeaveRequest>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=cancel&id=${id}`, {
+      method: 'POST'
+    });
   }
 };

@@ -1,7 +1,7 @@
 <?php
 /**
  * Time Attendance API
- * Routing Entry Point
+ * Routing Entry Point & Full CRUD Workflows
  */
 
 require_once 'database.php';
@@ -14,7 +14,6 @@ require_once 'controllers/leave_controller.php';
 require_once 'controllers/dynamic_request_controller.php';
 require_once 'controllers/employee_controller.php';
 
-// Set response content type
 header('Content-Type: application/json; charset=UTF-8');
 
 class ApiResponse {
@@ -71,7 +70,7 @@ function getAuthenticatedEmployeeId() {
             return (int)$payload['userId'];
         }
     }
-    return 1; // Fallback default
+    return 1;
 }
 
 $tenantId = validateTenant();
@@ -80,6 +79,8 @@ $uri = $_SERVER['REQUEST_URI'] ?? '';
 $parsedUrl = parse_url($uri);
 $path = trim($parsedUrl['path'] ?? '', '/');
 $route = $_GET['route'] ?? '';
+$id = isset($_GET['id']) ? (int)$_GET['id'] : null;
+$action = $_GET['action'] ?? '';
 
 if (empty($route)) {
     $parts = explode('/', $path);
@@ -103,16 +104,45 @@ try {
             $controller = new CompaniesController();
             if ($method === 'POST') {
                 $controller->createCompany($input, $tenantId);
+            } elseif ($method === 'PUT' || $method === 'PATCH') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $controller->updateCompany($targetId, $input, $tenantId);
+            } elseif ($method === 'DELETE') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $controller->deleteCompany($targetId, $tenantId);
             } else {
                 $controller->getCompanies($tenantId);
+            }
+            break;
+
+        case 'employees':
+            $controller = new EmployeeController();
+            if ($method === 'POST') {
+                $controller->createEmployee($input, $tenantId);
+            } elseif ($method === 'PUT' || $method === 'PATCH') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $controller->updateEmployee($targetId, $input, $tenantId);
+            } elseif ($method === 'DELETE') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $controller->deleteEmployee($targetId, $tenantId);
+            } else {
+                $companyId = isset($_GET['companyId']) ? (int)$_GET['companyId'] : null;
+                $controller->getEmployees($tenantId, $companyId);
             }
             break;
 
         case 'attendance':
             $controller = new AttendanceController();
             if ($method === 'POST') {
-                $employeeId = getAuthenticatedEmployeeId();
-                $controller->checkIn($employeeId, $input, $tenantId);
+                if ($action === 'correct' && $id) {
+                    $controller->correctFingerprint($id, $input, $tenantId);
+                } else {
+                    $employeeId = getAuthenticatedEmployeeId();
+                    $controller->checkIn($employeeId, $input, $tenantId);
+                }
+            } elseif ($method === 'PUT') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $controller->correctFingerprint($targetId, $input, $tenantId);
             } else {
                 $employeeId = isset($_GET['employee_id']) ? (int)$_GET['employee_id'] : null;
                 $startDate = $_GET['start_date'] ?? null;
@@ -123,23 +153,19 @@ try {
 
         case 'leaves':
             $controller = new LeaveController();
-            if ($method === 'POST') {
+            if (!empty($action) && $id) {
+                $controller->updateLeaveStatus($id, $action, $input['reason'] ?? '', $tenantId);
+            } elseif ($method === 'POST') {
                 $employeeId = getAuthenticatedEmployeeId();
                 $controller->createLeaveRequest($employeeId, $input, $tenantId);
+            } elseif ($method === 'PUT' || $method === 'PATCH') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $act = $input['action'] ?? 'approve';
+                $controller->updateLeaveStatus($targetId, $act, $input['reason'] ?? '', $tenantId);
             } else {
                 $employeeId = isset($_GET['employee_id']) ? (int)$_GET['employee_id'] : null;
                 $status = $_GET['status'] ?? null;
                 $controller->getLeaveRequests($tenantId, $employeeId, $status);
-            }
-            break;
-
-        case 'employees':
-            $controller = new EmployeeController();
-            if ($method === 'POST') {
-                $controller->createEmployee($input, $tenantId);
-            } else {
-                $companyId = isset($_GET['companyId']) ? (int)$_GET['companyId'] : null;
-                $controller->getEmployees($tenantId, $companyId);
             }
             break;
 

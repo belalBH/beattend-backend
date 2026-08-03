@@ -67,7 +67,7 @@ export const GeofenceModal: React.FC<Props> = ({
     }
   }, [editingGeofence, isOpen]);
 
-  // Initialize and update Leaflet Map
+  // Initialize and update Google Maps Leaflet Layer
   useEffect(() => {
     if (!isOpen || !mapContainerRef.current) return;
 
@@ -79,15 +79,16 @@ export const GeofenceModal: React.FC<Props> = ({
 
       if (!mapRef.current) {
         // Create Map Instance
-        const map = L.map(mapContainerRef.current).setView([initialLat, initialLng], 15);
+        const map = L.map(mapContainerRef.current).setView([initialLat, initialLng], 16);
         mapRef.current = map;
 
-        // Tile Layers
-        const streetTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '© OpenStreetMap'
+        // OFFICIAL GOOGLE MAPS TILES LAYER
+        const googleStreets = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+          maxZoom: 20,
+          subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+          attribution: '© Google Maps'
         });
-        streetTiles.addTo(map);
+        googleStreets.addTo(map);
 
         // Marker & Circle
         const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
@@ -206,17 +207,19 @@ export const GeofenceModal: React.FC<Props> = ({
     });
 
     if (mapTileMode === 'streets') {
-      // Switch to Satellite
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        attribution: '© Esri Satellite'
+      // Switch to GOOGLE MAPS HYBRID SATELLITE
+      L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '© Google Maps Satellite'
       }).addTo(mapRef.current);
       setMapTileMode('satellite');
     } else {
-      // Switch to Standard Streets
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
+      // Switch to GOOGLE MAPS STREETS
+      L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '© Google Maps'
       }).addTo(mapRef.current);
       setMapTileMode('streets');
     }
@@ -231,9 +234,9 @@ export const GeofenceModal: React.FC<Props> = ({
             <span className="text-2xl">🗺️</span>
             <div>
               <h2 className="text-xl font-bold text-[#d4af37]">
-                {editingGeofence ? '✏️ تعديل وتضخيم النطاق الجغرافي' : '+ تحديد ونطاق جغرافي جديد'}
+                {editingGeofence ? '✏️ تعديل وتضخيم النطاق (Google Maps)' : '+ تحديد ونطاق جغرافي جديد (Google Maps)'}
               </h2>
-              <p className="text-xs text-slate-400">انقر أو اسحب العلامة على الخريطة لتحديد الموقع وتغيير نصف القطر بالكامل</p>
+              <p className="text-xs text-slate-400">خرائط خرائط جوجل المباشرة Google Maps: اسحب الدبوس أو انقر لتعديل الموقع والدائرة</p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="text-slate-400 font-bold hover:text-white text-lg cursor-pointer">✕</button>
@@ -272,7 +275,7 @@ export const GeofenceModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Interactive Map Search & Tiles Bar */}
+          {/* Interactive Google Maps Search & Tiles Bar */}
           <div className="space-y-2">
             <div className="flex flex-col sm:flex-row gap-2 justify-between items-center">
               {/* Address Search Form */}
@@ -281,7 +284,7 @@ export const GeofenceModal: React.FC<Props> = ({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ابحث عن اسم مدينة، حي أو معلم (مثال: الرياض، حي الصحافة)..."
+                  placeholder="ابحث عن اسم مدينة، حي أو معلم في Google Maps..."
                   className="flex-1 px-3 py-2 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-[#d4af37]"
                 />
                 <button
@@ -290,7 +293,7 @@ export const GeofenceModal: React.FC<Props> = ({
                   disabled={searching}
                   className="px-4 py-2 bg-[#234735] text-[#d4af37] border border-[#d4af37]/30 font-bold rounded-xl text-xs hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer"
                 >
-                  {searching ? 'جاري البحث...' : '🔍 بحث بالخريطة'}
+                  {searching ? 'جاري البحث...' : '🔍 بحث Google Maps'}
                 </button>
               </div>
 
@@ -301,7 +304,7 @@ export const GeofenceModal: React.FC<Props> = ({
                   onClick={toggleTileMode}
                   className="px-3 py-2 bg-[#0f1e16] text-slate-200 border border-[#d4af37]/30 font-bold rounded-xl text-xs hover:text-[#d4af37] transition cursor-pointer"
                 >
-                  {mapTileMode === 'streets' ? '🛰️ الخريطة قمر صناعي' : '🗺️ خريطة الشوارع'}
+                  {mapTileMode === 'streets' ? '🛰️ قمر صناعي Google' : '🗺️ شوارع Google'}
                 </button>
                 <button
                   type="button"
@@ -313,12 +316,13 @@ export const GeofenceModal: React.FC<Props> = ({
               </div>
             </div>
 
-            {/* Interactive Leaflet Map Container */}
+            {/* Interactive Google Maps Canvas Container */}
             <div className="relative w-full h-72 rounded-2xl border-2 border-[#d4af37]/40 overflow-hidden shadow-inner bg-[#0f1e16]">
               <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-              <div className="absolute top-3 right-3 bg-[#0f1e16]/90 border border-[#d4af37]/40 px-3 py-1.5 rounded-xl text-[11px] font-bold text-[#d4af37] z-[400] shadow-md backdrop-blur-md">
-                📍 اسحب الدبوس أو انقر على الخريطة لتعديل الموقع
+              <div className="absolute top-3 right-3 bg-[#0f1e16]/90 border border-[#d4af37]/40 px-3 py-1.5 rounded-xl text-[11px] font-bold text-[#d4af37] z-[400] shadow-md backdrop-blur-md flex items-center gap-1.5">
+                <span>🗺️</span>
+                <span>خرائط جوجل المباشرة (Google Maps) - اسحب الدبوس للتعديل</span>
               </div>
             </div>
           </div>
@@ -331,7 +335,7 @@ export const GeofenceModal: React.FC<Props> = ({
                 <label className="font-bold text-slate-200">
                   🎯 نصف قطر النطاق المسموح (Radius): <span className="text-[#d4af37] font-mono text-sm">{formData.radius_meters} متر</span>
                 </label>
-                <span className="text-[11px] text-slate-400">تكبير أو تصغير الدائرة على الخريطة</span>
+                <span className="text-[11px] text-slate-400">تكبير أو تصغير الدائرة على خريطة جوجل</span>
               </div>
 
               {/* Range Slider */}

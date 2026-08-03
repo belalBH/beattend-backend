@@ -88,6 +88,13 @@ try {
             $controller->check();
             break;
 
+        case 'tenant':
+        case 'tenant_resolve':
+            $controller = new TenantController();
+            $identifier = $_GET['identifier'] ?? $_GET['code'] ?? $_GET['slug'] ?? '';
+            $controller->resolveTenant($identifier);
+            break;
+
         // ---------------------------------------------------------
         // PLATFORM SUPER ADMIN NAMESPACE (/api/platform/*)
         // ---------------------------------------------------------

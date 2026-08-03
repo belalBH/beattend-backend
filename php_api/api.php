@@ -95,6 +95,25 @@ try {
             $controller->resolveTenant($identifier);
             break;
 
+        case 'companies':
+            $controller = new CompaniesController();
+            if ($method === 'POST') {
+                $controller->createCompany($input);
+            } elseif ($method === 'PUT' || $method === 'PATCH') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $controller->updateCompany($targetId, $input);
+            } elseif ($method === 'DELETE') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $controller->deleteCompany($targetId);
+            } else {
+                if ($id) {
+                    $controller->getCompanyById($id);
+                } else {
+                    $controller->getCompanies($tenantId);
+                }
+            }
+            break;
+
         // ---------------------------------------------------------
         // PLATFORM SUPER ADMIN NAMESPACE (/api/platform/*)
         // ---------------------------------------------------------

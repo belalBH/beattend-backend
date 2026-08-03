@@ -25,9 +25,13 @@ export default function App() {
   };
 
   const [activeTab, setActiveTabState] = useState<string>(getInitialTab);
+  const [isSuperAdminConsole, setIsSuperAdminConsole] = useState<boolean>(() => getInitialTab() === 'superadmin');
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
+    if (tab === 'superadmin') {
+      setIsSuperAdminConsole(true);
+    }
     window.history.replaceState({ page: tab }, '', `${window.location.pathname}?page=${tab}#${tab}`);
     try {
       localStorage.setItem('beattend_active_page', tab);
@@ -44,10 +48,10 @@ export default function App() {
       const queryTab = urlParams.get('page') || '';
       const hashTab = window.location.hash.replace('#', '').trim();
 
-      if (validTabs.includes(queryTab)) {
-        setActiveTabState(queryTab);
-      } else if (validTabs.includes(hashTab)) {
-        setActiveTabState(hashTab);
+      const current = validTabs.includes(queryTab) ? queryTab : validTabs.includes(hashTab) ? hashTab : '';
+      if (current) {
+        setActiveTabState(current);
+        if (current === 'superadmin') setIsSuperAdminConsole(true);
       }
     };
 
@@ -59,11 +63,10 @@ export default function App() {
     };
   }, []);
 
-  const navItems = [
-    { id: 'dashboard', label: 'لوحة التحكم', icon: '📊', isLive: true },
-    { id: 'login', label: 'تسجيل دخول المنشأة', icon: '🔑', isLive: true },
-    { id: 'superadmin', label: 'إدارة المنصة (SaaS Admin)', icon: '🛡️', isLive: true },
-    { id: 'companies', label: 'الشركات والمنشآت', icon: '🏢', isLive: true },
+  const allNavItems = [
+    { id: 'dashboard', label: 'لوحة التحكم', icon: '📊', isLive: true, tenantOnly: true },
+    { id: 'superadmin', label: 'إدارة المنصة (SaaS Admin)', icon: '🛡️', isLive: true, superAdminOnly: true },
+    { id: 'companies', label: 'الشركات والمنشآت', icon: '🏢', isLive: true, superAdminOnly: true },
     { id: 'employees', label: 'دليل الموظفين', icon: '👥', isLive: true },
     { id: 'attendance', label: 'الحضور والبصمة', icon: '⏱️', isLive: true },
     { id: 'leaves', label: 'الإجازات والطلبات', icon: '📅', isLive: true },
@@ -76,14 +79,28 @@ export default function App() {
     { id: 'settings', label: 'إعدادات النظام', icon: '⚙️', isLive: false },
   ];
 
+  // Filter sidebar items depending on view mode (Tenant Portal vs Super Admin Console)
+  const navItems = allNavItems.filter(item => {
+    if (activeTab === 'superadmin') {
+      // In Super Admin Console, hide tenant-specific dashboard
+      return item.id !== 'dashboard';
+    }
+    // In Tenant Portal view, HIDE superadmin and companies items completely!
+    return !item.superAdminOnly;
+  });
+
   if (activeTab === 'login') {
     return (
       <TenantLoginPage
         onLoginSuccess={(t) => {
           alert(`مرحباً بك في لوحة تحكم شركة ${t.company_name}`);
+          setIsSuperAdminConsole(false);
           setActiveTab('dashboard');
         }}
-        onSwitchToSuperAdmin={() => setActiveTab('superadmin')}
+        onSwitchToSuperAdmin={() => {
+          setIsSuperAdminConsole(true);
+          setActiveTab('superadmin');
+        }}
       />
     );
   }
@@ -99,7 +116,9 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-xl font-black text-[#d4af37] tracking-wide">BeatAttend</h1>
-              <p className="text-xs text-slate-400 font-semibold">SaaS Enterprise Platform</p>
+              <p className="text-xs text-slate-400 font-semibold">
+                {activeTab === 'superadmin' ? 'Super Admin Console' : 'شركة الحلول المتقدمة'}
+              </p>
             </div>
           </div>
 
@@ -135,7 +154,9 @@ export default function App() {
           </div>
           <div className="flex justify-between items-center">
             <span>التنظيم:</span>
-            <span className="text-emerald-400 font-mono">Multi-Tenant Enabled</span>
+            <span className="text-emerald-400 font-mono">
+              {activeTab === 'superadmin' ? 'Super Admin Mode' : 'Tenant Isolated'}
+            </span>
           </div>
         </div>
       </aside>
@@ -146,27 +167,46 @@ export default function App() {
         <header className="h-20 bg-[#1b3325]/80 border-b border-[#d4af37]/20 flex items-center justify-between px-8 backdrop-blur-md sticky top-0 z-10">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-bold text-[#d4af37]">
-              {navItems.find(n => n.id === activeTab)?.label || 'لوحة التحكم'}
+              {allNavItems.find(n => n.id === activeTab)?.label || 'لوحة التحكم'}
             </h2>
           </div>
 
           <div className="flex items-center gap-4">
+            {activeTab !== 'superadmin' ? (
+              <button
+                type="button"
+                onClick={() => setActiveTab('superadmin')}
+                className="px-3.5 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-xs text-[#d4af37] font-semibold hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer flex items-center gap-2"
+              >
+                🛡️ لوحة السوبر أدمن
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setActiveTab('dashboard')}
+                className="px-3.5 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-xs text-[#d4af37] font-semibold hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer flex items-center gap-2"
+              >
+                🏢 العودة إلى لوحة المنشأة
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setActiveTab('login')}
-              className="px-3.5 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-xs text-[#d4af37] font-semibold hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer"
+              className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-300 font-semibold hover:bg-slate-700 transition cursor-pointer"
             >
-              🔑 شاشة دخول المنشآت
+              🔑 خروج / شاشة الدخول
             </button>
+
             <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center font-bold text-[#d4af37] text-sm">
-              SA
+              {activeTab === 'superadmin' ? 'SA' : 'AD'}
             </div>
           </div>
         </header>
 
         {/* View Component Switcher */}
         <div className="p-8 flex-1 overflow-y-auto">
-          {activeTab === 'dashboard' && <SuperAdminView />}
+          {activeTab === 'dashboard' && <EmployeesView />}
           {activeTab === 'superadmin' && <SuperAdminView />}
           {activeTab === 'companies' && <CompaniesView />}
           {activeTab === 'employees' && <EmployeesView />}
@@ -175,7 +215,7 @@ export default function App() {
           {activeTab === 'locations' && <GeofencesView />}
 
           {['shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'].includes(activeTab) && (
-            <UnderIntegration moduleName={navItems.find(n => n.id === activeTab)?.label || ''} />
+            <UnderIntegration moduleName={allNavItems.find(n => n.id === activeTab)?.label || ''} />
           )}
         </div>
       </main>

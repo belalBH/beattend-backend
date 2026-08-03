@@ -13,7 +13,7 @@ class TenantSettingsController {
         $pdo = $db->getConnection();
 
         $stmt = $pdo->prepare("
-            SELECT id, name_ar, name_ar AS name_en, days_credit, is_paid, requires_attachment, is_active
+            SELECT id, name_ar, name_ar AS name_en, days_allowed AS days_credit, is_paid, requires_attachment, is_active
             FROM leave_types
             WHERE tenant_id = :t_id OR tenant_id IS NULL
             ORDER BY is_active DESC, id ASC
@@ -47,7 +47,7 @@ class TenantSettingsController {
         $pdo = $db->getConnection();
 
         $stmt = $pdo->prepare("
-            INSERT INTO leave_types (tenant_id, name_ar, days_credit, is_paid, requires_attachment, is_active)
+            INSERT INTO leave_types (tenant_id, name_ar, days_allowed, is_paid, requires_attachment, is_active)
             VALUES (:t, :nar, :days, :paid, :att, 1)
         ");
         $stmt->execute([
@@ -68,7 +68,7 @@ class TenantSettingsController {
 
         $stmt = $pdo->prepare("
             UPDATE leave_types
-            SET name_ar = :nar, days_credit = :days, is_paid = :paid,
+            SET name_ar = :nar, days_allowed = :days, is_paid = :paid,
                 requires_attachment = :att, is_active = :act
             WHERE id = :id
         ");

@@ -58,7 +58,7 @@ class PlatformController {
         // 1. Basic Info & Company Profile
         $tStmt = $pdo->prepare("
             SELECT t.tenant_id, t.company_code, t.slug, t.subdomain, t.status, t.created_at,
-                   c.id AS company_id, c.name_ar AS company_name, c.name_en AS company_name_en, c.cr_number, c.tax_number,
+                   c.id AS company_id, c.name_ar AS company_name, c.cr_number, c.tax_number,
                    s.id AS subscription_id, s.plan_id, s.start_date, s.end_date, s.status AS subscription_status,
                    p.name_ar AS plan_name, p.price_monthly, p.price_annual, p.max_admin_users, p.max_employees, p.max_branches
             FROM tenants t
@@ -77,33 +77,42 @@ class PlatformController {
         }
 
         // 2. Company Admins & Users
-        $usersStmt = $pdo->prepare("
-            SELECT u.id, u.email, u.full_name, tm.status, tm.joined_at
-            FROM tenant_memberships tm
-            JOIN users u ON u.id = tm.user_id
-            WHERE tm.tenant_id = :t_id
-        ");
-        $usersStmt->execute([':t_id' => $tenantId]);
-        $users = $usersStmt->fetchAll(PDO::FETCH_ASSOC);
+        $users = [];
+        try {
+            $usersStmt = $pdo->prepare("
+                SELECT u.id, u.email, u.full_name, tm.status, tm.joined_at
+                FROM tenant_memberships tm
+                JOIN users u ON u.id = tm.user_id
+                WHERE tm.tenant_id = :t_id
+            ");
+            $usersStmt->execute([':t_id' => $tenantId]);
+            $users = $usersStmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
 
         // 3. Employees List
-        $empStmt = $pdo->prepare("
-            SELECT id, employee_code, first_name_ar, last_name_ar, email, phone, job_title, status, created_at
-            FROM employees
-            WHERE tenant_id = :t_id
-            ORDER BY id ASC
-        ");
-        $empStmt->execute([':t_id' => $tenantId]);
-        $employees = $empStmt->fetchAll(PDO::FETCH_ASSOC);
+        $employees = [];
+        try {
+            $empStmt = $pdo->prepare("
+                SELECT id, first_name_ar, last_name_ar, email, job_title, status, created_at
+                FROM employees
+                WHERE tenant_id = :t_id
+                ORDER BY id ASC
+            ");
+            $empStmt->execute([':t_id' => $tenantId]);
+            $employees = $empStmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
 
         // 4. Enabled Features Override
-        $featStmt = $pdo->prepare("
-            SELECT pf.code, pf.name_ar, tfo.is_enabled
-            FROM platform_features pf
-            LEFT JOIN tenant_feature_overrides tfo ON tfo.feature_id = pf.id AND tfo.tenant_id = :t_id
-        ");
-        $featStmt->execute([':t_id' => $tenantId]);
-        $features = $featStmt->fetchAll(PDO::FETCH_ASSOC);
+        $features = [];
+        try {
+            $featStmt = $pdo->prepare("
+                SELECT pf.code, pf.name_ar, tfo.is_enabled
+                FROM platform_features pf
+                LEFT JOIN tenant_feature_overrides tfo ON tfo.feature_id = pf.id AND tfo.tenant_id = :t_id
+            ");
+            $featStmt->execute([':t_id' => $tenantId]);
+            $features = $featStmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
 
         ApiResponse::success([
             'tenant' => $tenantInfo,

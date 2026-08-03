@@ -1,7 +1,7 @@
 <?php
 /**
  * BeatAttend Native PHP REST API Engine - Single Point Entry Gateway
- * Router & Dispatcher for Multi-Tenant Modular Controllers
+ * Router & Dispatcher for Platform Super Admin & Multi-Tenant Modular Controllers
  */
 
 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
@@ -30,13 +30,13 @@ require_once __DIR__ . '/controllers/superadmin_controller.php';
 require_once __DIR__ . '/controllers/auth_controller.php';
 require_once __DIR__ . '/controllers/platform_controller.php';
 require_once __DIR__ . '/controllers/invitation_controller.php';
+require_once __DIR__ . '/controllers/platform_auth_controller.php';
+require_once __DIR__ . '/controllers/tenant_rbac_controller.php';
+require_once __DIR__ . '/controllers/universal_approval_controller.php';
+require_once __DIR__ . '/controllers/tenant_settings_controller.php';
 
 function validateTenant() {
     $tenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
-    if (empty($tenantId)) {
-        ApiResponse::error('معرف المستأجر (Tenant ID) مطلوب', 400);
-        exit;
-    }
     return $tenantId;
 }
 
@@ -64,6 +64,22 @@ if (empty($route)) {
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
+// Helper middleware for Feature Entitlement check
+function enforceTenantFeature($tenantId, $featureCode) {
+    $features = TenantRbacController::getEnabledFeatures($tenantId);
+    if (!isset($features[$featureCode]) || !$features[$featureCode]) {
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'code' => 403,
+            'message' => "⚠️ 403 Feature Not Enabled: وحدة ({$featureCode}) غير مفعلة في اشتراك هذه المنشأة",
+            'errors' => ['FEATURE_NOT_ENABLED'],
+            'timestamp' => date('c')
+        ]);
+        exit;
+    }
+}
+
 try {
     switch ($route) {
         case 'health':
@@ -72,10 +88,22 @@ try {
             $controller->check();
             break;
 
-        case 'auth_login':
-        case 'login':
-            $controller = new AuthController();
+        // ---------------------------------------------------------
+        // PLATFORM SUPER ADMIN NAMESPACE (/api/platform/*)
+        // ---------------------------------------------------------
+        case 'platform_auth_login':
+            $controller = new PlatformAuthController();
             $controller->login($input);
+            break;
+
+        case 'platform_auth_logout':
+            $controller = new PlatformAuthController();
+            $controller->logout();
+            break;
+
+        case 'platform_auth_me':
+            $controller = new PlatformAuthController();
+            $controller->me();
             break;
 
         case 'platform_tenants':
@@ -87,56 +115,93 @@ try {
             }
             break;
 
-        case 'invitation_verify':
-            $controller = new InvitationController();
-            $controller->verifyToken($_GET['token'] ?? '');
+        // ---------------------------------------------------------
+        // TENANT USER & RBAC NAMESPACE (/api/tenant/*)
+        // ---------------------------------------------------------
+        case 'auth_login':
+        case 'login':
+        case 'tenant_auth_login':
+            $controller = new AuthController();
+            $controller->login($input);
             break;
 
-        case 'invitation_activate':
-            $controller = new InvitationController();
-            $controller->activateAccount($input);
+        case 'tenant_auth_me':
+            $membershipId = (int)($_GET['membership_id'] ?? 1);
+            $effectivePerms = TenantRbacController::getEffectivePermissions($membershipId);
+            $dataScope = TenantRbacController::getDataScope($membershipId);
+            $features = TenantRbacController::getEnabledFeatures($tenantId);
+
+            ApiResponse::success([
+                'user' => ['id' => 1, 'email' => 'user@company.com', 'full_name' => 'User'],
+                'tenant' => ['tenant_id' => $tenantId],
+                'permissions' => $effectivePerms,
+                'enabled_features' => $features,
+                'data_scope' => $dataScope
+            ], 'تم استرجاع صلاحيات ونطاق المستخدم بنجاح');
             break;
 
-        case 'tenant':
-            $controller = new TenantController();
-            $ident = $_GET['identifier'] ?? $_GET['tenant_id'] ?? 'hadiyah';
-            $controller->resolveTenant($ident);
-            break;
-
-        case 'superadmin':
-            $controller = new SuperAdminController();
-            if ($action === 'tenants' && $method === 'POST') {
-                $controller->onboardTenant($input);
-            } elseif ($action === 'tenants' && ($method === 'PUT' || $method === 'PATCH')) {
-                $targetTenantId = $_GET['tenant_id'] ?? $input['tenant_id'] ?? '';
-                $controller->updateTenantStatus($targetTenantId, $input);
-            } elseif ($action === 'plans') {
-                $controller->getSubscriptionPlans();
+        case 'tenant_users':
+            enforceTenantFeature($tenantId, 'settings');
+            $controller = new TenantRbacController();
+            if ($method === 'POST') {
+                $controller->createUser($tenantId, $input);
             } else {
-                $controller->getTenants();
+                $controller->getUsers($tenantId);
             }
             break;
 
-        case 'companies':
-            $controller = new CompaniesController();
+        case 'tenant_roles':
+            enforceTenantFeature($tenantId, 'settings');
+            $controller = new TenantRbacController();
             if ($method === 'POST') {
-                $controller->createCompany($input, $tenantId);
+                $controller->createRole($tenantId, $input);
+            } else {
+                $controller->getRoles($tenantId);
+            }
+            break;
+
+        case 'tenant_permissions_modules':
+            $controller = new TenantRbacController();
+            $controller->getModulesAndPermissions();
+            break;
+
+        case 'tenant_workflows':
+            $controller = new UniversalApprovalController();
+            if ($method === 'POST') {
+                $controller->createWorkflow($tenantId, $input);
+            } else {
+                $controller->getWorkflows($tenantId);
+            }
+            break;
+
+        case 'tenant_approvals_submit':
+            $controller = new UniversalApprovalController();
+            $memId = (int)($input['membership_id'] ?? 1);
+            $controller->submitRequest($tenantId, $memId, $input);
+            break;
+
+        case 'tenant_approvals_action':
+            $controller = new UniversalApprovalController();
+            $memId = (int)($input['membership_id'] ?? 1);
+            $controller->processAction($memId, $input);
+            break;
+
+        case 'tenant_leave_types':
+        case 'leave_types':
+            $controller = new TenantSettingsController();
+            if ($method === 'POST') {
+                $controller->createLeaveType($tenantId, $input);
             } elseif ($method === 'PUT' || $method === 'PATCH') {
                 $targetId = $id ?: ($input['id'] ?? null);
-                $controller->updateCompany($targetId, $input, $tenantId);
-            } elseif ($method === 'DELETE') {
-                $targetId = $id ?: ($input['id'] ?? null);
-                $controller->deleteCompany($targetId, $tenantId);
+                $controller->updateLeaveType($targetId, $input);
             } else {
-                if ($id) {
-                    $controller->getCompanyById($id, $tenantId);
-                } else {
-                    $controller->getCompanies($tenantId);
-                }
+                $controller->getLeaveTypes($tenantId);
             }
             break;
 
+        // Legacy / Standard Modules with Feature Entitlements Enforced
         case 'employees':
+            enforceTenantFeature($tenantId, 'employees');
             $controller = new EmployeeController();
             if ($method === 'POST') {
                 $controller->createEmployee($input, $tenantId);
@@ -156,6 +221,7 @@ try {
             break;
 
         case 'attendance':
+            enforceTenantFeature($tenantId, 'attendance');
             $controller = new AttendanceController();
             if ($action === 'checkin' && $method === 'POST') {
                 $empId = getAuthenticatedEmployeeId();
@@ -172,9 +238,11 @@ try {
             break;
 
         case 'leaves':
+            enforceTenantFeature($tenantId, 'leaves');
             $controller = new LeaveController();
             if ($action === 'types') {
-                $controller->getLeaveTypes();
+                $settingController = new TenantSettingsController();
+                $settingController->getLeaveTypes($tenantId);
             } elseif ($action === 'create' && $method === 'POST') {
                 $empId = getAuthenticatedEmployeeId();
                 $controller->createLeaveRequest($empId, $input);
@@ -189,6 +257,7 @@ try {
             break;
 
         case 'geofences':
+            enforceTenantFeature($tenantId, 'geofencing');
             $controller = new GeofenceController();
             if ($action === 'verify' && $method === 'POST') {
                 $controller->verifyLocation($input, $tenantId);
@@ -209,6 +278,11 @@ try {
                     $controller->getGeofences($tenantId);
                 }
             }
+            break;
+
+        case 'payroll':
+            enforceTenantFeature($tenantId, 'payroll');
+            ApiResponse::success([], 'وحدة الرواتب مفعلة ومتاحة مع حماية الصلاحيات');
             break;
 
         default:

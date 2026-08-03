@@ -7,21 +7,24 @@ import { GeofencesView } from "./features/geofences/GeofencesView";
 import { SuperAdminView } from "./features/superadmin/SuperAdminView";
 import { TenantLoginPage } from "./features/auth/TenantLoginPage";
 import { AccountActivationPage } from "./features/auth/AccountActivationPage";
+import { PlatformLoginPage } from "./features/platform/PlatformLoginPage";
+import { PlatformConsoleView } from "./features/platform/PlatformConsoleView";
+import { UsersAndPermissionsView } from "./features/settings/UsersAndPermissionsView";
 import { UnderIntegration } from "./components/UnderIntegration";
 
 export default function App() {
   const getInitialTab = () => {
-    const validTabs = ['dashboard', 'login', 'activate', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
+    const validTabs = ['dashboard', 'login', 'platform_login', 'platform', 'activate', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
     const urlParams = new URLSearchParams(window.location.search);
     const queryTab = urlParams.get('page') || '';
     const hashTab = window.location.hash.replace('#', '').trim();
-    const sessionTab = sessionStorage.getItem('beattend_active_page') || '';
-    const localTab = localStorage.getItem('beattend_active_page') || '';
+    const pathname = window.location.pathname;
+
+    if (pathname.includes('/platform/login')) return 'platform_login';
+    if (pathname.includes('/platform')) return 'platform';
 
     if (validTabs.includes(queryTab)) return queryTab;
     if (validTabs.includes(hashTab)) return hashTab;
-    if (validTabs.includes(sessionTab)) return sessionTab;
-    if (validTabs.includes(localTab)) return localTab;
     return 'dashboard';
   };
 
@@ -29,21 +32,31 @@ export default function App() {
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
-    window.history.replaceState({ page: tab }, '', `${window.location.pathname}?page=${tab}#${tab}`);
-    try {
-      localStorage.setItem('beattend_active_page', tab);
-      sessionStorage.setItem('beattend_active_page', tab);
-    } catch (e) {
-      console.warn('Storage unavailable:', e);
+    if (tab === 'platform_login') {
+      window.history.replaceState({ page: tab }, '', `/platform/login?page=${tab}#${tab}`);
+    } else if (tab === 'platform') {
+      window.history.replaceState({ page: tab }, '', `/platform?page=${tab}#${tab}`);
+    } else {
+      window.history.replaceState({ page: tab }, '', `${window.location.pathname}?page=${tab}#${tab}`);
     }
   };
 
   useEffect(() => {
     const handleUrlChange = () => {
-      const validTabs = ['dashboard', 'login', 'activate', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
+      const validTabs = ['dashboard', 'login', 'platform_login', 'platform', 'activate', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
       const urlParams = new URLSearchParams(window.location.search);
       const queryTab = urlParams.get('page') || '';
       const hashTab = window.location.hash.replace('#', '').trim();
+      const pathname = window.location.pathname;
+
+      if (pathname.includes('/platform/login')) {
+        setActiveTabState('platform_login');
+        return;
+      }
+      if (pathname.includes('/platform')) {
+        setActiveTabState('platform');
+        return;
+      }
 
       const current = validTabs.includes(queryTab) ? queryTab : validTabs.includes(hashTab) ? hashTab : '';
       if (current) {
@@ -67,11 +80,11 @@ export default function App() {
     { id: 'attendance', label: 'الحضور والبصمة', icon: '⏱️', isLive: true },
     { id: 'leaves', label: 'الإجازات والطلبات', icon: '📅', isLive: true },
     { id: 'locations', label: 'النطاق الجغرافي', icon: '📍', isLive: true },
+    { id: 'roles', label: 'المستخدمون والصلاحيات (RBAC)', icon: '🔐', isLive: true },
     { id: 'shifts', label: 'مناوبات العمل', icon: '🔄', isLive: false },
-    { id: 'payroll', label: 'مسيرات الرواتب', icon: '💰', isLive: false },
+    { id: 'payroll', label: 'مسيرات الرواتب', icon: '💰', isLive: true },
     { id: 'documents', label: 'المستندات والملفات', icon: '📁', isLive: false },
     { id: 'reports', label: 'التقارير والإحصائيات', icon: '📈', isLive: false },
-    { id: 'roles', label: 'الأدوار والصلاحيات', icon: '🔐', isLive: false },
     { id: 'settings', label: 'إعدادات النظام', icon: '⚙️', isLive: false },
   ];
 
@@ -82,6 +95,20 @@ export default function App() {
     return !item.superAdminOnly;
   });
 
+  if (activeTab === 'platform_login') {
+    return (
+      <PlatformLoginPage
+        onLoginSuccess={(token, user) => {
+          setActiveTab('platform');
+        }}
+      />
+    );
+  }
+
+  if (activeTab === 'platform') {
+    return <PlatformConsoleView />;
+  }
+
   if (activeTab === 'login') {
     return (
       <TenantLoginPage
@@ -90,7 +117,7 @@ export default function App() {
           setActiveTab('dashboard');
         }}
         onSwitchToSuperAdmin={() => {
-          setActiveTab('superadmin');
+          setActiveTab('platform_login');
         }}
       />
     );
@@ -173,23 +200,13 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4">
-            {activeTab !== 'superadmin' ? (
-              <button
-                type="button"
-                onClick={() => setActiveTab('superadmin')}
-                className="px-3.5 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-xs text-[#d4af37] font-semibold hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer flex items-center gap-2"
-              >
-                🛡️ لوحة السوبر أدمن
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setActiveTab('dashboard')}
-                className="px-3.5 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-xs text-[#d4af37] font-semibold hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer flex items-center gap-2"
-              >
-                🏢 العودة إلى لوحة المنشأة
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setActiveTab('platform_login')}
+              className="px-3.5 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-xl text-xs text-[#d4af37] font-semibold hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer flex items-center gap-2"
+            >
+              🛡️ بوابة السوبر أدمن المستقلة
+            </button>
 
             <button
               type="button"
@@ -214,8 +231,9 @@ export default function App() {
           {activeTab === 'attendance' && <AttendanceView />}
           {activeTab === 'leaves' && <LeavesView />}
           {activeTab === 'locations' && <GeofencesView />}
+          {activeTab === 'roles' && <UsersAndPermissionsView />}
 
-          {['shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'].includes(activeTab) && (
+          {['shifts', 'payroll', 'documents', 'reports', 'settings'].includes(activeTab) && (
             <UnderIntegration moduleName={allNavItems.find(n => n.id === activeTab)?.label || ''} />
           )}
         </div>

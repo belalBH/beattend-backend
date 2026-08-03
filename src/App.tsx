@@ -4,11 +4,12 @@ import { EmployeesView } from "./features/employees/EmployeesView";
 import { AttendanceView } from "./features/attendance/AttendanceView";
 import { LeavesView } from "./features/leaves/LeavesView";
 import { GeofencesView } from "./features/geofences/GeofencesView";
+import { SuperAdminView } from "./features/superadmin/SuperAdminView";
 import { UnderIntegration } from "./components/UnderIntegration";
 
 export default function App() {
   const getInitialTab = () => {
-    const validTabs = ['dashboard', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
+    const validTabs = ['dashboard', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
     const urlParams = new URLSearchParams(window.location.search);
     const queryTab = urlParams.get('page') || '';
     const hashTab = window.location.hash.replace('#', '').trim();
@@ -37,7 +38,7 @@ export default function App() {
 
   useEffect(() => {
     const handleUrlChange = () => {
-      const validTabs = ['dashboard', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
+      const validTabs = ['dashboard', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
       const urlParams = new URLSearchParams(window.location.search);
       const queryTab = urlParams.get('page') || '';
       const hashTab = window.location.hash.replace('#', '').trim();
@@ -59,6 +60,7 @@ export default function App() {
 
   const navItems = [
     { id: 'dashboard', label: 'لوحة التحكم', icon: '📊', isLive: true },
+    { id: 'superadmin', label: 'إدارة المنصة (SaaS Admin)', icon: '🛡️', isLive: true },
     { id: 'companies', label: 'الشركات والمنشآت', icon: '🏢', isLive: true },
     { id: 'employees', label: 'دليل الموظفين', icon: '👥', isLive: true },
     { id: 'attendance', label: 'الحضور والبصمة', icon: '⏱️', isLive: true },
@@ -83,7 +85,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-xl font-black text-[#d4af37] tracking-wide">BeatAttend</h1>
-              <p className="text-xs text-slate-400 font-semibold">Staging HR Enterprise</p>
+              <p className="text-xs text-slate-400 font-semibold">SaaS Enterprise Platform</p>
             </div>
           </div>
 
@@ -115,11 +117,11 @@ export default function App() {
         <div className="pt-6 border-t border-[#d4af37]/10 text-xs text-slate-400 space-y-2">
           <div className="flex justify-between items-center">
             <span>البيئة:</span>
-            <span className="text-[#d4af37] font-mono">Staging Live API</span>
+            <span className="text-[#d4af37] font-mono">Staging SaaS Live</span>
           </div>
           <div className="flex justify-between items-center">
-            <span>التظهير:</span>
-            <span className="text-emerald-400 font-mono">v1.0.0 (API Connected)</span>
+            <span>التنظيم:</span>
+            <span className="text-emerald-400 font-mono">Multi-Tenant Enabled</span>
           </div>
         </div>
       </aside>
@@ -137,17 +139,18 @@ export default function App() {
           <div className="flex items-center gap-4">
             <div className="px-3 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-full text-xs text-[#d4af37] font-semibold flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              بيئة Staging متصلة بالـ API الحقيقي
+              بيئة Staging SaaS متصلة بالـ Tenant Engine
             </div>
             <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center font-bold text-[#d4af37] text-sm">
-              AD
+              SA
             </div>
           </div>
         </header>
 
         {/* View Component Switcher */}
         <div className="p-8 flex-1 overflow-y-auto">
-          {activeTab === 'dashboard' && <CompaniesView />}
+          {activeTab === 'dashboard' && <SuperAdminView />}
+          {activeTab === 'superadmin' && <SuperAdminView />}
           {activeTab === 'companies' && <CompaniesView />}
           {activeTab === 'employees' && <EmployeesView />}
           {activeTab === 'attendance' && <AttendanceView />}

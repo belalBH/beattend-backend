@@ -25,6 +25,8 @@ require_once __DIR__ . '/controllers/employee_controller.php';
 require_once __DIR__ . '/controllers/attendance_controller.php';
 require_once __DIR__ . '/controllers/leave_controller.php';
 require_once __DIR__ . '/controllers/geofence_controller.php';
+require_once __DIR__ . '/controllers/tenant_controller.php';
+require_once __DIR__ . '/controllers/superadmin_controller.php';
 
 function validateTenant() {
     $tenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
@@ -65,6 +67,26 @@ try {
         case 'ping':
             $controller = new HealthController();
             $controller->check();
+            break;
+
+        case 'tenant':
+            $controller = new TenantController();
+            $ident = $_GET['identifier'] ?? $_GET['tenant_id'] ?? 'hadiyah';
+            $controller->resolveTenant($ident);
+            break;
+
+        case 'superadmin':
+            $controller = new SuperAdminController();
+            if ($action === 'tenants' && $method === 'POST') {
+                $controller->onboardTenant($input);
+            } elseif ($action === 'tenants' && ($method === 'PUT' || $method === 'PATCH')) {
+                $targetTenantId = $_GET['tenant_id'] ?? $input['tenant_id'] ?? '';
+                $controller->updateTenantStatus($targetTenantId, $input);
+            } elseif ($action === 'plans') {
+                $controller->getSubscriptionPlans();
+            } else {
+                $controller->getTenants();
+            }
             break;
 
         case 'companies':

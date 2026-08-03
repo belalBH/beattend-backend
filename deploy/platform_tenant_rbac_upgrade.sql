@@ -272,6 +272,16 @@ CREATE TABLE IF NOT EXISTS approval_request_actions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------
+-- PART 6: LEAVE TYPES SCHEMA ALIGNMENT
+-- ---------------------------------------------------------
+
+ALTER TABLE leave_types ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) NULL;
+ALTER TABLE leave_types ADD COLUMN IF NOT EXISTS days_allowed INT DEFAULT 21;
+ALTER TABLE leave_types ADD COLUMN IF NOT EXISTS is_paid TINYINT(1) DEFAULT 1;
+ALTER TABLE leave_types ADD COLUMN IF NOT EXISTS requires_attachment TINYINT(1) DEFAULT 0;
+ALTER TABLE leave_types ADD COLUMN IF NOT EXISTS is_active TINYINT(1) DEFAULT 1;
+
+-- ---------------------------------------------------------
 -- SEED DATA & INITIALIZATION
 -- ---------------------------------------------------------
 

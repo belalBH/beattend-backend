@@ -2,10 +2,14 @@ import { API_CONFIG } from '../config/api.config';
 import { Company, Employee, AttendanceRecord, LeaveRequest } from '../types';
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const activeTenantId = localStorage.getItem('beattend_tenant_id') || API_CONFIG.DEFAULT_TENANT_ID;
+  const platformToken = localStorage.getItem('beattend_platform_token') || 'PlatformSuperAdminSecret2026!';
+
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'X-Tenant-ID': API_CONFIG.DEFAULT_TENANT_ID,
+    'X-Tenant-ID': activeTenantId,
+    'X-Platform-Token': platformToken,
     ...(options.headers || {}),
   };
 
@@ -35,8 +39,8 @@ export async function fetchApi<T>(url: string, options: RequestInit = {}): Promi
 
     return (result && result.data !== undefined) ? result.data : result;
   } catch (err: any) {
-    console.error(`[API Call Failed] URL: ${url}`, err);
-    throw err;
+      console.error(`[API Call Failed] URL: ${url}`, err);
+      throw err;
   }
 }
 
@@ -61,15 +65,14 @@ export const apiService = {
   },
 
   async deleteCompany(id: number): Promise<void> {
-    await fetchApi(`${API_CONFIG.PHP_API_URL}?route=companies&id=${id}`, {
+    return await fetchApi<void>(`${API_CONFIG.PHP_API_URL}?route=companies&id=${id}`, {
       method: 'DELETE'
     });
   },
 
   // 2. Employees CRUD
-  async getEmployees(companyId?: number): Promise<Employee[]> {
-    const url = companyId ? `${API_CONFIG.PHP_API_URL}?route=employees&companyId=${companyId}` : `${API_CONFIG.PHP_API_URL}?route=employees`;
-    return await fetchApi<Employee[]>(url);
+  async getEmployees(): Promise<Employee[]> {
+    return await fetchApi<Employee[]>(`${API_CONFIG.PHP_API_URL}?route=employees`);
   },
 
   async getEmployeeById(id: number): Promise<Employee> {
@@ -91,57 +94,67 @@ export const apiService = {
   },
 
   async deleteEmployee(id: number): Promise<void> {
-    await fetchApi(`${API_CONFIG.PHP_API_URL}?route=employees&id=${id}`, {
+    return await fetchApi<void>(`${API_CONFIG.PHP_API_URL}?route=employees&id=${id}`, {
       method: 'DELETE'
     });
   },
 
   // 3. Attendance CRUD
-  async getAttendance(): Promise<AttendanceRecord[]> {
-    return await fetchApi<AttendanceRecord[]>(`${API_CONFIG.PHP_API_URL}?route=attendance`);
-  },
-
-  async checkIn(location: string): Promise<AttendanceRecord> {
-    return await fetchApi<AttendanceRecord>(`${API_CONFIG.PHP_API_URL}?route=attendance`, {
+  async checkIn(payload: any): Promise<any> {
+    return await fetchApi<any>(`${API_CONFIG.PHP_API_URL}?route=attendance&action=checkin`, {
       method: 'POST',
-      body: JSON.stringify({ location })
+      body: JSON.stringify(payload)
     });
   },
 
-  async correctAttendance(id: number, status: string): Promise<AttendanceRecord> {
-    return await fetchApi<AttendanceRecord>(`${API_CONFIG.PHP_API_URL}?route=attendance&action=correct&id=${id}`, {
+  async checkOut(payload: any): Promise<any> {
+    return await fetchApi<any>(`${API_CONFIG.PHP_API_URL}?route=attendance&action=checkout`, {
       method: 'POST',
-      body: JSON.stringify({ status })
+      body: JSON.stringify(payload)
     });
   },
 
-  // 4. Leave Requests CRUD
+  async getAttendanceLogs(): Promise<AttendanceRecord[]> {
+    return await fetchApi<AttendanceRecord[]>(`${API_CONFIG.PHP_API_URL}?route=attendance&action=logs`);
+  },
+
+  async getAttendanceStats(): Promise<any> {
+    return await fetchApi<any>(`${API_CONFIG.PHP_API_URL}?route=attendance`);
+  },
+
+  // 4. Leaves CRUD
   async getLeaves(): Promise<LeaveRequest[]> {
     return await fetchApi<LeaveRequest[]>(`${API_CONFIG.PHP_API_URL}?route=leaves`);
   },
 
-  async createLeave(leaveData: Partial<LeaveRequest>): Promise<LeaveRequest> {
-    return await fetchApi<LeaveRequest>(`${API_CONFIG.PHP_API_URL}?route=leaves`, {
+  async createLeave(payload: any): Promise<LeaveRequest> {
+    return await fetchApi<LeaveRequest>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=create`, {
       method: 'POST',
-      body: JSON.stringify(leaveData)
+      body: JSON.stringify(payload)
     });
   },
 
-  async approveLeave(id: number): Promise<LeaveRequest> {
-    return await fetchApi<LeaveRequest>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=approve&id=${id}`, {
+  async updateLeaveStatus(id: number, action: 'approve' | 'reject'): Promise<any> {
+    return await fetchApi<any>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=${action}&id=${id}`, {
       method: 'POST'
     });
   },
 
-  async rejectLeave(id: number, reason: string): Promise<LeaveRequest> {
-    return await fetchApi<LeaveRequest>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=reject&id=${id}`, {
+  async approveLeave(id: number): Promise<any> {
+    return await fetchApi<any>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=approve&id=${id}`, {
+      method: 'POST'
+    });
+  },
+
+  async rejectLeave(id: number, reason?: string): Promise<any> {
+    return await fetchApi<any>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=reject&id=${id}`, {
       method: 'POST',
       body: JSON.stringify({ reason })
     });
   },
 
-  async cancelLeave(id: number): Promise<LeaveRequest> {
-    return await fetchApi<LeaveRequest>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=cancel&id=${id}`, {
+  async cancelLeave(id: number): Promise<any> {
+    return await fetchApi<any>(`${API_CONFIG.PHP_API_URL}?route=leaves&action=cancel&id=${id}`, {
       method: 'POST'
     });
   }

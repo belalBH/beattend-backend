@@ -76,6 +76,18 @@ class EmployeeController {
                 return;
             }
 
+            $email = trim($input['email']);
+
+            // Check duplicate email
+            $dupStmt = $this->db->prepare("SELECT id FROM employees WHERE LOWER(email) = LOWER(:e) LIMIT 1");
+            $dupStmt->execute([':e' => $email]);
+            $existingEmp = $dupStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($existingEmp) {
+                ApiResponse::error("⚠️ الموظف صاحب البريد الإلكتروني ({$email}) موجود بالفعل مسبقاً في دليل الموظفين برقم ID: {$existingEmp['id']}", 400);
+                return;
+            }
+
             $empNo = !empty($input['empNo']) ? trim($input['empNo']) : (!empty($input['employee_number']) ? trim($input['employee_number']) : 'EMP-STG-' . rand(100, 999));
             $companyId = isset($input['company_id']) ? (int)$input['company_id'] : 1;
             $departmentId = isset($input['department_id']) ? (int)$input['department_id'] : 1;
@@ -108,7 +120,7 @@ class EmployeeController {
                 'last_name' => trim($input['last_name']),
                 'arabic_name' => trim($input['arabic_name'] ?? ($input['first_name'] . ' ' . $input['last_name'])),
                 'english_name' => trim($input['english_name'] ?? ($input['first_name'] . ' ' . $input['last_name'])),
-                'email' => trim($input['email']),
+                'email' => $email,
                 'phone' => trim($input['phone'] ?? ''),
                 'identity_number' => trim($input['identity_number'] ?? ($input['national_id'] ?? '')),
                 'nationality' => trim($input['nationality'] ?? 'سعودي'),
@@ -139,77 +151,46 @@ class EmployeeController {
             $stmtCheck = $this->db->prepare("SELECT id FROM employees WHERE id = :id AND tenant_id = :tenant_id");
             $stmtCheck->execute(['id' => $id, 'tenant_id' => $tenantId]);
             if (!$stmtCheck->fetch()) {
-                ApiResponse::error('الموظف المطلوب غير موجود', 404);
+                ApiResponse::error('الموظف المراد تعديله غير موجود', 404);
                 return;
             }
 
-            $fields = [];
-            $params = ['id' => $id, 'tenant_id' => $tenantId];
+            $first_name = trim($input['first_name'] ?? 'موظف');
+            $last_name = trim($input['last_name'] ?? 'جديد');
+            $isActive = isset($input['is_active']) ? ((bool)$input['is_active'] ? 1 : 0) : 1;
 
-            $allowedFields = [
-                'first_name', 'last_name', 'arabic_name', 'english_name', 'email', 'phone',
-                'identity_number', 'nationality', 'gender', 'birth_date', 'marital_status',
-                'job_title', 'hire_date', 'contract_type', 'bank_name', 'iban'
-            ];
-
-            foreach ($allowedFields as $f) {
-                if (isset($input[$f])) {
-                    $fields[] = "$f = :$f";
-                    $params[$f] = $input[$f];
-                }
-            }
-
-            if (isset($input['national_id'])) {
-                $fields[] = "identity_number = :national_id";
-                $params['national_id'] = $input['national_id'];
-            }
-
-            if (isset($input['empNo']) || isset($input['employee_number'])) {
-                $empNoVal = $input['empNo'] ?? $input['employee_number'];
-                $fields[] = "employee_number = :empNoVal";
-                $params['empNoVal'] = $empNoVal;
-            }
-
-            if (isset($input['company_id'])) {
-                $fields[] = "company_id = :company_id";
-                $params['company_id'] = (int)$input['company_id'];
-            }
-
-            if (isset($input['department_id'])) {
-                $fields[] = "department_id = :department_id";
-                $params['department_id'] = (int)$input['department_id'];
-            }
-
-            if (isset($input['branch_id'])) {
-                $fields[] = "branch_id = :branch_id";
-                $params['branch_id'] = (int)$input['branch_id'];
-            }
-
-            if (isset($input['is_active'])) {
-                $fields[] = "is_active = :is_active";
-                $params['is_active'] = (bool)$input['is_active'] ? 1 : 0;
-            }
-
-            if (empty($fields)) {
-                $this->getEmployeeById($id, $tenantId);
-                return;
-            }
-
-            $sql = "UPDATE employees SET " . implode(', ', $fields) . " WHERE id = :id AND tenant_id = :tenant_id";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
+            $stmt = $this->db->prepare("
+                UPDATE employees SET
+                  first_name = :first_name,
+                  last_name = :last_name,
+                  arabic_name = :arabic_name,
+                  phone = :phone,
+                  job_title = :job_title,
+                  is_active = :is_active
+                WHERE id = :id AND tenant_id = :tenant_id
+            ");
+            $stmt->execute([
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'arabic_name' => trim($input['arabic_name'] ?? ($first_name . ' ' . $last_name)),
+                'phone' => trim($input['phone'] ?? ''),
+                'job_title' => trim($input['job_title'] ?? 'أخصائي تطوير'),
+                'is_active' => $isActive,
+                'id' => (int)$id,
+                'tenant_id' => $tenantId
+            ]);
 
             $this->getEmployeeById($id, $tenantId);
         } catch (Exception $e) {
-            ApiResponse::error('فشل تعديل بيانات الموظف: ' . $e->getMessage(), 500);
+            ApiResponse::error('فشل تعديل الموظف: ' . $e->getMessage(), 500);
         }
     }
 
     public function deleteEmployee($id, $tenantId) {
         try {
             $stmt = $this->db->prepare("DELETE FROM employees WHERE id = :id AND tenant_id = :tenant_id");
-            $stmt->execute(['id' => $id, 'tenant_id' => $tenantId]);
-            ApiResponse::send(['id' => $id], 'تم حذف الموظف بنجاح');
+            $stmt->execute(['id' => (int)$id, 'tenant_id' => $tenantId]);
+            ApiResponse::send(null, 'تم حذف الموظف بنجاح');
         } catch (Exception $e) {
             ApiResponse::error('فشل حذف الموظف: ' . $e->getMessage(), 500);
         }

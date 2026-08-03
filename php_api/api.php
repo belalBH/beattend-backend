@@ -41,6 +41,7 @@ require_once __DIR__ . '/controllers/tenant_rbac_controller.php';
 require_once __DIR__ . '/controllers/universal_approval_controller.php';
 require_once __DIR__ . '/controllers/tenant_settings_controller.php';
 require_once __DIR__ . '/controllers/payroll_controller.php';
+require_once __DIR__ . '/controllers/payroll_engine_controller.php';
 
 function validateTenant() {
     $tenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
@@ -382,6 +383,12 @@ try {
                     $controller->getGeofences($tenantId);
                 }
             }
+            break;
+
+        case 'payroll_engine_tests':
+            enforceTenantFeature($tenantId, 'payroll');
+            $controller = new PayrollEngineController();
+            $controller->runPhase1Tests();
             break;
 
         case 'payroll':

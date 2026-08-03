@@ -33,6 +33,7 @@ export const GeofenceModal: React.FC<Props> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searching, setSearching] = useState<boolean>(false);
   const [mapTileMode, setMapTileMode] = useState<'streets' | 'satellite'>('streets');
+  const [locating, setLocating] = useState<boolean>(false);
 
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -164,15 +165,32 @@ export const GeofenceModal: React.FC<Props> = ({
   };
 
   const handleGetCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
+    if (!navigator.geolocation) {
+      alert('متصفحك لا يدعم خاصية تحديد الموقع الجغرافي GPS');
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
         const lat = roundToSix(pos.coords.latitude);
         const lng = roundToSix(pos.coords.longitude);
         setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
-      }, () => {
-        alert('تعذر جلب موقعك الحالي عبر GPS المتصفح');
-      });
-    }
+        if (mapRef.current) {
+          mapRef.current.setView([lat, lng], 18);
+        }
+        setLocating(false);
+      },
+      (err) => {
+        setLocating(false);
+        alert('تعذر جلب موقعك الحالي: يرجى السماح للمتصفح بالوصول لموقعك الجغرافي GPS');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
   };
 
   const handleSearchLocation = async (e: React.FormEvent) => {
@@ -187,8 +205,11 @@ export const GeofenceModal: React.FC<Props> = ({
         const lat = roundToSix(parseFloat(data[0].lat));
         const lng = roundToSix(parseFloat(data[0].lon));
         setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+        if (mapRef.current) {
+          mapRef.current.setView([lat, lng], 16);
+        }
       } else {
-        alert('لم يتم العثور على موقع بهذا الاسم');
+        alert('لم يتم العثور على موقع بهذا الاسم في Google Maps');
       }
     } catch (err) {
       alert('حدث خطأ أثناء البحث عن الموقع');
@@ -236,7 +257,7 @@ export const GeofenceModal: React.FC<Props> = ({
               <h2 className="text-xl font-bold text-[#d4af37]">
                 {editingGeofence ? '✏️ تعديل وتضخيم النطاق (Google Maps)' : '+ تحديد ونطاق جغرافي جديد (Google Maps)'}
               </h2>
-              <p className="text-xs text-slate-400">خرائط خرائط جوجل المباشرة Google Maps: اسحب الدبوس أو انقر لتعديل الموقع والدائرة</p>
+              <p className="text-xs text-slate-400">خرائط جوجل المباشرة Google Maps: اسحب الدبوس أو انقر لتعديل الموقع والدائرة</p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="text-slate-400 font-bold hover:text-white text-lg cursor-pointer">✕</button>
@@ -309,9 +330,10 @@ export const GeofenceModal: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={handleGetCurrentLocation}
-                  className="px-3 py-2 bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/40 font-bold rounded-xl text-xs hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer"
+                  disabled={locating}
+                  className="px-3 py-2 bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/40 font-bold rounded-xl text-xs hover:bg-[#d4af37] hover:text-[#0f1e16] transition cursor-pointer disabled:opacity-50"
                 >
-                  📍 موقعي الحقيقي
+                  {locating ? '⏳ جاري تحديد موقعك...' : '📍 موقعي الحقيقي (GPS)'}
                 </button>
               </div>
             </div>

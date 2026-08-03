@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { CompaniesView } from "./features/companies/CompaniesView";
+import { EmployeesView } from "./features/employees/EmployeesView";
+import { AttendanceView } from "./features/attendance/AttendanceView";
+import { LeavesView } from "./features/leaves/LeavesView";
+import { UnderIntegration } from "./components/UnderIntegration";
 
 export default function App() {
   const getInitialTab = () => {
-    const validTabs = ['dashboard', 'employees', 'attendance', 'leaves', 'locations', 'reports', 'settings'];
+    const validTabs = ['dashboard', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
     const urlParams = new URLSearchParams(window.location.search);
     const queryTab = urlParams.get('page') || '';
     const hashTab = window.location.hash.replace('#', '').trim();
@@ -17,7 +22,6 @@ export default function App() {
   };
 
   const [activeTab, setActiveTabState] = useState<string>(getInitialTab);
-  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
@@ -32,7 +36,7 @@ export default function App() {
 
   useEffect(() => {
     const handleUrlChange = () => {
-      const validTabs = ['dashboard', 'employees', 'attendance', 'leaves', 'locations', 'reports', 'settings'];
+      const validTabs = ['dashboard', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
       const urlParams = new URLSearchParams(window.location.search);
       const queryTab = urlParams.get('page') || '';
       const hashTab = window.location.hash.replace('#', '').trim();
@@ -52,526 +56,107 @@ export default function App() {
     };
   }, []);
 
-  const employeesData = [
-    {
-      id: 1,
-      empNo: "EMP-001",
-      name: "بلال البنا",
-      email: "b.albanna@hadiyah.org.sa",
-      company: "جمعية هدية (Hadiyah Association)",
-      location: "Fayha Branch",
-      dept: "تقنية المعلومات (IT)",
-      status: "active",
-      mobileApp: true
-    },
-    {
-      id: 2,
-      empNo: "EMP-101",
-      name: "سعد العتيبي",
-      email: "saad@solutions.sa",
-      company: "Solutions Co",
-      location: "Al Naseem - HQ",
-      dept: "تقنية المعلومات (IT)",
-      status: "active",
-      mobileApp: true
-    },
-    {
-      id: 3,
-      empNo: "EMP-102",
-      name: "خالد الشهري",
-      email: "k.shehri@solutions.sa",
-      company: "Solutions Co",
-      location: "Al Naseem - HQ",
-      dept: "الموارد البشرية (HR)",
-      status: "active",
-      mobileApp: false
-    }
+  const navItems = [
+    { id: 'dashboard', label: 'لوحة التحكم', icon: '📊', isLive: true },
+    { id: 'companies', label: 'الشركات والمنشآت', icon: '🏢', isLive: true },
+    { id: 'employees', label: 'دليل الموظفين', icon: '👥', isLive: true },
+    { id: 'attendance', label: 'الحضور والبصمة', icon: '⏱️', isLive: true },
+    { id: 'leaves', label: 'الإجازات والطلبات', icon: '📅', isLive: true },
+    { id: 'locations', label: 'النطاق الجغرافي', icon: '📍', isLive: false },
+    { id: 'shifts', label: 'مناوبات العمل', icon: '🔄', isLive: false },
+    { id: 'payroll', label: 'مسيرات الرواتب', icon: '💰', isLive: false },
+    { id: 'documents', label: 'المستندات والملفات', icon: '📁', isLive: false },
+    { id: 'reports', label: 'التقارير والإحصائيات', icon: '📈', isLive: false },
+    { id: 'roles', label: 'الأدوار والصلاحيات', icon: '🔐', isLive: false },
+    { id: 'settings', label: 'إعدادات النظام', icon: '⚙️', isLive: false },
   ];
-
-  const attendanceData = [
-    { id: 1, name: "بلال البنا", timeIn: "08:00 AM", timeOut: "04:30 PM", location: "Fayha Branch", workHours: "8.5 س", status: "حاضر في الموعد" },
-    { id: 2, name: "سعد العتيبي", timeIn: "08:15 AM", timeOut: "04:30 PM", location: "Al Naseem - HQ", workHours: "8.25 س", status: "متأخر 15 دقيقة" },
-    { id: 3, name: "خالد الشهري", timeIn: "-", timeOut: "-", location: "Al Naseem - HQ", workHours: "0 س", status: "غائب" }
-  ];
-
-  const leavesData = [
-    { id: 1, name: "بلال البنا", type: "إجازة سنوية", startDate: "2026-08-05", endDate: "2026-08-10", days: 5, balance: "18 يوم", status: "بانتظار موافقة المدير" },
-    { id: 2, name: "سعد العتيبي", type: "إجازة مرضية", startDate: "2026-07-20", endDate: "2026-07-21", days: 2, balance: "12 يوم", status: "مقبولة" }
-  ];
-
-  const filteredEmployees = employeesData.filter(emp =>
-    emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.empNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
-    <div className="flex min-h-screen bg-[#f4f5f1] text-[#13241b] font-sans" dir="rtl">
-      
-      {/* 1. RIGHT ROYAL OLIVE SIDEBAR (RTL NAVIGATION WITH GOLD ACCENTS) */}
-      <aside className="w-[270px] bg-gradient-to-b from-[#1b3325] to-[#122419] text-[#e2ebd5] flex-shrink-0 flex flex-col min-h-screen shadow-2xl border-l-2 border-[#d4af37]">
-        {/* Brand Header */}
-        <div className="p-6 border-b border-[#d4af37]/20 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#d4af37]/15 text-[#d4af37] border border-[#d4af37]/40 flex items-center justify-center text-xl font-black shadow-md">
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8force-z"/>
-            </svg>
+    <div className="min-h-screen bg-[#0f1e16] text-slate-100 font-sans flex flex-col md:flex-row dir-rtl" dir="rtl">
+      {/* Sidebar Navigation */}
+      <aside className="w-full md:w-72 bg-[#1b3325] border-l border-[#d4af37]/20 flex flex-col justify-between p-6 shrink-0 shadow-2xl z-20">
+        <div>
+          <div className="flex items-center gap-3 mb-8 px-2">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#d4af37] to-[#f3e5ab] text-[#0f1e16] font-black text-xl flex items-center justify-center shadow-lg">
+              B
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-[#d4af37] tracking-wide">BeatAttend</h1>
+              <p className="text-xs text-slate-400 font-semibold">Staging HR Enterprise</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-white font-black text-xl leading-tight m-0 tracking-wide">BeatAttend</h1>
-            <span className="bg-[#d4af37]/15 text-[#d4af37] border border-[#d4af37]/40 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">ROYAL HR ENTERPRISE</span>
-          </div>
+
+          <nav className="space-y-1.5">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
+                  activeTab === item.id
+                    ? 'bg-gradient-to-r from-[#d4af37] to-[#b38f2a] text-[#0f1e16] shadow-lg translate-x-1'
+                    : 'text-slate-300 hover:bg-[#234735] hover:text-[#d4af37]'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
+                </div>
+                {!item.isLive && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#0f1e16]/60 text-slate-400 font-normal">
+                    قيد التجهيز
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
         </div>
 
-        {/* User Profile Header */}
-        <div className="p-5 text-center border-b border-white/10 bg-black/20">
-          <div className="relative inline-block mb-2">
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
-              alt="المدير العام"
-              className="w-16 h-16 rounded-full object-cover border-2 border-[#d4af37] shadow-xl mx-auto"
-            />
+        <div className="pt-6 border-t border-[#d4af37]/10 text-xs text-slate-400 space-y-2">
+          <div className="flex justify-between items-center">
+            <span>البيئة:</span>
+            <span className="text-[#d4af37] font-mono">Staging Live API</span>
           </div>
-          <h2 className="text-white font-extrabold text-sm m-0">المدير العام</h2>
-          <p className="text-[#d4af37] text-xs mt-0.5 font-bold">مسؤول النظام المعتمد</p>
+          <div className="flex justify-between items-center">
+            <span>التظهير:</span>
+            <span className="text-emerald-400 font-mono">v1.0.0 (API Connected)</span>
+          </div>
         </div>
-
-        {/* Navigation List */}
-        <nav className="py-4 flex-1">
-          <ul className="space-y-1">
-            <li>
-              <button
-                onClick={() => setActiveTab("dashboard")}
-                className={`w-full flex items-center justify-between px-6 py-3.5 text-sm font-extrabold transition-all border-r-4 ${
-                  activeTab === "dashboard"
-                    ? "bg-gradient-to-l from-[#d4af37]/20 to-transparent text-white border-[#d4af37]"
-                    : "hover:bg-[#d4af37]/10 text-[#c9d8cc] border-transparent"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M4 13h6a1 1 0 001-1V4a1 1 0 00-1-1H4a1 1 0 00-1 1v8a1 1 0 001 1zm0 8h6a1 1 0 001-1v-4a1 1 0 00-1-1H4a1 1 0 00-1 1v4a1 1 0 001 1zm10 0h6a1 1 0 001-1v-8a1 1 0 00-1-1h-6a1 1 0 00-1 1v8a1 1 0 001 1zm0-18v4a1 1 0 001 1h6a1 1 0 001-1V4a1 1 0 00-1-1h-6a1 1 0 00-1 1z"/>
-                  </svg>
-                  <span>الرئيسية (لوحة المعلومات)</span>
-                </div>
-              </button>
-            </li>
-
-            <li>
-              <button
-                onClick={() => setActiveTab("employees")}
-                className={`w-full flex items-center justify-between px-6 py-3.5 text-sm font-extrabold transition-all border-r-4 ${
-                  activeTab === "employees"
-                    ? "bg-gradient-to-l from-[#d4af37]/20 to-transparent text-white border-[#d4af37]"
-                    : "hover:bg-[#d4af37]/10 text-[#c9d8cc] border-transparent"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                  </svg>
-                  <span>إدارة الموظفين</span>
-                </div>
-              </button>
-            </li>
-
-            <li>
-              <button
-                onClick={() => setActiveTab("attendance")}
-                className={`w-full flex items-center justify-between px-6 py-3.5 text-sm font-extrabold transition-all border-r-4 ${
-                  activeTab === "attendance"
-                    ? "bg-gradient-to-l from-[#d4af37]/20 to-transparent text-white border-[#d4af37]"
-                    : "hover:bg-[#d4af37]/10 text-[#c9d8cc] border-transparent"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
-                  </svg>
-                  <span>سجلات الحضور والغياب</span>
-                </div>
-              </button>
-            </li>
-
-            <li>
-              <button
-                onClick={() => setActiveTab("leaves")}
-                className={`w-full flex items-center justify-between px-6 py-3.5 text-sm font-extrabold transition-all border-r-4 ${
-                  activeTab === "leaves"
-                    ? "bg-gradient-to-l from-[#d4af37]/20 to-transparent text-white border-[#d4af37]"
-                    : "hover:bg-[#d4af37]/10 text-[#c9d8cc] border-transparent"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10z"/>
-                  </svg>
-                  <span>طلبات الإجازات</span>
-                </div>
-              </button>
-            </li>
-
-            <li>
-              <button
-                onClick={() => setActiveTab("locations")}
-                className={`w-full flex items-center justify-between px-6 py-3.5 text-sm font-extrabold transition-all border-r-4 ${
-                  activeTab === "locations"
-                    ? "bg-gradient-to-l from-[#d4af37]/20 to-transparent text-white border-[#d4af37]"
-                    : "hover:bg-[#d4af37]/10 text-[#c9d8cc] border-transparent"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  </svg>
-                  <span>المواقع الجغرافية</span>
-                </div>
-              </button>
-            </li>
-
-            <li>
-              <button
-                onClick={() => setActiveTab("reports")}
-                className={`w-full flex items-center justify-between px-6 py-3.5 text-sm font-extrabold transition-all border-r-4 ${
-                  activeTab === "reports"
-                    ? "bg-gradient-to-l from-[#d4af37]/20 to-transparent text-white border-[#d4af37]"
-                    : "hover:bg-[#d4af37]/10 text-[#c9d8cc] border-transparent"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-                  </svg>
-                  <span>التقارير المعتمدة</span>
-                </div>
-              </button>
-            </li>
-
-            <li>
-              <button
-                onClick={() => setActiveTab("settings")}
-                className={`w-full flex items-center justify-between px-6 py-3.5 text-sm font-extrabold transition-all border-r-4 ${
-                  activeTab === "settings"
-                    ? "bg-gradient-to-l from-[#d4af37]/20 to-transparent text-white border-[#d4af37]"
-                    : "hover:bg-[#d4af37]/10 text-[#c9d8cc] border-transparent"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
-                  </svg>
-                  <span>إعدادات النظام</span>
-                </div>
-              </button>
-            </li>
-          </ul>
-        </nav>
       </aside>
 
-      {/* 2. MAIN CONTENT AREA (LEFT SIDE IN RTL) */}
-      <main className="flex-1 p-7 overflow-y-auto">
-        
-        {/* Top 4 Horizontal Metric Cards with Gold Accents */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-          {/* Card 1: Present */}
-          <div className="bg-white rounded-xl p-5 flex items-center justify-between border border-[#c8d3c6] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden border-t-4 border-t-[#d4af37]">
-            <div className="w-14 h-14 rounded-full bg-[#1b3325] text-[#d4af37] border-2 border-[#d4af37] flex items-center justify-center shadow-md">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <div className="text-xs font-extrabold text-[#617367] mb-1">الحضور اليوم</div>
-              <div className="text-2xl font-black text-[#1b3325] leading-tight">45</div>
-            </div>
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col min-w-0 bg-[#0f1e16]">
+        {/* Top Header */}
+        <header className="h-20 bg-[#1b3325]/80 border-b border-[#d4af37]/20 flex items-center justify-between px-8 backdrop-blur-md sticky top-0 z-10">
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-bold text-[#d4af37]">
+              {navItems.find(n => n.id === activeTab)?.label || 'لوحة التحكم'}
+            </h2>
           </div>
 
-          {/* Card 2: Absent */}
-          <div className="bg-white rounded-xl p-5 flex items-center justify-between border border-[#c8d3c6] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden border-t-4 border-t-[#d4af37]">
-            <div className="w-14 h-14 rounded-full bg-[#1b3325] text-[#d4af37] border-2 border-[#d4af37] flex items-center justify-center shadow-md">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <div className="flex items-center gap-4">
+            <div className="px-3 py-1.5 bg-[#0f1e16] border border-[#d4af37]/30 rounded-full text-xs text-[#d4af37] font-semibold flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              بيئة Staging متصلة بالـ API الحقيقي
             </div>
-            <div className="text-left">
-              <div className="text-xs font-extrabold text-[#617367] mb-1">الغياب اليوم</div>
-              <div className="text-2xl font-black text-[#1b3325] leading-tight">5</div>
+            <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center font-bold text-[#d4af37] text-sm">
+              AD
             </div>
           </div>
+        </header>
 
-          {/* Card 3: Late */}
-          <div className="bg-white rounded-xl p-5 flex items-center justify-between border border-[#c8d3c6] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden border-t-4 border-t-[#d4af37]">
-            <div className="w-14 h-14 rounded-full bg-[#1b3325] text-[#d4af37] border-2 border-[#d4af37] flex items-center justify-center shadow-md">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <div className="text-xs font-extrabold text-[#617367] mb-1">التأخير اليوم</div>
-              <div className="text-2xl font-black text-[#1b3325] leading-tight">3</div>
-            </div>
-          </div>
+        {/* View Component Switcher */}
+        <div className="p-8 flex-1 overflow-y-auto">
+          {activeTab === 'dashboard' && <CompaniesView />}
+          {activeTab === 'companies' && <CompaniesView />}
+          {activeTab === 'employees' && <EmployeesView />}
+          {activeTab === 'attendance' && <AttendanceView />}
+          {activeTab === 'leaves' && <LeavesView />}
 
-          {/* Card 4: Total Staff */}
-          <div className="bg-white rounded-xl p-5 flex items-center justify-between border border-[#c8d3c6] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden border-t-4 border-t-[#d4af37]">
-            <div className="w-14 h-14 rounded-full bg-[#1b3325] text-[#d4af37] border-2 border-[#d4af37] flex items-center justify-center shadow-md">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <div className="text-xs font-extrabold text-[#617367] mb-1">إجمالي الموظفين</div>
-              <div className="text-2xl font-black text-[#1b3325] leading-tight">50</div>
-            </div>
-          </div>
+          {['locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'].includes(activeTab) && (
+            <UnderIntegration moduleName={navItems.find(n => n.id === activeTab)?.label || ''} />
+          )}
         </div>
-
-        {/* 3. DYNAMIC CONTAINER CARDS SWITCHED BY ACTIVE TAB */}
-        
-        {/* VIEW 1: EMPLOYEES DIRECTORY (activeTab === 'employees') */}
-        {activeTab === "employees" && (
-          <div className="bg-white rounded-xl p-6 border border-[#c8d3c6] shadow-sm">
-            <div className="flex items-center justify-between mb-5 flex-wrap gap-4 border-b border-[#e8eee9] pb-4">
-              <h2 className="text-xl font-black text-[#1b3325] m-0 flex items-center gap-2">
-                <svg className="w-6 h-6 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                سجل إدارة الموظفين والحسابات المعتمدة
-              </h2>
-
-              <div className="flex items-center gap-3">
-                <div className="relative w-64">
-                  <input
-                    type="text"
-                    placeholder="بحث باسم الموظف أو البريد..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pr-9 pl-3 py-2 border border-[#c8d3c6] rounded-lg text-sm focus:outline-none focus:border-[#d4af37]"
-                  />
-                </div>
-
-                <button className="bg-gradient-to-r from-[#234735] to-[#1b3325] text-[#d4af37] border border-[#d4af37] px-4 py-2 rounded-lg text-sm font-extrabold hover:shadow-lg transition-all">
-                  + إضافة موظف جديد
-                </button>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto rounded-lg border border-[#c8d3c6]">
-              <table className="w-full text-right border-collapse">
-                <thead>
-                  <tr className="bg-[#1b3325] text-[#d4af37] text-xs font-black uppercase tracking-wider border-b-2 border-[#d4af37]">
-                    <th className="py-4 px-4">رقم الموظف</th>
-                    <th className="py-4 px-4">الاسم الكامل</th>
-                    <th className="py-4 px-4">البريد الإلكتروني</th>
-                    <th className="py-4 px-4">الشركة المنتسب لها</th>
-                    <th className="py-4 px-4">القسم وموقع العمل</th>
-                    <th className="py-4 px-4">الحالة</th>
-                    <th className="py-4 px-4">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#e2e7e1] text-sm text-[#13241b]">
-                  {filteredEmployees.map((emp) => (
-                    <tr key={emp.id} className="hover:bg-[#f7f9f7] transition-colors">
-                      <td className="py-4 px-4 font-mono font-bold text-[#1b3325]">{emp.empNo}</td>
-                      <td className="py-4 px-4 font-extrabold text-[#1b3325]">{emp.name}</td>
-                      <td className="py-4 px-4 text-[#617367]">{emp.email}</td>
-                      <td className="py-4 px-4">
-                        <span className="bg-[#fdfbf3] text-[#856404] border border-[#e6c86e] px-3 py-1 rounded-md text-xs font-black">
-                          {emp.company}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="font-bold text-[#13241b]">{emp.dept}</span>{" "}
-                        <span className="text-[#617367] text-xs">({emp.location})</span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-[#edf5f0] text-[#1e392a] border border-[#c2d6c7] px-3 py-1 rounded-md text-xs font-black inline-flex items-center gap-1">
-                          ✓ نشط (الجوال مفعل)
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <button className="bg-white border border-[#c8d3c6] text-[#1b3325] px-3 py-1 rounded-md text-xs font-extrabold hover:bg-[#fdfbf3] hover:border-[#d4af37] transition-colors">
-                          تعديل
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 2: ATTENDANCE LOGS (activeTab === 'attendance' or 'dashboard') */}
-        {(activeTab === "attendance" || activeTab === "dashboard") && (
-          <div className="bg-white rounded-xl p-6 border border-[#c8d3c6] shadow-sm mb-6">
-            <div className="flex items-center justify-between mb-5 flex-wrap gap-4 border-b border-[#e8eee9] pb-4">
-              <h2 className="text-xl font-black text-[#1b3325] m-0 flex items-center gap-2">
-                <svg className="w-6 h-6 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                سجل الحضور المباشر والتأخير التفصيلي
-              </h2>
-            </div>
-
-            <div className="overflow-x-auto rounded-lg border border-[#c8d3c6]">
-              <table className="w-full text-right border-collapse">
-                <thead>
-                  <tr className="bg-[#1b3325] text-[#d4af37] text-xs font-black uppercase tracking-wider border-b-2 border-[#d4af37]">
-                    <th className="py-4 px-4">الموظف</th>
-                    <th className="py-4 px-4">وقت الحضور</th>
-                    <th className="py-4 px-4">وقت الانصراف</th>
-                    <th className="py-4 px-4">الموقع الجغرافي</th>
-                    <th className="py-4 px-4">ساعات العمل</th>
-                    <th className="py-4 px-4">الحالة الرسمية</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#e2e7e1] text-sm text-[#13241b]">
-                  {attendanceData.map((att) => (
-                    <tr key={att.id} className="hover:bg-[#f7f9f7] transition-colors">
-                      <td className="py-4 px-4 font-extrabold text-[#1b3325]">{att.name}</td>
-                      <td className="py-4 px-4 text-emerald-800 font-mono font-extrabold">{att.timeIn}</td>
-                      <td className="py-4 px-4 text-[#617367] font-mono">{att.timeOut}</td>
-                      <td className="py-4 px-4 text-[#13241b]">{att.location}</td>
-                      <td className="py-4 px-4 font-black">{att.workHours}</td>
-                      <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-md text-xs font-black ${
-                          att.status.includes('حاضر') ? 'bg-[#edf5f0] text-[#1e392a] border border-[#c2d6c7]' :
-                          att.status.includes('متأخر') ? 'bg-[#fdfbf3] text-[#856404] border border-[#e6c86e]' :
-                          'bg-[#fdf2f2] text-[#991b1b] border border-[#fecaca]'
-                        }`}>
-                          {att.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 3: LEAVE REQUESTS (activeTab === 'leaves') */}
-        {activeTab === "leaves" && (
-          <div className="bg-white rounded-xl p-6 border border-[#c8d3c6] shadow-sm">
-            <div className="flex items-center justify-between mb-5 border-b border-[#e8eee9] pb-4">
-              <h2 className="text-xl font-black text-[#1b3325] m-0 flex items-center gap-2">
-                <svg className="w-6 h-6 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                طلبات ورصيد الإجازات المعلقة
-              </h2>
-            </div>
-
-            <div className="overflow-x-auto rounded-lg border border-[#c8d3c6]">
-              <table className="w-full text-right border-collapse">
-                <thead>
-                  <tr className="bg-[#1b3325] text-[#d4af37] text-xs font-black uppercase tracking-wider border-b-2 border-[#d4af37]">
-                    <th className="py-4 px-4">الموظف</th>
-                    <th className="py-4 px-4">نوع الإجازة</th>
-                    <th className="py-4 px-4">من تاريخ</th>
-                    <th className="py-4 px-4">إلى تاريخ</th>
-                    <th className="py-4 px-4">الأيام</th>
-                    <th className="py-4 px-4">الرصيد المتبقي</th>
-                    <th className="py-4 px-4">الحالة</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#e2e7e1] text-sm text-[#13241b]">
-                  {leavesData.map((leave) => (
-                    <tr key={leave.id} className="hover:bg-[#f7f9f7] transition-colors">
-                      <td className="py-4 px-4 font-extrabold text-[#1b3325]">{leave.name}</td>
-                      <td className="py-4 px-4 text-[#1b3325] font-extrabold">{leave.type}</td>
-                      <td className="py-4 px-4 text-[#617367]">{leave.startDate}</td>
-                      <td className="py-4 px-4 text-[#617367]">{leave.endDate}</td>
-                      <td className="py-4 px-4 font-black">{leave.days} أيام</td>
-                      <td className="py-4 px-4 text-emerald-800 font-black">{leave.balance}</td>
-                      <td className="py-4 px-4">
-                        <span className="bg-[#fdfbf3] text-[#856404] border border-[#e6c86e] px-3 py-1 rounded-md text-xs font-black">
-                          {leave.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 4: LOCATIONS (activeTab === 'locations') */}
-        {activeTab === "locations" && (
-          <div className="bg-white rounded-xl p-6 border border-[#c8d3c6] shadow-sm">
-            <h2 className="text-xl font-black text-[#1b3325] mb-4 flex items-center gap-2">
-              <svg className="w-6 h-6 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              المواقع الجغرافية ونطاق الحضور الجغرافي (Geofence Zones)
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-5 border border-[#c8d3c6] rounded-xl bg-[#f7f9f7]">
-                <h3 className="font-black text-[#1b3325] text-lg">Al Naseem - HQ</h3>
-                <p className="text-xs text-[#617367] mt-1">الإحداثيات: 24.7136° N, 46.6753° E</p>
-                <p className="text-xs text-emerald-800 font-extrabold mt-2">نطاق البصمة المسموح: 200 متر</p>
-              </div>
-              <div className="p-5 border border-[#c8d3c6] rounded-xl bg-[#f7f9f7]">
-                <h3 className="font-black text-[#1b3325] text-lg">Fayha Branch - فرع الفيحاء</h3>
-                <p className="text-xs text-[#617367] mt-1">الإحداثيات: 24.6892° N, 46.7321° E</p>
-                <p className="text-xs text-emerald-800 font-extrabold mt-2">نطاق البصمة المسموح: 150 متر</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 5: REPORTS (activeTab === 'reports') */}
-        {activeTab === "reports" && (
-          <div className="bg-white rounded-xl p-6 border border-[#c8d3c6] shadow-sm">
-            <h2 className="text-xl font-black text-[#1b3325] mb-4 flex items-center gap-2">
-              <svg className="w-6 h-6 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              مركز التقارير المعتمدة وتصدير مسيرات الرواتب
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div className="p-5 border border-[#c8d3c6] rounded-xl text-center bg-[#f7f9f7]">
-                <div className="text-[#1b3325] font-black text-2xl mb-1">EXCEL</div>
-                <h3 className="font-black text-[#1b3325]">تقرير الحضور الشهري</h3>
-                <button className="mt-3 bg-gradient-to-r from-[#234735] to-[#1b3325] text-[#d4af37] border border-[#d4af37] text-xs px-4 py-2 rounded-lg font-extrabold">تصدير التقرير</button>
-              </div>
-              <div className="p-5 border border-[#c8d3c6] rounded-xl text-center bg-[#f7f9f7]">
-                <div className="text-[#856404] font-black text-2xl mb-1">PDF</div>
-                <h3 className="font-black text-[#1b3325]">تقرير الإجازات والأرصدة</h3>
-                <button className="mt-3 bg-gradient-to-r from-[#234735] to-[#1b3325] text-[#d4af37] border border-[#d4af37] text-xs px-4 py-2 rounded-lg font-extrabold">تصدير التقرير</button>
-              </div>
-              <div className="p-5 border border-[#c8d3c6] rounded-xl text-center bg-[#f7f9f7]">
-                <div className="text-[#1b3325] font-black text-2xl mb-1">CSV</div>
-                <h3 className="font-black text-[#1b3325]">تقرير التأخير والخروج المبكر</h3>
-                <button className="mt-3 bg-gradient-to-r from-[#234735] to-[#1b3325] text-[#d4af37] border border-[#d4af37] text-xs px-4 py-2 rounded-lg font-extrabold">تصدير التقرير</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 6: SETTINGS (activeTab === 'settings') */}
-        {activeTab === "settings" && (
-          <div className="bg-white rounded-xl p-6 border border-[#c8d3c6] shadow-sm">
-            <h2 className="text-xl font-black text-[#1b3325] mb-4 flex items-center gap-2">
-              <svg className="w-6 h-6 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              إعدادات النظام والـ API
-            </h2>
-            <div className="p-5 border border-[#c8d3c6] rounded-xl bg-[#f7f9f7]">
-              <label className="block text-xs font-black text-[#1b3325] mb-2">رابط خادم الربط (API Base URL)</label>
-              <input type="text" readOnly value="https://beattend.com/api" className="w-full p-2.5 border border-[#c8d3c6] rounded-lg bg-white text-sm text-[#13241b] font-mono font-bold" />
-            </div>
-          </div>
-        )}
-
       </main>
-
     </div>
   );
 }

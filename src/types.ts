@@ -1,20 +1,20 @@
 export interface Engagement {
   id: string;
   title: string;
-  date: string; // ISO date format "YYYY-MM-DD" or raw display text like "14 OCT"
-  rawDate: string; // "14 OCT"
-  time: string; // "10:30 AM"
-  location: string; // "Board Room Crystal"
+  date: string;
+  rawDate: string;
+  time: string;
+  location: string;
   type: "INTERNAL" | "CLIENT" | "STRATEGIC" | "OTHER";
   status: "active" | "warning" | "error";
-  attendees: string[]; // Avatar URLs
+  attendees: string[];
   description?: string;
 }
 
 export interface CheckInLog {
   id: string;
-  timestamp: string; // e.g. "08:45 AM"
-  date: string; // "2026-07-12"
+  timestamp: string;
+  date: string;
   type: "check-in" | "check-out";
   method: "Fingerprint" | "NFC" | "Manual Override";
 }
@@ -33,19 +33,19 @@ export interface HRRequest {
   type: "leave" | "loan" | "deputation" | "overtime" | "salary-certificate";
   typeNameAr: string;
   typeNameEn: string;
-  dateSubmitted: string; // YYYY-MM-DD
+  dateSubmitted: string;
   status: "pending" | "approved" | "rejected";
   details: {
     startDate?: string;
     endDate?: string;
-    leaveType?: string; // e.g. Annual, Sick
-    amount?: number; // for loan
-    repaymentMonths?: number; // for loan
-    destination?: string; // for deputation
-    purpose?: string; // for deputation
-    hoursRequested?: number; // for overtime
+    leaveType?: string;
+    amount?: number;
+    repaymentMonths?: number;
+    destination?: string;
+    purpose?: string;
+    hoursRequested?: number;
     overtimeDate?: string;
-    language?: "Arabic" | "English" | "Both"; // for salary certificate
+    language?: "Arabic" | "English" | "Both";
     notes?: string;
   };
 }
@@ -57,4 +57,46 @@ export interface SentimentReport {
   analysis: string;
 }
 
+export interface Company {
+  id: number;
+  tenant_id: string;
+  name: string;
+  name_ar: string;
+  cr_number?: string;
+  tax_number?: string;
+  is_active: boolean;
+  created_at: string;
+}
 
+export interface Employee {
+  id: number;
+  empNo: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  company_id?: number;
+  company_name?: string;
+  department_name?: string;
+  status: 'active' | 'inactive';
+}
+
+export interface AttendanceRecord {
+  id: number;
+  employee_name: string;
+  check_in: string;
+  check_out?: string;
+  location?: string;
+  work_hours?: string;
+  status: string;
+}
+
+export interface LeaveRequest {
+  id: number;
+  employee_name: string;
+  type: string;
+  start_date: string;
+  end_date: string;
+  days_count: number;
+  status: string;
+  reason?: string;
+}

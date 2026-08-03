@@ -6,11 +6,12 @@ import { LeavesView } from "./features/leaves/LeavesView";
 import { GeofencesView } from "./features/geofences/GeofencesView";
 import { SuperAdminView } from "./features/superadmin/SuperAdminView";
 import { TenantLoginPage } from "./features/auth/TenantLoginPage";
+import { AccountActivationPage } from "./features/auth/AccountActivationPage";
 import { UnderIntegration } from "./components/UnderIntegration";
 
 export default function App() {
   const getInitialTab = () => {
-    const validTabs = ['dashboard', 'login', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
+    const validTabs = ['dashboard', 'login', 'activate', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
     const urlParams = new URLSearchParams(window.location.search);
     const queryTab = urlParams.get('page') || '';
     const hashTab = window.location.hash.replace('#', '').trim();
@@ -25,13 +26,9 @@ export default function App() {
   };
 
   const [activeTab, setActiveTabState] = useState<string>(getInitialTab);
-  const [isSuperAdminConsole, setIsSuperAdminConsole] = useState<boolean>(() => getInitialTab() === 'superadmin');
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
-    if (tab === 'superadmin') {
-      setIsSuperAdminConsole(true);
-    }
     window.history.replaceState({ page: tab }, '', `${window.location.pathname}?page=${tab}#${tab}`);
     try {
       localStorage.setItem('beattend_active_page', tab);
@@ -43,7 +40,7 @@ export default function App() {
 
   useEffect(() => {
     const handleUrlChange = () => {
-      const validTabs = ['dashboard', 'login', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
+      const validTabs = ['dashboard', 'login', 'activate', 'superadmin', 'companies', 'employees', 'attendance', 'leaves', 'locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'];
       const urlParams = new URLSearchParams(window.location.search);
       const queryTab = urlParams.get('page') || '';
       const hashTab = window.location.hash.replace('#', '').trim();
@@ -51,7 +48,6 @@ export default function App() {
       const current = validTabs.includes(queryTab) ? queryTab : validTabs.includes(hashTab) ? hashTab : '';
       if (current) {
         setActiveTabState(current);
-        if (current === 'superadmin') setIsSuperAdminConsole(true);
       }
     };
 
@@ -79,13 +75,10 @@ export default function App() {
     { id: 'settings', label: 'إعدادات النظام', icon: '⚙️', isLive: false },
   ];
 
-  // Filter sidebar items depending on view mode (Tenant Portal vs Super Admin Console)
   const navItems = allNavItems.filter(item => {
     if (activeTab === 'superadmin') {
-      // In Super Admin Console, hide tenant-specific dashboard
       return item.id !== 'dashboard';
     }
-    // In Tenant Portal view, HIDE superadmin and companies items completely!
     return !item.superAdminOnly;
   });
 
@@ -94,12 +87,20 @@ export default function App() {
       <TenantLoginPage
         onLoginSuccess={(t) => {
           alert(`مرحباً بك في لوحة تحكم شركة ${t.company_name}`);
-          setIsSuperAdminConsole(false);
           setActiveTab('dashboard');
         }}
         onSwitchToSuperAdmin={() => {
-          setIsSuperAdminConsole(true);
           setActiveTab('superadmin');
+        }}
+      />
+    );
+  }
+
+  if (activeTab === 'activate') {
+    return (
+      <AccountActivationPage
+        onActivationSuccess={(email, code) => {
+          setActiveTab('login');
         }}
       />
     );

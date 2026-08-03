@@ -10,7 +10,7 @@ ini_set('display_errors', '0');
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Tenant-ID');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Tenant-ID, X-Platform-Token');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -27,6 +27,9 @@ require_once __DIR__ . '/controllers/leave_controller.php';
 require_once __DIR__ . '/controllers/geofence_controller.php';
 require_once __DIR__ . '/controllers/tenant_controller.php';
 require_once __DIR__ . '/controllers/superadmin_controller.php';
+require_once __DIR__ . '/controllers/auth_controller.php';
+require_once __DIR__ . '/controllers/platform_controller.php';
+require_once __DIR__ . '/controllers/invitation_controller.php';
 
 function validateTenant() {
     $tenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
@@ -69,6 +72,31 @@ try {
             $controller->check();
             break;
 
+        case 'auth_login':
+        case 'login':
+            $controller = new AuthController();
+            $controller->login($input);
+            break;
+
+        case 'platform_tenants':
+            $controller = new PlatformController();
+            if ($method === 'POST') {
+                $controller->createTenant($input);
+            } else {
+                $controller->getTenants();
+            }
+            break;
+
+        case 'invitation_verify':
+            $controller = new InvitationController();
+            $controller->verifyToken($_GET['token'] ?? '');
+            break;
+
+        case 'invitation_activate':
+            $controller = new InvitationController();
+            $controller->activateAccount($input);
+            break;
+
         case 'tenant':
             $controller = new TenantController();
             $ident = $_GET['identifier'] ?? $_GET['tenant_id'] ?? 'hadiyah';
@@ -100,7 +128,11 @@ try {
                 $targetId = $id ?: ($input['id'] ?? null);
                 $controller->deleteCompany($targetId, $tenantId);
             } else {
-                $controller->getCompanies($tenantId);
+                if ($id) {
+                    $controller->getCompanyById($id, $tenantId);
+                } else {
+                    $controller->getCompanies($tenantId);
+                }
             }
             break;
 
@@ -118,18 +150,50 @@ try {
                 if ($id) {
                     $controller->getEmployeeById($id, $tenantId);
                 } else {
-                    $companyId = isset($_GET['companyId']) ? (int)$_GET['companyId'] : null;
-                    $controller->getEmployees($tenantId, $companyId);
+                    $controller->getEmployees($tenantId);
                 }
+            }
+            break;
+
+        case 'attendance':
+            $controller = new AttendanceController();
+            if ($action === 'checkin' && $method === 'POST') {
+                $empId = getAuthenticatedEmployeeId();
+                $controller->checkIn($empId, $input, $tenantId);
+            } elseif ($action === 'checkout' && $method === 'POST') {
+                $empId = getAuthenticatedEmployeeId();
+                $controller->checkOut($empId, $input, $tenantId);
+            } elseif ($action === 'logs') {
+                $empId = getAuthenticatedEmployeeId();
+                $controller->getLogs($empId, $tenantId);
+            } else {
+                $controller->getDashboardStats($tenantId);
+            }
+            break;
+
+        case 'leaves':
+            $controller = new LeaveController();
+            if ($action === 'types') {
+                $controller->getLeaveTypes();
+            } elseif ($action === 'create' && $method === 'POST') {
+                $empId = getAuthenticatedEmployeeId();
+                $controller->createLeaveRequest($empId, $input);
+            } elseif (($action === 'approve' || $action === 'reject') && $method === 'POST') {
+                $reqId = $id ?: ($input['request_id'] ?? null);
+                $status = ($action === 'approve') ? 'Approved' : 'Rejected';
+                $controller->updateLeaveStatus($reqId, $status);
+            } else {
+                $empId = isset($_GET['employee_id']) ? (int)$_GET['employee_id'] : null;
+                $controller->getLeaveRequests($empId);
             }
             break;
 
         case 'geofences':
             $controller = new GeofenceController();
-            if ($action === 'test') {
-                $controller->testRadius($input);
-            } elseif ($action === 'link_employees' && $id) {
-                $controller->linkEmployees($id, $input, $tenantId);
+            if ($action === 'verify' && $method === 'POST') {
+                $controller->verifyLocation($input, $tenantId);
+            } elseif ($action === 'link' && $method === 'POST') {
+                $controller->linkEmployees($input, $tenantId);
             } elseif ($method === 'POST') {
                 $controller->createGeofence($input, $tenantId);
             } elseif ($method === 'PUT' || $method === 'PATCH') {
@@ -147,53 +211,10 @@ try {
             }
             break;
 
-        case 'attendance':
-            $controller = new AttendanceController();
-            if (!empty($action)) {
-                $controller->handleAction($action, $tenantId, $id, $input);
-            } elseif ($method === 'POST') {
-                if ($action === 'correct' && $id) {
-                    $controller->correctFingerprint($id, $input, $tenantId);
-                } else {
-                    $employeeId = getAuthenticatedEmployeeId();
-                    $controller->checkIn($employeeId, $input, $tenantId);
-                }
-            } elseif ($method === 'PUT') {
-                $targetId = $id ?: ($input['id'] ?? null);
-                $controller->correctFingerprint($targetId, $input, $tenantId);
-            } else {
-                $employeeId = isset($_GET['employee_id']) ? (int)$_GET['employee_id'] : null;
-                $startDate = $_GET['start_date'] ?? null;
-                $endDate = $_GET['end_date'] ?? null;
-                $controller->getAttendance($tenantId, $employeeId, $startDate, $endDate);
-            }
-            break;
-
-        case 'leaves':
-            $controller = new LeaveController();
-            if (!empty($action) && $id) {
-                $controller->updateLeaveStatus($id, $action, $input['reason'] ?? '', $tenantId);
-            } elseif ($method === 'POST') {
-                $employeeId = getAuthenticatedEmployeeId();
-                $controller->createLeaveRequest($employeeId, $input, $tenantId);
-            } elseif ($method === 'PUT' || $method === 'PATCH') {
-                $targetId = $id ?: ($input['id'] ?? null);
-                $act = $input['action'] ?? 'approve';
-                $controller->updateLeaveStatus($targetId, $act, $input['reason'] ?? '', $tenantId);
-            } else {
-                $employeeId = isset($_GET['employee_id']) ? (int)$_GET['employee_id'] : null;
-                $status = $_GET['status'] ?? null;
-                $controller->getLeaveRequests($tenantId, $employeeId, $status);
-            }
-            break;
-
         default:
-            ApiResponse::send([
-                'status' => 'online',
-                'service' => 'BeatAttend Native PHP REST Engine',
-                'timestamp' => date('Y-m-d H:i:s')
-            ], 'مرحباً بك في الباك إند الرسمي لـ BeatAttend');
+            ApiResponse::error("المسار غير معروف: {$route}", 404);
+            break;
     }
 } catch (Exception $e) {
-    ApiResponse::error($e->getMessage(), 500);
+    ApiResponse::error("خطأ داخلي في الخادم: " . $e->getMessage(), 500);
 }

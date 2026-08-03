@@ -21,7 +21,8 @@ mariadb -u root beattend_staging_db < staging_employees_upgrade.sql 2>/dev/null 
 mariadb -u root beattend_staging_db < seed_5_demo_employees.sql 2>/dev/null || true
 mariadb -u root beattend_staging_db < geofences_upgrade.sql 2>/dev/null || true
 mariadb -u root beattend_staging_db < saas_multitenant_schema.sql 2>/dev/null || true
+mariadb -u root beattend_staging_db < saas_memberships_upgrade.sql 2>/dev/null || true
 
-echo "=== 4. Verifying Columns & Tables ==="
-mariadb -u root -e "DESCRIBE beattend_staging_db.companies;"
+echo "=== 4. Verifying Tables & Memberships ==="
 mariadb -u root -e "SHOW TABLES FROM beattend_staging_db;"
+mariadb -u root -e "SELECT id, email, full_name, is_platform_superadmin FROM beattend_staging_db.users;"

@@ -17,13 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once __DIR__ / 'config/database.php';
-require_once __DIR__ / 'utils/api_response.php';
-require_once __DIR__ / 'controllers/health_controller.php';
-require_once __DIR__ / 'controllers/companies_controller.php';
-require_once __DIR__ / 'controllers/employee_controller.php';
-require_once __DIR__ / 'controllers/attendance_controller.php';
-require_once __DIR__ / 'controllers/leave_controller.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/utils/api_response.php';
+require_once __DIR__ . '/controllers/health_controller.php';
+require_once __DIR__ . '/controllers/companies_controller.php';
+require_once __DIR__ . '/controllers/employee_controller.php';
+require_once __DIR__ . '/controllers/attendance_controller.php';
+require_once __DIR__ . '/controllers/leave_controller.php';
 
 function validateTenant() {
     $tenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
@@ -92,8 +92,12 @@ try {
                 $targetId = $id ?: ($input['id'] ?? null);
                 $controller->deleteEmployee($targetId, $tenantId);
             } else {
-                $companyId = isset($_GET['companyId']) ? (int)$_GET['companyId'] : null;
-                $controller->getEmployees($tenantId, $companyId);
+                if ($id) {
+                    $controller->getEmployeeById($id, $tenantId);
+                } else {
+                    $companyId = isset($_GET['companyId']) ? (int)$_GET['companyId'] : null;
+                    $controller->getEmployees($tenantId, $companyId);
+                }
             }
             break;
 

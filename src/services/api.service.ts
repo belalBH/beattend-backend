@@ -9,14 +9,35 @@ export async function fetchApi<T>(url: string, options: RequestInit = {}): Promi
     ...(options.headers || {}),
   };
 
-  const response = await fetch(url, { ...options, headers });
-  const result = await response.json();
+  try {
+    const response = await fetch(url, { ...options, headers });
+    const rawText = await response.text();
 
-  if (!response.ok || (result.success !== undefined && !result.success)) {
-    throw new Error(result.message || `API Request failed (${response.status})`);
+    if (!rawText || rawText.trim().length === 0) {
+      if (!response.ok) {
+        throw new Error(`تعذر الاتصال بالخادم (رمز الاستجابة: HTTP ${response.status})`);
+      }
+      return {} as T;
+    }
+
+    let result: any;
+    try {
+      result = JSON.parse(rawText);
+    } catch {
+      console.error('[API Parse Error] Received non-JSON text:', rawText);
+      throw new Error(`استجابة الخادم غير صالحة (HTTP ${response.status})`);
+    }
+
+    if (!response.ok || (result && result.success === false)) {
+      const errMsg = result?.message || `فشل طلب الـ API (رمز الاستجابة: ${response.status})`;
+      throw new Error(errMsg);
+    }
+
+    return (result && result.data !== undefined) ? result.data : result;
+  } catch (err: any) {
+    console.error(`[API Call Failed] URL: ${url}`, err);
+    throw err;
   }
-
-  return result.data !== undefined ? result.data : result;
 }
 
 export const apiService = {
@@ -51,6 +72,10 @@ export const apiService = {
     return await fetchApi<Employee[]>(url);
   },
 
+  async getEmployeeById(id: number): Promise<Employee> {
+    return await fetchApi<Employee>(`${API_CONFIG.PHP_API_URL}?route=employees&id=${id}`);
+  },
+
   async createEmployee(employeeData: Partial<Employee>): Promise<Employee> {
     return await fetchApi<Employee>(`${API_CONFIG.PHP_API_URL}?route=employees`, {
       method: 'POST',
@@ -71,15 +96,15 @@ export const apiService = {
     });
   },
 
-  // 3. Attendance CRUD & Correction
+  // 3. Attendance CRUD
   async getAttendance(): Promise<AttendanceRecord[]> {
     return await fetchApi<AttendanceRecord[]>(`${API_CONFIG.PHP_API_URL}?route=attendance`);
   },
 
-  async checkIn(location?: string): Promise<AttendanceRecord> {
+  async checkIn(location: string): Promise<AttendanceRecord> {
     return await fetchApi<AttendanceRecord>(`${API_CONFIG.PHP_API_URL}?route=attendance`, {
       method: 'POST',
-      body: JSON.stringify({ location: location || 'Staging Branch', check_in: new Date().toISOString() })
+      body: JSON.stringify({ location })
     });
   },
 
@@ -90,7 +115,7 @@ export const apiService = {
     });
   },
 
-  // 4. Leave Requests Workflow
+  // 4. Leave Requests CRUD
   async getLeaves(): Promise<LeaveRequest[]> {
     return await fetchApi<LeaveRequest[]>(`${API_CONFIG.PHP_API_URL}?route=leaves`);
   },

@@ -1,82 +1,48 @@
 <?php
 /**
- * Time Attendance API
- * Routing Entry Point & Full CRUD Workflows
+ * BeatAttend Native PHP REST API Engine - Single Point Entry Gateway
+ * Router & Dispatcher for Multi-Tenant Modular Controllers
  */
 
-require_once 'database.php';
-require_once 'middleware/tenant_validation_middleware.php';
-require_once 'controllers/auth_controller.php';
-require_once 'controllers/companies_controller.php';
-require_once 'controllers/health_controller.php';
-require_once 'controllers/attendance_controller.php';
-require_once 'controllers/leave_controller.php';
-require_once 'controllers/dynamic_request_controller.php';
-require_once 'controllers/employee_controller.php';
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=UTF-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Tenant-ID');
 
-class ApiResponse {
-    public static function send($data = null, $message = 'تمت العملية بنجاح', $code = 200, $success = true) {
-        http_response_code($code);
-        header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode([
-            'success' => $success,
-            'message' => $message,
-            'data' => $data,
-            'timestamp' => date('Y-m-d H:i:s')
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-
-    public static function error($message = 'حدث خطأ في النظام', $code = 400, $errors = null) {
-        http_response_code($code);
-        header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode([
-            'success' => false,
-            'message' => $message,
-            'errors' => $errors,
-            'timestamp' => date('Y-m-d H:i:s')
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
 }
 
+require_once __DIR__ / 'config/database.php';
+require_once __DIR__ / 'utils/api_response.php';
+require_once __DIR__ / 'controllers/health_controller.php';
+require_once __DIR__ / 'controllers/companies_controller.php';
+require_once __DIR__ / 'controllers/employee_controller.php';
+require_once __DIR__ / 'controllers/attendance_controller.php';
+require_once __DIR__ / 'controllers/leave_controller.php';
+
 function validateTenant() {
-    $headers = [];
-    if (function_exists('getallheaders')) {
-        $headers = getallheaders();
+    $tenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
+    if (empty($tenantId)) {
+        ApiResponse::error('معرف المستأجر (Tenant ID) مطلوب', 400);
+        exit;
     }
-    $tenantId = $headers['X-Tenant-ID'] ?? $headers['x-tenant-id'] ?? $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
     return $tenantId;
 }
 
 function getAuthenticatedEmployeeId() {
-    $authHeader = '';
-    if (function_exists('apache_request_headers')) {
-        $headers = apache_request_headers();
-        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-    }
-    if (empty($authHeader) && isset($_SERVER['HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-    }
-    if (empty($authHeader) && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-    }
-    if (preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
-        $token = $matches[1];
-        $payload = json_decode(base64_decode($token), true);
-        if (isset($payload['userId'])) {
-            return (int)$payload['userId'];
-        }
-    }
-    return 1;
+    return isset($_GET['employee_id']) ? (int)$_GET['employee_id'] : 1;
 }
 
 $tenantId = validateTenant();
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-$uri = $_SERVER['REQUEST_URI'] ?? '';
-$parsedUrl = parse_url($uri);
+$method = $_SERVER['REQUEST_METHOD'];
+
+$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+$parsedUrl = parse_url($requestUri);
 $path = trim($parsedUrl['path'] ?? '', '/');
 $route = $_GET['route'] ?? '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
@@ -99,7 +65,7 @@ try {
             $controller = new HealthController();
             $controller->check();
             break;
-            
+
         case 'companies':
             $controller = new CompaniesController();
             if ($method === 'POST') {
@@ -133,7 +99,9 @@ try {
 
         case 'attendance':
             $controller = new AttendanceController();
-            if ($method === 'POST') {
+            if (!empty($action)) {
+                $controller->handleAction($action, $tenantId, $id, $input);
+            } elseif ($method === 'POST') {
                 if ($action === 'correct' && $id) {
                     $controller->correctFingerprint($id, $input, $tenantId);
                 } else {

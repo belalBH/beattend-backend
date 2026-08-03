@@ -27,10 +27,18 @@ class TenantController {
                 LEFT JOIN subscriptions s ON t.tenant_id = s.tenant_id AND s.status = 'active'
                 LEFT JOIN subscription_plans sp ON s.plan_id = sp.id
                 LEFT JOIN companies c ON t.tenant_id = c.tenant_id
-                WHERE LOWER(t.company_code) = :ident OR LOWER(t.slug) = :ident OR LOWER(t.subdomain) = :ident OR LOWER(t.tenant_id) = :ident
+                WHERE LOWER(t.company_code) = :ident1 
+                   OR LOWER(t.slug) = :ident2 
+                   OR LOWER(t.subdomain) = :ident3 
+                   OR LOWER(t.tenant_id) = :ident4
                 LIMIT 1
             ");
-            $stmt->execute(['ident' => $cleaned]);
+            $stmt->execute([
+                'ident1' => $cleaned,
+                'ident2' => $cleaned,
+                'ident3' => $cleaned,
+                'ident4' => $cleaned
+            ]);
             $tenant = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$tenant) {

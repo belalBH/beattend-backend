@@ -19,8 +19,7 @@ export const TenantLoginPage: React.FC<Props> = ({
   const [resolveError, setResolveError] = useState<string | null>(null);
   const [tenantInfo, setTenantInfo] = useState<any>(null);
 
-  // Step 2: Role & Credentials
-  const [userRoleTab, setUserRoleTab] = useState<'admin' | 'employee'>('admin');
+  // Step 2: Credentials
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -218,32 +217,6 @@ export const TenantLoginPage: React.FC<Props> = ({
                 <p className="text-xs text-slate-500 font-medium">الرجاء إدخال بيانات حسابك المعتمدة بالشركة</p>
               </div>
 
-              {/* Role Toggle Switcher */}
-              <div className="bg-slate-100 p-1 rounded-xl flex">
-                <button
-                  type="button"
-                  onClick={() => setUserRoleTab('admin')}
-                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
-                    userRoleTab === 'admin'
-                      ? 'bg-white text-[#0e382c] shadow-sm'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  🛡️ مسؤول المنشأة
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUserRoleTab('employee')}
-                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
-                    userRoleTab === 'employee'
-                      ? 'bg-white text-[#0e382c] shadow-sm'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  👥 موظف
-                </button>
-              </div>
-
               {loginError && (
                 <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-xs font-bold space-y-1">
                   <p>{loginError}</p>
@@ -309,7 +282,7 @@ export const TenantLoginPage: React.FC<Props> = ({
       </div>
 
       {/* Left / Hero Dark Forest Green Column */}
-      <div className="hidden md:flex flex-1 bg-[#0e382c] text-white p-12 flex-col justify-between relative overflow-hidden">
+      <div className="hidden md:flex flex-1 bg-[#0e382c] text-[#f8fafc] p-12 flex-col justify-between relative overflow-hidden">
         <div className="flex justify-between items-center z-10">
           <div className="flex items-center gap-3">
             <span className="text-2xl font-black tracking-widest text-[#d4af37]">BeatAttend</span>

@@ -33,6 +33,10 @@ require_once __DIR__ . '/controllers/invitation_controller.php';
 require_once __DIR__ . '/controllers/platform_auth_controller.php';
 require_once __DIR__ . '/controllers/platform_analytics_controller.php';
 require_once __DIR__ . '/controllers/platform_plans_controller.php';
+require_once __DIR__ . '/controllers/platform_subscriptions_controller.php';
+require_once __DIR__ . '/controllers/platform_users_controller.php';
+require_once __DIR__ . '/controllers/platform_support_controller.php';
+require_once __DIR__ . '/controllers/platform_settings_controller.php';
 require_once __DIR__ . '/controllers/tenant_rbac_controller.php';
 require_once __DIR__ . '/controllers/universal_approval_controller.php';
 require_once __DIR__ . '/controllers/tenant_settings_controller.php';
@@ -151,6 +155,42 @@ try {
                 $controller->deletePlan($targetId);
             } else {
                 $controller->getPlans();
+            }
+            break;
+
+        case 'platform_subscriptions':
+            $controller = new PlatformSubscriptionsController();
+            if ($action === 'renew' && $method === 'POST') {
+                $controller->renewSubscription($input);
+            } else {
+                $controller->getSubscriptions();
+            }
+            break;
+
+        case 'platform_users':
+            $controller = new PlatformUsersController();
+            if ($method === 'POST') {
+                $controller->createUser($input);
+            } else {
+                $controller->getUsers();
+            }
+            break;
+
+        case 'platform_support':
+            $controller = new PlatformSupportController();
+            if ($method === 'POST') {
+                $controller->createTicket($input);
+            } else {
+                $controller->getTickets();
+            }
+            break;
+
+        case 'platform_settings':
+            $controller = new PlatformSettingsController();
+            if ($method === 'POST' || $method === 'PUT') {
+                $controller->updateSettings($input);
+            } else {
+                $controller->getSettings();
             }
             break;
 

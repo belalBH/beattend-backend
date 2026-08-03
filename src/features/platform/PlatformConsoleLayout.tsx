@@ -3,6 +3,10 @@ import { PlatformDashboardView } from './dashboard/PlatformDashboardView';
 import { PlatformConsoleView } from './PlatformConsoleView';
 import { PlatformPlansView } from './plans/PlatformPlansView';
 import { PlatformFeaturesView } from './features/PlatformFeaturesView';
+import { PlatformSubscriptionsView } from './subscriptions/PlatformSubscriptionsView';
+import { PlatformUsersView } from './users/PlatformUsersView';
+import { PlatformSupportView } from './support/PlatformSupportView';
+import { PlatformSettingsView } from './settings/PlatformSettingsView';
 
 export const PlatformConsoleLayout: React.FC = () => {
   const getInitialRoute = () => {
@@ -43,7 +47,7 @@ export const PlatformConsoleLayout: React.FC = () => {
     { id: 'plans', label: 'الباقات والأسعار', icon: '💰', path: '/platform/plans' },
     { id: 'subscriptions', label: 'الاشتراكات', icon: '📅', path: '/platform/subscriptions' },
     { id: 'features', label: 'الوحدات والمزايا', icon: '🧩', path: '/platform/features' },
-    { id: 'users', label: 'مستخدمو المنصة', icon: '🛡️', path: '/platform/users' },
+    { id: 'users', label: 'مستخدمو المنصة (RBAC)', icon: '🛡️', path: '/platform/users' },
     { id: 'usage', label: 'حدود الاستخدام', icon: '⚡', path: '/platform/usage' },
     { id: 'storage', label: 'التخزين والمظلات', icon: '☁️', path: '/platform/storage' },
     { id: 'support', label: 'الدعم والتذاكر', icon: '💬', path: '/platform/support' },
@@ -127,9 +131,13 @@ export const PlatformConsoleLayout: React.FC = () => {
           {currentRoute === 'dashboard' && <PlatformDashboardView />}
           {currentRoute === 'tenants' && <PlatformConsoleView />}
           {currentRoute === 'plans' && <PlatformPlansView />}
+          {currentRoute === 'subscriptions' && <PlatformSubscriptionsView />}
           {currentRoute === 'features' && <PlatformFeaturesView />}
+          {currentRoute === 'users' && <PlatformUsersView />}
+          {currentRoute === 'support' && <PlatformSupportView />}
+          {currentRoute === 'settings' && <PlatformSettingsView />}
 
-          {['subscriptions', 'users', 'usage', 'storage', 'support', 'audit', 'settings'].includes(currentRoute) && (
+          {['usage', 'storage', 'audit'].includes(currentRoute) && (
             <div className="bg-[#12241a] border border-[#d4af37]/30 rounded-3xl p-8 shadow-2xl text-center space-y-4">
               <div className="text-4xl">🚧</div>
               <h2 className="text-xl font-bold text-[#d4af37]">

@@ -7,10 +7,6 @@ USE beattend_staging_db;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Drop obsolete legacy foreign keys referencing old tenants(id)
-ALTER TABLE companies DROP FOREIGN KEY companies_ibfk_1 2>/dev/null || true;
-ALTER TABLE employees DROP FOREIGN KEY employees_ibfk_1 2>/dev/null || true;
-
 -- 1. Master Users Table (Decoupled from single tenant)
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,

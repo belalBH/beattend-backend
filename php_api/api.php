@@ -284,6 +284,11 @@ try {
             $controller->processAction($memId, $input);
             break;
 
+        case 'tenant_settings':
+            $controller = new TenantSettingsController();
+            $controller->getFullSettings($tenantId);
+            break;
+
         case 'tenant_leave_types':
         case 'leave_types':
             $controller = new TenantSettingsController();

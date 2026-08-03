@@ -13,6 +13,11 @@ class AuthController {
         // Remove port if present
         $host = preg_replace('/:\d+$/', '', $host);
         
+        // Ignore IP addresses (e.g. 76.13.253.114 or 127.0.0.1)
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            return null;
+        }
+
         $parts = explode('.', $host);
         if (count($parts) >= 3) {
             $sub = strtolower($parts[0]);
@@ -33,7 +38,7 @@ class AuthController {
 
         // 1. Resolve Target Tenant from Host Header or Parameter
         $hostSubdomain = $this->extractSubdomainFromHost();
-        $targetSubdomain = $hostSubdomain ?: $tenantIdentifier;
+        $targetSubdomain = !empty($hostSubdomain) ? $hostSubdomain : $tenantIdentifier;
 
         if (empty($targetSubdomain)) {
             ApiResponse::error('يرجى تحديد رمز الشركة أو الـ Subdomain للوصول', 400);

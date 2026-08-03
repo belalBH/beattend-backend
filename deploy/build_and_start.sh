@@ -23,11 +23,10 @@ DB_NAME=beattend_staging_db
 JWT_SECRET=BeAttendSuperSecret2026StagingJwtKey
 EOF
 
-echo "=== 5. Starting / Restarting PM2 Application ==="
+echo "=== 5. Starting PM2 Node Application ==="
 pm2 delete beattend-staging 2>/dev/null || true
-pm2 start server.ts --name "beattend-staging" -- --port 3001
+pm2 start backend-dist/server.cjs --name "beattend-staging"
 pm2 save
-pm2 startup | tail -n 1 | bash 2>/dev/null || true
 
 echo "=== 6. PM2 Status ==="
 pm2 status

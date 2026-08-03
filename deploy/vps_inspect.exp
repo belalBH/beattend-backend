@@ -1,0 +1,16 @@
+#!/usr/bin/expect
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no root@76.13.253.114
+expect "password:"
+send "Belalalbanna12\#@\r"
+expect "#"
+send "ls -la /var/www/ && ls -la /var/www/beattend 2>/dev/null || echo NO_BEATTEND\r"
+expect "#"
+send "mariadb -u root -e 'SHOW DATABASES;'\r"
+expect "#"
+send "systemctl is-active nginx php8.3-fpm mariadb\r"
+expect "#"
+send "pm2 status\r"
+expect "#"
+send "exit\r"
+expect eof

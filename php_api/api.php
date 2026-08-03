@@ -24,6 +24,7 @@ require_once __DIR__ . '/controllers/companies_controller.php';
 require_once __DIR__ . '/controllers/employee_controller.php';
 require_once __DIR__ . '/controllers/attendance_controller.php';
 require_once __DIR__ . '/controllers/leave_controller.php';
+require_once __DIR__ . '/controllers/geofence_controller.php';
 
 function validateTenant() {
     $tenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? $_GET['tenant_id'] ?? 'tenant-sol-102';
@@ -97,6 +98,29 @@ try {
                 } else {
                     $companyId = isset($_GET['companyId']) ? (int)$_GET['companyId'] : null;
                     $controller->getEmployees($tenantId, $companyId);
+                }
+            }
+            break;
+
+        case 'geofences':
+            $controller = new GeofenceController();
+            if ($action === 'test') {
+                $controller->testRadius($input);
+            } elseif ($action === 'link_employees' && $id) {
+                $controller->linkEmployees($id, $input, $tenantId);
+            } elseif ($method === 'POST') {
+                $controller->createGeofence($input, $tenantId);
+            } elseif ($method === 'PUT' || $method === 'PATCH') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $controller->updateGeofence($targetId, $input, $tenantId);
+            } elseif ($method === 'DELETE') {
+                $targetId = $id ?: ($input['id'] ?? null);
+                $controller->deleteGeofence($targetId, $tenantId);
+            } else {
+                if ($id) {
+                    $controller->getGeofenceById($id, $tenantId);
+                } else {
+                    $controller->getGeofences($tenantId);
                 }
             }
             break;

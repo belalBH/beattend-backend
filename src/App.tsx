@@ -3,6 +3,7 @@ import { CompaniesView } from "./features/companies/CompaniesView";
 import { EmployeesView } from "./features/employees/EmployeesView";
 import { AttendanceView } from "./features/attendance/AttendanceView";
 import { LeavesView } from "./features/leaves/LeavesView";
+import { GeofencesView } from "./features/geofences/GeofencesView";
 import { UnderIntegration } from "./components/UnderIntegration";
 
 export default function App() {
@@ -62,7 +63,7 @@ export default function App() {
     { id: 'employees', label: 'دليل الموظفين', icon: '👥', isLive: true },
     { id: 'attendance', label: 'الحضور والبصمة', icon: '⏱️', isLive: true },
     { id: 'leaves', label: 'الإجازات والطلبات', icon: '📅', isLive: true },
-    { id: 'locations', label: 'النطاق الجغرافي', icon: '📍', isLive: false },
+    { id: 'locations', label: 'النطاق الجغرافي', icon: '📍', isLive: true },
     { id: 'shifts', label: 'مناوبات العمل', icon: '🔄', isLive: false },
     { id: 'payroll', label: 'مسيرات الرواتب', icon: '💰', isLive: false },
     { id: 'documents', label: 'المستندات والملفات', icon: '📁', isLive: false },
@@ -151,8 +152,9 @@ export default function App() {
           {activeTab === 'employees' && <EmployeesView />}
           {activeTab === 'attendance' && <AttendanceView />}
           {activeTab === 'leaves' && <LeavesView />}
+          {activeTab === 'locations' && <GeofencesView />}
 
-          {['locations', 'shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'].includes(activeTab) && (
+          {['shifts', 'payroll', 'documents', 'reports', 'roles', 'settings'].includes(activeTab) && (
             <UnderIntegration moduleName={navItems.find(n => n.id === activeTab)?.label || ''} />
           )}
         </div>

@@ -2,7 +2,7 @@
 -- BeatAttend Staging DDL Migration: Odoo-Style Enterprise Payroll Engine
 -- Database: beattend_staging_db
 -- Date: 2026-08-04
--- Target Tables: 24 Tables with Foreign Keys, Unique Constraints, & DECIMAL Precision
+-- Target Tables: 25 Tables with Foreign Keys, Unique Constraints, & DECIMAL Precision
 -- ============================================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS `payroll_contracts` (
   `created_by` INT NULL,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL,
   UNIQUE KEY `uk_tenant_contract_num` (`tenant_id`, `contract_number`),
   UNIQUE KEY `uk_tenant_emp_effective` (`tenant_id`, `employee_id`, `effective_date`),
   KEY `idx_tenant_emp` (`tenant_id`, `employee_id`),
@@ -69,6 +70,7 @@ CREATE TABLE IF NOT EXISTS `salary_structures` (
   `name_en` VARCHAR(150) NULL,
   `is_active` TINYINT(1) DEFAULT 1,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL,
   UNIQUE KEY `uk_tenant_struct_code` (`tenant_id`, `code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -92,10 +94,20 @@ CREATE TABLE IF NOT EXISTS `salary_rules` (
   `in_payslip` TINYINT(1) DEFAULT 1,
   `status` ENUM('active', 'inactive') DEFAULT 'active',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL,
   UNIQUE KEY `uk_tenant_rule_code` (`tenant_id`, `code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 5. Salary Structure Rules (Many-to-Many Mapping)
+-- 5. Salary Rule Versions
+CREATE TABLE IF NOT EXISTS `salary_rule_versions` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `rule_id` INT NOT NULL,
+  `version` INT NOT NULL DEFAULT 1,
+  `rule_snapshot` JSON NOT NULL,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 6. Salary Structure Rules (Many-to-Many Mapping)
 CREATE TABLE IF NOT EXISTS `salary_structure_rules` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -108,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `salary_structure_rules` (
   CONSTRAINT `fk_struct_rules_rule` FOREIGN KEY (`rule_id`) REFERENCES `salary_rules` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 6. Employee Specific Rule Overrides
+-- 7. Employee Specific Rule Overrides
 CREATE TABLE IF NOT EXISTS `employee_salary_rules` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -121,17 +133,18 @@ CREATE TABLE IF NOT EXISTS `employee_salary_rules` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 7. GOSI Configurations Table
+-- 8. GOSI Configurations Table (Dated & Scope-Driven)
 CREATE TABLE IF NOT EXISTS `gosi_configurations` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
+  `insurance_system_code` VARCHAR(50) DEFAULT 'GOSI_SAUDI_2026',
   `nationality_scope` ENUM('saudi', 'non_saudi', 'all') DEFAULT 'saudi',
-  `contributor_type` VARCHAR(50) DEFAULT 'standard',
-  `employee_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.0975,
-  `employer_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.1175,
-  `pension_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.0975,
-  `unemployment_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.0075,
-  `occupational_hazard_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.0200,
+  `contributor_category` VARCHAR(50) DEFAULT 'standard',
+  `pension_employee_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.0975,
+  `pension_employer_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.0975,
+  `unemployment_employee_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.0075,
+  `unemployment_employer_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.0075,
+  `occupational_hazard_employer_rate` DECIMAL(6, 4) NOT NULL DEFAULT 0.0200,
   `min_contributory_wage` DECIMAL(12, 2) NOT NULL DEFAULT 1500.00,
   `max_contributory_wage` DECIMAL(12, 2) NOT NULL DEFAULT 45000.00,
   `effective_from` DATE NOT NULL,
@@ -140,7 +153,26 @@ CREATE TABLE IF NOT EXISTS `gosi_configurations` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 8. Payroll Runs
+-- 9. Overtime Policies Table (Dated & Policy-Driven)
+CREATE TABLE IF NOT EXISTS `overtime_policies` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `tenant_id` VARCHAR(100) NOT NULL,
+  `policy_name` VARCHAR(100) NOT NULL,
+  `ordinary_hourly_wage_formula` VARCHAR(255) DEFAULT 'BASIC / 30 / 8',
+  `basic_hourly_wage_formula` VARCHAR(255) DEFAULT 'BASIC / 30 / 8',
+  `additional_basic_percentage` DECIMAL(6, 4) DEFAULT 0.5000,
+  `weekday_multiplier` DECIMAL(4, 2) DEFAULT 1.50,
+  `weekend_multiplier` DECIMAL(4, 2) DEFAULT 1.50,
+  `holiday_multiplier` DECIMAL(4, 2) DEFAULT 2.00,
+  `daily_divisor` INT DEFAULT 8,
+  `monthly_divisor` INT DEFAULT 30,
+  `effective_from` DATE NOT NULL,
+  `effective_to` DATE NULL,
+  `status` ENUM('active', 'inactive') DEFAULT 'active',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 10. Payroll Runs
 CREATE TABLE IF NOT EXISTS `payroll_runs` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -162,7 +194,7 @@ CREATE TABLE IF NOT EXISTS `payroll_runs` (
   UNIQUE KEY `uk_tenant_period_struct` (`tenant_id`, `period_year`, `period_month`, `structure_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 9. Payroll Run Employees
+-- 11. Payroll Run Employees
 CREATE TABLE IF NOT EXISTS `payroll_run_employees` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `run_id` INT NOT NULL,
@@ -176,7 +208,7 @@ CREATE TABLE IF NOT EXISTS `payroll_run_employees` (
   CONSTRAINT `fk_run_emp_run` FOREIGN KEY (`run_id`) REFERENCES `payroll_runs` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 10. Payslips Table
+-- 12. Payslips Table
 CREATE TABLE IF NOT EXISTS `payslips` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -203,7 +235,7 @@ CREATE TABLE IF NOT EXISTS `payslips` (
   CONSTRAINT `fk_payslips_contract` FOREIGN KEY (`contract_id`) REFERENCES `payroll_contracts` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 11. Payslip Itemized Lines
+-- 13. Payslip Itemized Lines
 CREATE TABLE IF NOT EXISTS `payslip_lines` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `payslip_id` INT NOT NULL,
@@ -226,7 +258,7 @@ CREATE TABLE IF NOT EXISTS `payslip_lines` (
   CONSTRAINT `fk_lines_payslip` FOREIGN KEY (`payslip_id`) REFERENCES `payslips` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 12. Employee Loans Table
+-- 14. Employee Loans Table
 CREATE TABLE IF NOT EXISTS `employee_loans` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -242,7 +274,7 @@ CREATE TABLE IF NOT EXISTS `employee_loans` (
   UNIQUE KEY `uk_loan_num` (`tenant_id`, `loan_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 13. Loan Installments Schedule
+-- 15. Loan Installments Schedule
 CREATE TABLE IF NOT EXISTS `employee_loan_installments` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `loan_id` INT NOT NULL,
@@ -259,7 +291,7 @@ CREATE TABLE IF NOT EXISTS `employee_loan_installments` (
   CONSTRAINT `fk_installments_loan` FOREIGN KEY (`loan_id`) REFERENCES `employee_loans` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 14. Overtime Approved Entries
+-- 16. Overtime Approved Entries
 CREATE TABLE IF NOT EXISTS `overtime_entries` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -272,7 +304,7 @@ CREATE TABLE IF NOT EXISTS `overtime_entries` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 15. Business Trip Entries (الانتداب)
+-- 17. Business Trip Entries (الانتداب)
 CREATE TABLE IF NOT EXISTS `business_trip_entries` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -288,7 +320,7 @@ CREATE TABLE IF NOT EXISTS `business_trip_entries` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 16. Payroll Inputs (Variable Extra Earnings & Deductions)
+-- 18. Payroll Inputs (Variable Extra Earnings & Deductions)
 CREATE TABLE IF NOT EXISTS `payroll_inputs` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -300,7 +332,7 @@ CREATE TABLE IF NOT EXISTS `payroll_inputs` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 17. Payroll Adjustments (Retroactive)
+-- 19. Payroll Adjustments (Retroactive)
 CREATE TABLE IF NOT EXISTS `payroll_adjustments` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -312,7 +344,7 @@ CREATE TABLE IF NOT EXISTS `payroll_adjustments` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 18. Attendance Snapshots
+-- 20. Attendance Snapshots
 CREATE TABLE IF NOT EXISTS `payroll_attendance_snapshots` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -327,7 +359,7 @@ CREATE TABLE IF NOT EXISTS `payroll_attendance_snapshots` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 19. Approval Workflow Audit Log
+-- 21. Approval Workflow Audit Log
 CREATE TABLE IF NOT EXISTS `payroll_approval_history` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -339,7 +371,7 @@ CREATE TABLE IF NOT EXISTS `payroll_approval_history` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 20. Payment Batches
+-- 22. Payment Batches
 CREATE TABLE IF NOT EXISTS `payroll_payment_batches` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -351,7 +383,7 @@ CREATE TABLE IF NOT EXISTS `payroll_payment_batches` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 21. Payment Batch Lines
+-- 23. Payment Batch Lines
 CREATE TABLE IF NOT EXISTS `payroll_payment_lines` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `batch_id` INT NOT NULL,
@@ -363,7 +395,7 @@ CREATE TABLE IF NOT EXISTS `payroll_payment_lines` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 22. Export File Snapshots
+-- 24. Export File Snapshots
 CREATE TABLE IF NOT EXISTS `payroll_export_files` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `tenant_id` VARCHAR(100) NOT NULL,
@@ -374,21 +406,12 @@ CREATE TABLE IF NOT EXISTS `payroll_export_files` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 23. Engine Calculation Versions
+-- 25. Engine Calculation Versions
 CREATE TABLE IF NOT EXISTS `payroll_calculation_versions` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `version_code` VARCHAR(20) NOT NULL,
   `description` VARCHAR(255) NOT NULL,
   `is_active` TINYINT(1) DEFAULT 1,
-  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 24. Rule Engine Rule Versions
-CREATE TABLE IF NOT EXISTS `payroll_rule_versions` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `rule_id` INT NOT NULL,
-  `version` INT NOT NULL DEFAULT 1,
-  `rule_snapshot` JSON NOT NULL,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

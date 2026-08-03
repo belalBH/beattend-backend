@@ -12,19 +12,9 @@ class PlatformController {
     private function verifyPlatformSuperAdmin() {
         $headers = getallheaders();
         $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-        $platformToken = $headers['X-Platform-Token'] ?? $_GET['platform_token'] ?? '';
+        $platformToken = $headers['X-Platform-Token'] ?? $headers['x-platform-token'] ?? '';
 
-        // Allow platform token or superadmin validation
         if ($platformToken === 'PlatformSuperAdminSecret2026!' || strpos($authHeader, 'PlatformAdminToken') !== false) {
-            return true;
-        }
-
-        // Query database for superadmin user if platform email passed
-        $email = $_GET['admin_email'] ?? $_POST['admin_email'] ?? 'superadmin@beattend.com';
-        $db = Database::getInstance();
-        $stmt = $db->getConnection()->prepare("SELECT is_platform_superadmin FROM users WHERE LOWER(email) = LOWER(:email) AND is_platform_superadmin = 1 LIMIT 1");
-        $stmt->execute([':email' => $email]);
-        if ($stmt->fetch()) {
             return true;
         }
 
@@ -32,7 +22,7 @@ class PlatformController {
         echo json_encode([
             'success' => false,
             'code' => 401,
-            'message' => '⚠️ 401 Unauthorized: تطلب هذا الإجراء صلاحيات Platform Super Admin',
+            'message' => '⚠️ 401 Unauthorized: تطلب هذا الإجراء صلاحيات Platform Super Admin ومعرف مجهول مرفوض',
             'errors' => ['SUPERADMIN_AUTH_REQUIRED'],
             'timestamp' => date('c')
         ]);

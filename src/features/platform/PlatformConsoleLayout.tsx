@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PlatformDashboardView } from './dashboard/PlatformDashboardView';
 import { PlatformConsoleView } from './PlatformConsoleView';
+import { PlatformPlansView } from './plans/PlatformPlansView';
+import { PlatformFeaturesView } from './features/PlatformFeaturesView';
 
 export const PlatformConsoleLayout: React.FC = () => {
   const getInitialRoute = () => {
@@ -124,8 +126,10 @@ export const PlatformConsoleLayout: React.FC = () => {
         <main className="p-6 flex-1 overflow-y-auto">
           {currentRoute === 'dashboard' && <PlatformDashboardView />}
           {currentRoute === 'tenants' && <PlatformConsoleView />}
+          {currentRoute === 'plans' && <PlatformPlansView />}
+          {currentRoute === 'features' && <PlatformFeaturesView />}
 
-          {['plans', 'subscriptions', 'features', 'users', 'usage', 'storage', 'support', 'audit', 'settings'].includes(currentRoute) && (
+          {['subscriptions', 'users', 'usage', 'storage', 'support', 'audit', 'settings'].includes(currentRoute) && (
             <div className="bg-[#12241a] border border-[#d4af37]/30 rounded-3xl p-8 shadow-2xl text-center space-y-4">
               <div className="text-4xl">🚧</div>
               <h2 className="text-xl font-bold text-[#d4af37]">

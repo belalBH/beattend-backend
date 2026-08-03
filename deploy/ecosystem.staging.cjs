@@ -9,13 +9,11 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: "1G",
-      env_production: {
+      env: {
         NODE_ENV: "production",
         HOST: "127.0.0.1",
         PORT: 3001
-      },
-      error_file: "/var/www/beattend-staging/logs/pm2-error.log",
-      out_file: "/var/www/beattend-staging/logs/pm2-out.log"
+      }
     }
   ]
 };

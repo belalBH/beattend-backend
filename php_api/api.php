@@ -391,6 +391,14 @@ try {
             $controller->runPhase1RefinedTests();
             break;
 
+        case 'payroll_accounting':
+            enforceTenantFeature($tenantId, 'payroll');
+            require_once __DIR__ . '/controllers/payroll_accounting_controller.php';
+            $controller = new PayrollAccountingController();
+            $runId = $_GET['run_id'] ?? 101;
+            $controller->generateJournalVoucherPreview($tenantId, $runId);
+            break;
+
         case 'payroll':
             enforceTenantFeature($tenantId, 'payroll');
             $controller = new PayrollController();

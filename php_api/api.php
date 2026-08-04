@@ -388,7 +388,7 @@ try {
         case 'payroll_engine_tests':
             enforceTenantFeature($tenantId, 'payroll');
             $controller = new PayrollEngineController();
-            $controller->runPhase1Tests();
+            $controller->runPhase1RefinedTests();
             break;
 
         case 'payroll':

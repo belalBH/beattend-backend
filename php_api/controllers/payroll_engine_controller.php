@@ -91,8 +91,8 @@ class PayrollEngineController {
                     'gosi_emp' => 0.00,
                     'total_deductions' => 0.00,
                     'net' => 10800.00,
-                    'gosi_employer' => 160.00, // 2.0% of (8000 + 2000) = 160.00 SAR
-                    'total_employer_cost' => 10960.00
+                    'gosi_employer' => 200.00, // 2.0% of (8000 + 2000) GOSI Taxable Wage = 200.00 SAR
+                    'total_employer_cost' => 11000.00
                 ]
             ],
             [

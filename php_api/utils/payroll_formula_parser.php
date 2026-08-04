@@ -101,7 +101,10 @@ class PayrollFormulaParser {
             if ($op === '*') {
                 $left *= $right;
             } else {
-                $left = ($right != 0) ? ($left / $right) : 0;
+                if ($right == 0) {
+                    throw new Exception("⚠️ Formula Parser Error: Division by zero");
+                }
+                $left = $left / $right;
             }
         }
         return $left;

@@ -12,7 +12,7 @@ import { PlatformLoginPage } from "./features/platform/PlatformLoginPage";
 import { PlatformConsoleLayout } from "./features/platform/PlatformConsoleLayout";
 import { UsersAndPermissionsView } from "./features/settings/UsersAndPermissionsView";
 import { TenantSettingsView } from "./features/settings/TenantSettingsView";
-import { PayrollView } from "./features/payroll/PayrollView";
+import { PayrollConsoleLayout } from "./features/payroll/PayrollConsoleLayout";
 import { UnderIntegration } from "./components/UnderIntegration";
 
 export default function App() {
@@ -226,7 +226,7 @@ export default function App() {
           {activeTab === 'locations' && <GeofencesView />}
           {activeTab === 'roles' && <UsersAndPermissionsView />}
           {activeTab === 'settings' && <TenantSettingsView />}
-          {activeTab === 'payroll' && <PayrollView />}
+          {activeTab === 'payroll' && <PayrollConsoleLayout />}
 
           {['shifts', 'documents', 'reports'].includes(activeTab) && (
             <UnderIntegration moduleName={allNavItems.find(n => n.id === activeTab)?.label || ''} />
